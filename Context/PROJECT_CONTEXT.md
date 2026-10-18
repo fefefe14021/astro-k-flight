@@ -4,8 +4,7 @@
 
 Дата снимка: 19 октября 2026.  
 GitHub: https://github.com/fefefe14021/astro-k-flight.git  
-Последний коммит на момент снимка: `7d9b25c` (сцена `Gameplay` с кораблём и экранным управлением).  
-Снаряд, астероид, Album и шкала Hype на этот момент есть в рабочей копии и ещё не закоммичены.
+Снаряд, астероид, Album, шкала Hype и пакет Input System входят в репозиторий вместе с этим контекстом. Друг клонирует https://github.com/fefefe14021/astro-k-flight.git и открывает корень репозитория в Unity `6000.6.6f1`.
 
 ## Роли
 
@@ -95,13 +94,11 @@ Meta loop: достижения, коллекция скинов, ежеднев
 - Unity `6000.6.6f1` (`d20c9ac777da`)
 - `companyName`: DefaultCompany
 - `productName`: astro-k-flight
-- `activeInputHandler`: `0` (старый Input Manager)
+- `activeInputHandler`: `2` (старый Input Manager и новая Input System вместе)
 
 Сцены в Build Settings, по порядку: `Assets/Scenes/Bootstrap.unity`, `Assets/Scenes/MainMenu.unity`, `Assets/Scenes/Gameplay.unity`.
 
-`Packages/manifest.json` в репозитории урезан коммитом `3e52561`. В нём есть `com.unity.ugui` `2.0.0` и модули движка. Пакета `com.unity.inputsystem` в этом манифесте нет.
-
-Локальный `AsteroidShooter` на момент настройки ввода был другим: пакет Input System `1.20.0`, `activeInputHandler` равен `1` (только новая Input System). Код корабля использует `UnityEngine.InputSystem`. Пока в репозиторий не добавлен пакет и не переключён Active Input Handling, чистый клон GitHub этого кода не соберёт. Это открытый разрыв, его не закрывали.
+`Packages/manifest.json` содержит `com.unity.inputsystem` `1.20.1`, `com.unity.ugui` `2.6.0` и модули движка. Для Unity `6000.6` нужна именно `1.20.1`: более старый Input System даёт ошибки компиляции `CS0619`. Код корабля использует `UnityEngine.InputSystem`.
 
 `.gitignore` — стандартный Unity-шаблон. В конец дополнительно добавлены правила без ведущего слэша: `[Ll]ibrary/`, `[Tt]emp/`, `[Oo]bj/`, `[Bb]uild/`.
 
@@ -126,9 +123,9 @@ README в корне описывает, как открыть проект в U
 - `3e52561` — чужой коммит: настройки Unity Hub и урезанный `Packages/manifest.json`.
 - `7d9b25c` — сцена `Gameplay`: объекты `Player` и `TouchControls`.
 
-### В рабочей копии, ещё без коммита
+### Геймплейный срез, который должен быть в том же коммите, что и эта правка контекста
 
-Эти файлы продюсер уже мог видеть в `AsteroidShooter`, но на GitHub их ещё нет:
+Файлы сверены с `AsteroidShooter`: содержимое совпадает.
 
 - `Assets/Scripts/Gameplay/ShipShooter.cs` — выстрел по `FirePressed`.
 - `Assets/Scripts/Gameplay/Projectile.cs` — кинематический снаряд, триггер, полёт через `Rigidbody2D.MovePosition`.
@@ -181,7 +178,6 @@ README в корне описывает, как открыть проект в U
 - достижения, скины, ежедневная награда, магазин;
 - реклама Яндекс SDK: rewarded и interstitial;
 - WebGL-сборка под Яндекс Игры;
-- пиксель-арт вместо цветных прямоугольников;
-- починка пакетов репозитория: добавить Input System и выставить Active Input Handling в Input System Package, иначе клон не совпадает с `AsteroidShooter`.
+- пиксель-арт вместо цветных прямоугольников.
 
 Предлагать эти пункты по одному. Не писать сразу весь список в код.
