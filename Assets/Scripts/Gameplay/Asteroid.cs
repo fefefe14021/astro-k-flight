@@ -61,6 +61,15 @@ namespace KANYE.Gameplay
         private void EnsureVisible()
         {
             var spriteRenderer = GetComponent<SpriteRenderer>();
+            PlaceholderShipVisual.UseSpriteMaterial(spriteRenderer);
+
+            var art = Resources.Load<Sprite>("Sprites/asteroid");
+            if (art != null)
+            {
+                spriteRenderer.sprite = art;
+                return;
+            }
+
             if (spriteRenderer.sprite != null)
                 return;
 

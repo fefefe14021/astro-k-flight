@@ -10,8 +10,10 @@ namespace KANYE.UI
         [SerializeField] private float fillSpeed = 0.35f;
 
         private HypeState state;
+        private ShipHealth health;
         private Image fill;
         private Text albumLabel;
+        private Text livesLabel;
         private float targetFill;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -36,11 +38,12 @@ namespace KANYE.UI
         private void Start()
         {
             state = Object.FindAnyObjectByType<HypeState>();
+            health = Object.FindAnyObjectByType<ShipHealth>();
             Build();
-            if (state == null)
-                return;
-
-            state.Changed += Refresh;
+            if (state != null)
+                state.Changed += Refresh;
+            if (health != null)
+                health.Changed += Refresh;
             Refresh();
         }
 
@@ -48,6 +51,8 @@ namespace KANYE.UI
         {
             if (state != null)
                 state.Changed -= Refresh;
+            if (health != null)
+                health.Changed -= Refresh;
         }
 
         private void Update()
@@ -60,8 +65,16 @@ namespace KANYE.UI
 
         private void Refresh()
         {
-            targetFill = state.HypeMax <= 0f ? 0f : state.Hype / state.HypeMax;
-            albumLabel.text = $"Album {state.Albums}";
+            if (state != null && albumLabel != null)
+            {
+                targetFill = state.HypeMax <= 0f ? 0f : state.Hype / state.HypeMax;
+                albumLabel.text = $"Album {state.Albums}";
+            }
+
+            if (livesLabel == null || health == null)
+                return;
+
+            livesLabel.text = health.IsDefeated ? "Сбит" : $"Lives {health.Lives}";
         }
 
         private void Build()
@@ -93,6 +106,10 @@ namespace KANYE.UI
 
             albumLabel = CreateText("AlbumLabel", canvasObject.transform, new Vector2(0.5f, 1f), new Vector2(0f, -28f), 28);
             albumLabel.text = "Album 0";
+
+            livesLabel = CreateText("LivesLabel", canvasObject.transform, new Vector2(0f, 1f), new Vector2(150f, -36f), 28);
+            livesLabel.alignment = TextAnchor.MiddleLeft;
+            livesLabel.text = "Lives 3";
 
             var caption = CreateText("HypeCaption", canvasObject.transform, new Vector2(0.5f, 1f), new Vector2(-250f, -70f), 22);
             caption.alignment = TextAnchor.MiddleRight;

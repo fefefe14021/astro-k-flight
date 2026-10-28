@@ -26,6 +26,16 @@ namespace KANYE.Gameplay
 
             GameRules.NotifyGameplayStarted();
 
+            if (Object.FindAnyObjectByType<SpaceBackdrop>() == null)
+                new GameObject("SpaceBackdrop").AddComponent<SpaceBackdrop>();
+
+            var player = GameObject.Find("Player");
+            if (player != null && player.GetComponent<ShipHealth>() == null)
+                player.AddComponent<ShipHealth>();
+
+            if (Object.FindAnyObjectByType<EnemySpawner>() == null)
+                new GameObject("EnemySpawner").AddComponent<EnemySpawner>();
+
             if (Object.FindAnyObjectByType<Asteroid>() != null)
                 return;
 

@@ -8,23 +8,26 @@ namespace KANYE.Gameplay
         [SerializeField] private Projectile projectilePrefab;
         [SerializeField] private Vector2 fireDirection = Vector2.right;
         [SerializeField] private Vector2 muzzleOffset = new Vector2(0.8f, 0f);
+        [SerializeField] private float fireInterval = 0.16f;
 
         private ShipInput shipInput;
+        private float cooldown;
 
         private void Awake()
         {
             shipInput = GetComponent<ShipInput>();
         }
 
-        private void OnEnable()
+        private void LateUpdate()
         {
-            shipInput.FirePressed += Shoot;
-        }
+            if (cooldown > 0f)
+                cooldown -= Time.deltaTime;
 
-        private void OnDisable()
-        {
-            if (shipInput != null)
-                shipInput.FirePressed -= Shoot;
+            if (!shipInput.FireHeld || cooldown > 0f)
+                return;
+
+            Shoot();
+            cooldown = fireInterval;
         }
 
         private void Shoot()

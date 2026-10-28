@@ -19,6 +19,9 @@ namespace KANYE.Gameplay
         {
             if (newDirection.sqrMagnitude > 0.0001f)
                 direction = newDirection.normalized;
+
+            var angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.Euler(0f, 0f, angle - 90f);
         }
 
         private void Awake()
@@ -47,6 +50,15 @@ namespace KANYE.Gameplay
         private void EnsureVisible()
         {
             var spriteRenderer = GetComponent<SpriteRenderer>();
+            PlaceholderShipVisual.UseSpriteMaterial(spriteRenderer);
+
+            var art = Resources.Load<Sprite>("Sprites/bolt");
+            if (art != null)
+            {
+                spriteRenderer.sprite = art;
+                return;
+            }
+
             if (spriteRenderer.sprite != null)
                 return;
 
