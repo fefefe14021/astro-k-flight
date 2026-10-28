@@ -1,3 +1,4 @@
+using KANYE.Systems;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -22,6 +23,8 @@ namespace KANYE.Gameplay
 
             if (Object.FindAnyObjectByType<HypeState>() == null)
                 new GameObject("HypeState").AddComponent<HypeState>();
+
+            GameRules.NotifyGameplayStarted();
 
             if (Object.FindAnyObjectByType<Asteroid>() != null)
                 return;

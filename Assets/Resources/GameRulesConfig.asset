@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b82d5f3c8e704b1f9d4c6a2e8b0f5d31, type: 3}
+  m_Name: GameRulesConfig
+  m_EditorClassIdentifier: Assembly-CSharp::KANYE.Systems.GameRulesConfig
+  coinsPerAsteroid: 10
+  killAchievementIds:
+  - kill_asteroids_1
+  - kill_asteroids_100
+  albumAchievementIds:
+  - albums_1
+  - albums_50
+  hypeFullAchievementId: hype_full
+  gameplayStageAchievementId: stage_neon_city

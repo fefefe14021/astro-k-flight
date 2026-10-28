@@ -1,3 +1,4 @@
+using KANYE.Systems;
 using UnityEngine;
 
 namespace KANYE.Gameplay
@@ -51,9 +52,7 @@ namespace KANYE.Gameplay
             if (!other.TryGetComponent<Projectile>(out var projectile))
                 return;
 
-            var hype = FindAnyObjectByType<HypeState>();
-            if (hype != null)
-                hype.AddAlbum(albumsOnHit);
+            GameRules.NotifyAsteroidDestroyed(albumsOnHit);
 
             Destroy(projectile.gameObject);
             Destroy(gameObject);

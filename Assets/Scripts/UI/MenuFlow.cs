@@ -1,0 +1,120 @@
+using KANYE.Services;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+namespace KANYE.UI
+{
+    public class MenuFlow : MonoBehaviour
+    {
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void Hook()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
+        }
+
+        private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (!Application.isPlaying)
+                return;
+
+            if (scene.name == SceneLoader.MainMenuScene)
+                EnsureMenu();
+            else if (scene.name == SceneLoader.GameplayScene)
+                EnsureBackButton();
+        }
+
+        private static void EnsureMenu()
+        {
+            if (Object.FindAnyObjectByType<MenuPanelSwitcher>() != null)
+                return;
+            if (Object.FindAnyObjectByType<MenuFlow>() != null)
+                return;
+
+            new GameObject("MenuFlow").AddComponent<MenuFlow>();
+        }
+
+        private static void EnsureBackButton()
+        {
+            if (GameObject.Find("TemporaryBackButton") != null)
+                return;
+
+            EnsureEventSystem();
+            var canvas = CreateCanvas("TemporaryBackCanvas", 120);
+            var button = CreateButton(canvas.transform, "TemporaryBackButton", "Назад", new Vector2(0f, 1f), new Vector2(120f, -40f), new Vector2(180f, 56f));
+            button.onClick.AddListener(SceneLoader.ReturnToMainMenu);
+        }
+
+        private void Start()
+        {
+            EnsureEventSystem();
+            var canvas = CreateCanvas("TemporaryMenuCanvas", 50);
+            var play = CreateButton(canvas.transform, "PlayButton", "Играть", new Vector2(0.5f, 0.5f), new Vector2(0f, 40f), new Vector2(280f, 72f));
+            var quit = CreateButton(canvas.transform, "QuitButton", "Выход", new Vector2(0.5f, 0.5f), new Vector2(0f, -50f), new Vector2(280f, 72f));
+            play.onClick.AddListener(() =>
+            {
+                var loader = Object.FindAnyObjectByType<SceneLoader>();
+                if (loader != null)
+                    loader.LoadGameplay();
+                else
+                    SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
+            });
+            quit.onClick.AddListener(SceneLoader.Quit);
+        }
+
+        private static void EnsureEventSystem()
+        {
+            if (EventSystem.current != null)
+                return;
+
+            var eventSystem = new GameObject("EventSystem");
+            eventSystem.AddComponent<EventSystem>();
+            eventSystem.AddComponent<InputSystemUIInputModule>().AssignDefaultActions();
+        }
+
+        private static Canvas CreateCanvas(string name, int sortingOrder)
+        {
+            var canvasObject = new GameObject(name, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            var canvas = canvasObject.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = sortingOrder;
+            var scaler = canvasObject.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 0.5f;
+            return canvas;
+        }
+
+        private static Button CreateButton(Transform parent, string name, string label, Vector2 anchor, Vector2 position, Vector2 size)
+        {
+            var buttonObject = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+            var rect = buttonObject.GetComponent<RectTransform>();
+            rect.anchorMin = anchor;
+            rect.anchorMax = anchor;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = position;
+            rect.sizeDelta = size;
+            buttonObject.GetComponent<Image>().color = new Color(0.12f, 0.14f, 0.2f, 0.92f);
+
+            var textObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            textObject.transform.SetParent(buttonObject.transform, false);
+            var textRect = textObject.GetComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+            var text = textObject.GetComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontSize = 28;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = Color.white;
+            text.text = label;
+            return buttonObject.GetComponent<Button>();
+        }
+    }
+}

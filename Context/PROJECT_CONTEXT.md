@@ -159,9 +159,38 @@ README в корне описывает, как открыть проект в U
 
 Клавиатура: WASD и стрелки, огонь — пробел. Экранные элементы пишут в `<Gamepad>/leftStick` и `<Gamepad>/buttonSouth`. Мышь к выстрелу не привязана, чтобы стик не стрелял при перетаскивании.
 
-`Assets/Art`, `Assets/Audio`, `Assets/Prefabs` (кроме снаряда) и `Assets/Resources` (кроме `PlayerControls`) по сути пустые: у пустых папок в git лежат только `.meta`.
+`Assets/Art` и `Assets/Audio` по сути пустые: в git у них только `.meta`. В `Assets/Resources` лежат `PlayerControls`, `GameRulesConfig` и ачивки.
 
 `Bootstrap` почти пустой: камера, без загрузочного сервиса. Меню переводит в `Gameplay` напрямую.
+
+## Срез участника 1, ветка feature/systems-and-docs
+
+Ветки `dev` в репозитории нет. Общая рабочая ветка: `feature/systems-and-docs`. В `main` этот срез не влит.
+
+Участник 1 делает код систем. Участник 2 делает визуал меню, панель ачивок и три документа. Панели Shop, Achievements и Settings не заведены отдельными сценами.
+
+Сохранения: `SaveManager` — синглтон с `DontDestroyOnLoad`. Данные пишутся в `PlayerPrefs` ключом `KANYE.SaveData` через `JsonUtility`. На WebGL Unity кладёт PlayerPrefs в хранилище браузера. В сохранении лежат монеты, прогресс ачивок, экипированный скин и список открытых скинов. Скин по умолчанию — `default`. Шкала Hype и Album между запусками не сохраняются: это состояние одного забега.
+
+Ачивки: ScriptableObject `AchievementData` в `Assets/Resources/Achievements`. `AchievementManager.AddProgress(id, amount)` и `UnlockAchievement(id)`. Событие `Unlocked` нужно участнику 2 для всплывающего окна. Готовые id:
+
+| id | Условие | Кто вызывает |
+|---|---|---|
+| `kill_asteroids_1` | 1 уничтоженный астероид | само, из `GameRules` |
+| `kill_asteroids_100` | 100 астероидов | само |
+| `albums_1` | 1 Album | само |
+| `albums_50` | 50 Album | само |
+| `hype_full` | шкала Hype дошла до 100 | само |
+| `stage_neon_city` | вход в сцену `Gameplay` | само |
+| `stage_ocean` | этап Ocean | `GameRules.NotifyStageReached("stage_ocean")`, когда появятся этапы |
+| `stage_ice_planet` | этап Ice Planet | так же |
+| `stage_deep_space` | этап Deep Space | так же |
+| `stage_home_base` | этап Home Base | так же |
+
+Правила забега: один сбитый астероид даёт 10 монет, 1 Album и 25 Hype, как и раньше. Число монет лежит в `Assets/Resources/GameRulesConfig.asset`.
+
+Меню: `SceneLoader.LoadGameplay`, `LoadMainMenu` и `Quit`. `MenuPanelSwitcher.Show("main")` переключает панели внутри одной сцены. Пока участник 2 не поставил `MenuPanelSwitcher`, в пустом `MainMenu` сами появляются кнопки «Играть» и «Выход». В `Gameplay` есть временная кнопка «Назад». Её объект называется `TemporaryBackButton`; когда появится своя кнопка, этот объект можно удалить и звать `SceneLoader.ReturnToMainMenu`.
+
+Кнопки участника 2 вешаются на `SaveManager.Instance.AddCoins`, `AchievementManager.Instance.AddProgress` и `MenuPanelSwitcher.Show`.
 
 ## Что предстоит
 
