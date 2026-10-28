@@ -10,6 +10,7 @@ namespace KANYE.EditorTools
     {
         static GameplaySceneRepair()
         {
+            EditorSceneManager.playModeStartScene = null;
             EditorApplication.delayCall += EnsureAsteroid;
         }
 

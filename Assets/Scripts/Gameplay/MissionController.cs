@@ -81,8 +81,7 @@ namespace KANYE.Gameplay
             var untouched = player == null || !player.TookDamage;
             GameRules.NotifyMissionCleared(MissionCatalog.Selected, untouched);
             var next = MissionCatalog.Selected + 1;
-            if (next < MissionCatalog.All.Length)
-                SaveManager.Instance?.RememberMission(next);
+            SaveManager.Instance?.RememberMission(next);
         }
 
         private void SpawnAsteroid()
@@ -128,18 +127,27 @@ namespace KANYE.Gameplay
                 return;
 
             var hasNext = MissionCatalog.Selected + 1 < MissionCatalog.All.Length;
-            var box = new Rect(Screen.width * 0.5f - 250f, Screen.height * 0.5f - 110f, 500f, hasNext ? 230f : 190f);
+            var showRestart = MissionCatalog.Selected > 0;
+            var buttonCount = 1 + (hasNext ? 1 : 0) + (showRestart ? 1 : 0);
+            var box = new Rect(Screen.width * 0.5f - 250f, Screen.height * 0.5f - 120f, 500f, 150f + buttonCount * 52f);
             GUI.Box(box, "Победа");
             var message = new GUIStyle(title) { fontSize = 20 };
             GUI.Label(new Rect(box.x + 24f, box.y + 40f, box.width - 48f, 70f), mission.VictoryText, message);
-            if (GUI.Button(new Rect(box.x + 40f, box.y + 130f, 190f, 40f), "В меню"))
+            var buttonY = box.y + 120f;
+            if (GUI.Button(new Rect(box.x + 40f, buttonY, box.width - 80f, 40f), "В меню"))
                 SceneLoader.ReturnToMainMenu();
-            if (hasNext && GUI.Button(new Rect(box.x + 260f, box.y + 130f, 200f, 40f), "Дальше"))
+            buttonY += 52f;
+            if (hasNext && GUI.Button(new Rect(box.x + 40f, buttonY, box.width - 80f, 40f), "Дальше"))
             {
                 Time.timeScale = 1f;
                 MissionCatalog.Select(MissionCatalog.Selected + 1);
                 SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
             }
+
+            if (hasNext)
+                buttonY += 52f;
+            if (showRestart && GUI.Button(new Rect(box.x + 40f, buttonY, box.width - 80f, 40f), "Сначала"))
+                SceneLoader.RestartFromFirstMission();
         }
     }
 }

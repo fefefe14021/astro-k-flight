@@ -9,6 +9,7 @@ namespace KANYE.Services
         public const string GameplayScene = "Gameplay";
         public const string MainMenuScene = "MainMenu";
         public const string ShopScene = "Shop";
+        public const string AchievementsScene = "Achievements";
 
         public void LoadScene(string sceneName)
         {
@@ -41,6 +42,20 @@ namespace KANYE.Services
         {
             SaveManager.Instance?.Save();
             LoadSceneByName(ShopScene);
+        }
+
+        public static void OpenAchievements()
+        {
+            SaveManager.Instance?.Save();
+            LoadSceneByName(AchievementsScene);
+        }
+
+        public static void RestartFromFirstMission()
+        {
+            Time.timeScale = 1f;
+            SaveManager.Instance?.RestartMissions();
+            Gameplay.MissionCatalog.Select(0);
+            LoadSceneByName(GameplayScene);
         }
 
         public void QuitGame()

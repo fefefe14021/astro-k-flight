@@ -103,15 +103,20 @@ namespace KANYE.Systems
             return true;
         }
 
-        public int CurrentMission => Data == null ? 0 : Mathf.Clamp(Data.currentMission, 0, 2);
+        public int CurrentMission => Data == null ? 0 : Mathf.Max(0, Data.currentMission);
 
         public void RememberMission(int index)
         {
             if (Data == null)
                 return;
 
-            Data.currentMission = Mathf.Clamp(index, 0, 2);
+            Data.currentMission = Mathf.Max(0, index);
             Save();
+        }
+
+        public void RestartMissions()
+        {
+            RememberMission(0);
         }
 
         public void RegisterKill()
