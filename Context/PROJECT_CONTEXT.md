@@ -14,10 +14,8 @@ GitHub: https://github.com/fefefe14021/astro-k-flight.git
 
 | Участник | Роль |
 |---|---|
-| Звездин Дмитрий Дмитриевич | Game Designer / Producer |
-| Портнов Степан Николаевич | Gameplay Developer |
-| Жужугов Дмитрий Ярославович | UI/UX Developer |
-| Миронов Егор Павлович | Technical Developer |
+| Портнов Степан Николаевич | Gameplay Developer / Technical Developer |
+| Жужугов Дмитрий Ярославович | UI/UX Developer / Game Designer |
 
 ## Жёсткие правила
 
