@@ -22,6 +22,7 @@ namespace KANYE.Gameplay
 
             UseSpriteMaterial(spriteRenderer);
             transform.rotation = Quaternion.Euler(0f, 0f, -90f);
+            ShipSkinCatalog.Apply(spriteRenderer);
         }
 
         internal static void UseSpriteMaterial(SpriteRenderer spriteRenderer)
@@ -42,7 +43,7 @@ namespace KANYE.Gameplay
             var texture = new Texture2D(4, 2);
             var pixels = new Color[8];
             for (var i = 0; i < pixels.Length; i++)
-                pixels[i] = color;
+                pixels[i] = Color.white;
 
             texture.SetPixels(pixels);
             texture.filterMode = FilterMode.Point;

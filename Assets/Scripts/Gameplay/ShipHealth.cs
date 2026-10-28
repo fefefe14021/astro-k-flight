@@ -34,11 +34,21 @@ namespace KANYE.Gameplay
 
         private void OnTriggerEnter2D(Collider2D other)
         {
+            if (GetComponent<PlayerHealth>() != null)
+                return;
+
             if (other.GetComponent<Asteroid>() == null && other.GetComponent<Enemy>() == null)
                 return;
 
             TakeHit();
             Destroy(other.gameObject);
+        }
+
+        public void Mirror(int lives, bool defeated)
+        {
+            Lives = lives;
+            IsDefeated = defeated;
+            Changed?.Invoke();
         }
 
         private void TakeHit()

@@ -15,6 +15,8 @@ namespace KANYE.Systems
     public class GameData
     {
         public int coins;
+        public int totalKills;
+        public int currentMission;
         public string equippedSkinId = "default";
         public List<string> unlockedSkinIds = new List<string>();
         public List<AchievementProgressEntry> achievements = new List<AchievementProgressEntry>();

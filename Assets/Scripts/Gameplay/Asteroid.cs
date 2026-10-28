@@ -8,6 +8,8 @@ namespace KANYE.Gameplay
     public class Asteroid : MonoBehaviour
     {
         [SerializeField] private int albumsOnHit = 1;
+        [SerializeField] private int damage = 1;
+        [SerializeField] private float moveSpeed = 2.5f;
         [SerializeField] private float radius = 0.55f;
         [SerializeField] private Vector2 sizeWorldUnits = new Vector2(1.2f, 1.2f);
         [SerializeField] private Color color = new Color(0.75f, 0.72f, 0.66f, 1f);
@@ -24,12 +26,46 @@ namespace KANYE.Gameplay
             EnsureVisible();
         }
 
+        private Rigidbody2D body;
+
+        private void FixedUpdate()
+        {
+            if (!Application.isPlaying || body == null)
+                return;
+
+            body.MovePosition(body.position + Vector2.left * moveSpeed * Time.fixedDeltaTime);
+            if (body.position.x < -12f)
+                Destroy(gameObject);
+        }
+
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            if (!Application.isPlaying)
+                return;
+
+            if (!collision.collider.TryGetComponent<PlayerHealth>(out var health))
+                return;
+
+            health.TakeDamage(damage);
+            Destroy(gameObject);
+        }
+
+        public void Configure(float speed, int contactDamage, float hitRadius)
+        {
+            moveSpeed = speed;
+            damage = contactDamage;
+            radius = hitRadius;
+            var hitBox = GetComponent<CircleCollider2D>();
+            if (hitBox != null)
+                hitBox.radius = radius;
+        }
+
         private void EnsureBody()
         {
             if (!Application.isPlaying)
                 return;
 
-            var body = GetComponent<Rigidbody2D>();
+            body = GetComponent<Rigidbody2D>();
             if (body == null)
                 body = gameObject.AddComponent<Rigidbody2D>();
 

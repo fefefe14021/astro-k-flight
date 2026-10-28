@@ -38,6 +38,15 @@ namespace KANYE.Gameplay
                 Destroy(gameObject);
         }
 
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            if (!collision.collider.TryGetComponent<PlayerHealth>(out var health))
+                return;
+
+            health.TakeDamage(1);
+            Destroy(gameObject);
+        }
+
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (!other.TryGetComponent<Projectile>(out var projectile))

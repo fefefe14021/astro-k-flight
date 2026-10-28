@@ -17,16 +17,23 @@ namespace KANYE.Gameplay
 
         private Rigidbody2D rb;
         private ShipInput shipInput;
+        private PlayerHealth health;
 
         private void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
             shipInput = GetComponent<ShipInput>();
+            if (GetComponent<PlayerHealth>() == null)
+                gameObject.AddComponent<PlayerHealth>();
+            health = GetComponent<PlayerHealth>();
             rb.gravityScale = 0f;
         }
 
         private void FixedUpdate()
         {
+            if (health != null && health.IsDead)
+                return;
+
             Vector2 newPosition = rb.position + shipInput.Move * moveSpeed * Time.fixedDeltaTime;
 
             newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);

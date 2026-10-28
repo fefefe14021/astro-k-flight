@@ -73,6 +73,16 @@ namespace KANYE.Systems
             Save();
         }
 
+        public bool TrySpendCoins(int amount)
+        {
+            if (amount < 0 || Data == null || Data.coins < amount)
+                return false;
+
+            Data.coins -= amount;
+            Save();
+            return true;
+        }
+
         public bool UnlockSkin(string skinId)
         {
             if (string.IsNullOrEmpty(skinId) || Data.unlockedSkinIds.Contains(skinId))
@@ -91,6 +101,26 @@ namespace KANYE.Systems
             Data.equippedSkinId = skinId;
             Save();
             return true;
+        }
+
+        public int CurrentMission => Data == null ? 0 : Mathf.Clamp(Data.currentMission, 0, 2);
+
+        public void RememberMission(int index)
+        {
+            if (Data == null)
+                return;
+
+            Data.currentMission = Mathf.Clamp(index, 0, 2);
+            Save();
+        }
+
+        public void RegisterKill()
+        {
+            if (Data == null)
+                return;
+
+            Data.totalKills++;
+            Save();
         }
 
         public AchievementProgressEntry GetAchievement(string id)

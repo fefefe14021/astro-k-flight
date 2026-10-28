@@ -60,7 +60,10 @@ namespace KANYE.UI
             if (fill == null)
                 return;
 
-            fill.fillAmount = Mathf.MoveTowards(fill.fillAmount, targetFill, fillSpeed * Time.deltaTime);
+            var step = fillSpeed * Time.unscaledDeltaTime;
+            fill.fillAmount = targetFill >= 1f
+                ? 1f
+                : Mathf.MoveTowards(fill.fillAmount, targetFill, step);
         }
 
         private void Refresh()
@@ -94,10 +97,12 @@ namespace KANYE.UI
             var bar = CreateImage("HypeBar", canvasObject.transform, new Vector2(0.5f, 1f), new Vector2(0f, -70f), new Vector2(420f, 28f), new Color(0.08f, 0.08f, 0.1f, 0.85f));
             bar.type = Image.Type.Simple;
 
-            var fillRect = CreateImage("Fill", bar.transform, new Vector2(0f, 0.5f), new Vector2(4f, 0f), new Vector2(412f, 20f), new Color(1f, 0.72f, 0.15f, 1f));
-            fillRect.rectTransform.pivot = new Vector2(0f, 0.5f);
-            fillRect.rectTransform.anchorMin = new Vector2(0f, 0.5f);
-            fillRect.rectTransform.anchorMax = new Vector2(0f, 0.5f);
+            var fillRect = CreateImage("Fill", bar.transform, new Vector2(0f, 0f), Vector2.zero, Vector2.zero, new Color(1f, 0.72f, 0.15f, 1f));
+            fillRect.rectTransform.anchorMin = Vector2.zero;
+            fillRect.rectTransform.anchorMax = Vector2.one;
+            fillRect.rectTransform.offsetMin = new Vector2(4f, 4f);
+            fillRect.rectTransform.offsetMax = new Vector2(-4f, -4f);
+            fillRect.rectTransform.pivot = new Vector2(0.5f, 0.5f);
             fill = fillRect;
             fill.type = Image.Type.Filled;
             fill.fillMethod = Image.FillMethod.Horizontal;

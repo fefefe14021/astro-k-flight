@@ -24,7 +24,9 @@ namespace KANYE.Gameplay
             if (Object.FindAnyObjectByType<HypeState>() == null)
                 new GameObject("HypeState").AddComponent<HypeState>();
 
-            GameRules.NotifyGameplayStarted();
+            if (Object.FindAnyObjectByType<MissionController>() == null)
+                new GameObject("Mission").AddComponent<MissionController>();
+
 
             if (Object.FindAnyObjectByType<SpaceBackdrop>() == null)
                 new GameObject("SpaceBackdrop").AddComponent<SpaceBackdrop>();

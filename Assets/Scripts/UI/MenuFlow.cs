@@ -1,4 +1,6 @@
+using KANYE.Gameplay;
 using KANYE.Services;
+using KANYE.Systems;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
@@ -22,8 +24,16 @@ namespace KANYE.UI
             if (!Application.isPlaying)
                 return;
 
+            if (scene.name == "Bootstrap")
+            {
+                SceneLoader.LoadSceneByName(SceneLoader.MainMenuScene);
+                return;
+            }
+
             if (scene.name == SceneLoader.MainMenuScene)
                 EnsureMenu();
+            else if (scene.name == SceneLoader.ShopScene)
+                EnsureShop();
             else if (scene.name == SceneLoader.GameplayScene)
                 EnsureBackButton();
         }
@@ -36,6 +46,14 @@ namespace KANYE.UI
                 return;
 
             new GameObject("MenuFlow").AddComponent<MenuFlow>();
+        }
+
+        private static void EnsureShop()
+        {
+            if (Object.FindAnyObjectByType<ShopScreen>() != null)
+                return;
+
+            new GameObject("ShopScreen").AddComponent<ShopScreen>();
         }
 
         private static void EnsureBackButton()
@@ -53,16 +71,20 @@ namespace KANYE.UI
         {
             EnsureEventSystem();
             var canvas = CreateCanvas("TemporaryMenuCanvas", 50);
-            var play = CreateButton(canvas.transform, "PlayButton", "Играть", new Vector2(0.5f, 0.5f), new Vector2(0f, 40f), new Vector2(280f, 72f));
-            var quit = CreateButton(canvas.transform, "QuitButton", "Выход", new Vector2(0.5f, 0.5f), new Vector2(0f, -50f), new Vector2(280f, 72f));
+            var missionIndex = SaveManager.Instance != null ? SaveManager.Instance.CurrentMission : 0;
+            var continueMission = MissionCatalog.All[missionIndex];
+            CreateLabel(canvas.transform, "Title", "Astro K", new Vector2(0.5f, 0.5f), new Vector2(0f, 180f), 42);
+            CreateLabel(canvas.transform, "MissionLine", "Дальше: " + continueMission.Title, new Vector2(0.5f, 0.5f), new Vector2(0f, 100f), 22);
+            var play = CreateButton(canvas.transform, "PlayButton", "Играть", new Vector2(0.5f, 0.5f), new Vector2(0f, 10f), new Vector2(280f, 72f));
+            var shop = CreateButton(canvas.transform, "ShopButton", "Магазин", new Vector2(0.5f, 0.5f), new Vector2(0f, -80f), new Vector2(280f, 64f));
+            var quit = CreateButton(canvas.transform, "QuitButton", "Выход", new Vector2(0.5f, 0.5f), new Vector2(0f, -160f), new Vector2(280f, 64f));
             play.onClick.AddListener(() =>
             {
-                var loader = Object.FindAnyObjectByType<SceneLoader>();
-                if (loader != null)
-                    loader.LoadGameplay();
-                else
-                    SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
+                var index = SaveManager.Instance != null ? SaveManager.Instance.CurrentMission : 0;
+                MissionCatalog.Select(index);
+                SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
             });
+            shop.onClick.AddListener(SceneLoader.OpenShop);
             quit.onClick.AddListener(SceneLoader.Quit);
         }
 
@@ -115,6 +137,25 @@ namespace KANYE.UI
             text.color = Color.white;
             text.text = label;
             return buttonObject.GetComponent<Button>();
+        }
+
+        private static Text CreateLabel(Transform parent, string name, string label, Vector2 anchor, Vector2 position, int fontSize)
+        {
+            var textObject = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            textObject.transform.SetParent(parent, false);
+            var rect = textObject.GetComponent<RectTransform>();
+            rect.anchorMin = anchor;
+            rect.anchorMax = anchor;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = position;
+            rect.sizeDelta = new Vector2(900f, 120f);
+            var text = textObject.GetComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontSize = fontSize;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = Color.white;
+            text.text = label;
+            return text;
         }
     }
 }

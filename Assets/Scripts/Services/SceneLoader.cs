@@ -8,6 +8,7 @@ namespace KANYE.Services
     {
         public const string GameplayScene = "Gameplay";
         public const string MainMenuScene = "MainMenu";
+        public const string ShopScene = "Shop";
 
         public void LoadScene(string sceneName)
         {
@@ -26,8 +27,20 @@ namespace KANYE.Services
 
         public static void ReturnToMainMenu()
         {
+            Time.timeScale = 1f;
             SaveManager.Instance?.Save();
             LoadSceneByName(MainMenuScene);
+        }
+
+        public void LoadShop()
+        {
+            OpenShop();
+        }
+
+        public static void OpenShop()
+        {
+            SaveManager.Instance?.Save();
+            LoadSceneByName(ShopScene);
         }
 
         public void QuitGame()

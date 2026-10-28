@@ -14,6 +14,14 @@ namespace KANYE.Gameplay
 
         public event Action Changed;
 
+        public void BeginMission(int albumsRequired)
+        {
+            Albums = 0;
+            Hype = 0f;
+            hypePerAlbum = albumsRequired <= 0 ? hypeMax : hypeMax / albumsRequired;
+            Changed?.Invoke();
+        }
+
         public void AddAlbum(int count)
         {
             if (count <= 0)
