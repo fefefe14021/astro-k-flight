@@ -292,6 +292,18 @@ namespace KANYE.EditorTools
                     throw new Exception($"Expected enemy PPU 48, got {enemySprite.pixelsPerUnit}");
             }, ref passed, ref failed);
 
+            Test("16. TikTok-Style Cinematic Intro Cutscene & Save State", () =>
+            {
+                var go = new GameObject("SaveCutsceneTest");
+                var sm = go.AddComponent<SaveManager>();
+                sm.Load();
+                sm.MarkIntroSeen(false);
+                if (sm.HasSeenIntro) throw new Exception("Expected HasSeenIntro to be false");
+                sm.MarkIntroSeen(true);
+                if (!sm.HasSeenIntro) throw new Exception("Expected HasSeenIntro to be true");
+                UnityEngine.Object.DestroyImmediate(go);
+            }, ref passed, ref failed);
+
             Debug.Log("==================================================");
             Debug.Log($"[SMOKE TEST FINISHED] Passed: {passed}, Failed: {failed}");
             Debug.Log("==================================================");

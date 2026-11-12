@@ -202,6 +202,14 @@ namespace KANYE.Systems
         }
 
         public int CurrentMission => Data == null ? 0 : Mathf.Max(0, Data.currentMission);
+        public bool HasSeenIntro => Data != null && Data.introCutsceneSeen;
+
+        public void MarkIntroSeen(bool seen = true)
+        {
+            if (Data == null) return;
+            Data.introCutsceneSeen = seen;
+            Save();
+        }
 
         public void RememberMission(int index)
         {

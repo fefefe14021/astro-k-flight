@@ -390,7 +390,14 @@ namespace KANYE.UI
                 content.alignment = TextAnchor.UpperLeft;
             }
 
-            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", "ЗАКРЫТЬ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -330f), new Vector2(300f, 54f), 20, Color.white);
+            var watchCutsceneBtn = CreateSlicedButton(card.transform, "BtnWatchPrologue", "🎬  СМОТРЕТЬ ПРОЛОГ (КАТСЦЕНА)", PixelUiAtlas.ButtonPrimary, new Vector2(-160f, -330f), new Vector2(380f, 54f), 17, Color.white);
+            watchCutsceneBtn.onClick.AddListener(() =>
+            {
+                CloseAllModals();
+                CinematicIntroCutscene.Play(null);
+            });
+
+            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", "ЗАКРЫТЬ", PixelUiAtlas.ButtonSecondary, new Vector2(230f, -330f), new Vector2(240f, 54f), 19, Color.white);
             closeBtn.onClick.AddListener(CloseAllModals);
         }
 
@@ -445,6 +452,17 @@ namespace KANYE.UI
             GameRules.CurrentMode = GameMode.Campaign;
             var index = SaveManager.Instance != null ? SaveManager.Instance.CurrentMission : 0;
             MissionCatalog.Select(index);
+
+            // Cold Open: Launch cinematic intro cutscene if first time entering campaign
+            if (SaveManager.Instance != null && !SaveManager.Instance.HasSeenIntro)
+            {
+                CinematicIntroCutscene.Play(() =>
+                {
+                    SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
+                });
+                return;
+            }
+
             SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
         }
 

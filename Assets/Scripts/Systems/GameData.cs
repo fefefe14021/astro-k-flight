@@ -24,6 +24,7 @@ namespace KANYE.Systems
         public int coins;
         public int totalKills;
         public int currentMission;
+        public bool introCutsceneSeen;
         public string equippedSkinId = "default";
         public List<string> unlockedSkinIds = new List<string>();
         public string equippedWeaponId = "twin_blaster";
