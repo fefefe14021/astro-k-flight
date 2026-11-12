@@ -37,13 +37,20 @@ namespace KANYE.Gameplay
                 return;
 
             Albums += count;
-            Hype = Mathf.Min(hypeMax, Hype + count * hypePerKill);
+            var gain = count * hypePerKill;
+            if (GameRules.CurrentMode == GameMode.RogueExpedition)
+                gain *= RogueExpeditionController.HypeMultiplier;
+
+            Hype = Mathf.Min(hypeMax, Hype + gain);
             Changed?.Invoke();
         }
 
         public void AddHype(float amount)
         {
             if (amount <= 0f) return;
+            if (GameRules.CurrentMode == GameMode.RogueExpedition)
+                amount *= RogueExpeditionController.HypeMultiplier;
+
             Hype = Mathf.Min(hypeMax, Hype + amount);
             Changed?.Invoke();
         }

@@ -225,24 +225,27 @@ namespace KANYE.UI
             rect.anchoredPosition = new Vector2(360f, -30f);
             rect.sizeDelta = new Vector2(520f, 540f);
 
-            // Primary Hero Button - PLAY / FLY (Sliced golden arcade button)
-            var playBtn = CreateSlicedButton(menuRoot.transform, "BtnPlay", "В ПОЛЁТ [СТАРТ]", PixelUiAtlas.ButtonPrimary, new Vector2(0f, 160f), new Vector2(480f, 82f), 30, new Color(1f, 0.98f, 0.85f));
-            playBtn.onClick.AddListener(OnPlayClicked);
+            // Primary Hero Buttons - CAMPAIGN & ROGUELITE EXPEDITION
+            var campaignBtn = CreateSlicedButton(menuRoot.transform, "BtnPlay", "🎯  КАМПАНИЯ // СЮЖЕТ", PixelUiAtlas.ButtonPrimary, new Vector2(0f, 185f), new Vector2(480f, 62f), 24, new Color(1f, 0.98f, 0.85f));
+            campaignBtn.onClick.AddListener(OnPlayClicked);
+
+            var rogueBtn = CreateSlicedButton(menuRoot.transform, "BtnRogue", "🌀  РОГАЛИК // ЭКСПЕДИЦИЯ", PixelUiAtlas.ButtonPrimary, new Vector2(0f, 115f), new Vector2(480f, 62f), 24, new Color(0.85f, 0.95f, 1f));
+            rogueBtn.onClick.AddListener(OnRogueClicked);
 
             // Secondary Navigation Buttons (Sliced cyber-blue arcade buttons)
-            var hangarBtn = CreateSlicedButton(menuRoot.transform, "BtnHangar", "🚀  АНГАР И АРСЕНАЛ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, 85f), new Vector2(480f, 58f), 20, Color.white);
+            var hangarBtn = CreateSlicedButton(menuRoot.transform, "BtnHangar", "🚀  АНГАР И АРСЕНАЛ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, 50f), new Vector2(480f, 52f), 19, Color.white);
             hangarBtn.onClick.AddListener(() => SceneLoader.LoadSceneByName(SceneLoader.ShopScene));
 
-            var loreBtn = CreateSlicedButton(menuRoot.transform, "BtnLore", "📖  БОРТОВОЙ ЖУРНАЛ // ЛОР", PixelUiAtlas.ButtonSecondary, new Vector2(0f, 15f), new Vector2(480f, 58f), 20, new Color(0.9f, 0.95f, 1f));
+            var loreBtn = CreateSlicedButton(menuRoot.transform, "BtnLore", "📖  БОРТОВОЙ ЖУРНАЛ // ЛОР", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -8f), new Vector2(480f, 50f), 19, new Color(0.9f, 0.95f, 1f));
             loreBtn.onClick.AddListener(() => OpenModal(loreModal));
 
-            var achBtn = CreateSlicedButton(menuRoot.transform, "BtnAchievements", "🏆  ДОСТИЖЕНИЯ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -55f), new Vector2(480f, 58f), 20, Color.white);
+            var achBtn = CreateSlicedButton(menuRoot.transform, "BtnAchievements", "🏆  ДОСТИЖЕНИЯ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -64f), new Vector2(480f, 50f), 19, Color.white);
             achBtn.onClick.AddListener(() => OpenModal(achievementsModal));
 
-            var settingsBtn = CreateSlicedButton(menuRoot.transform, "BtnSettings", "⚙️  НАСТРОЙКИ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -125f), new Vector2(480f, 58f), 20, Color.white);
+            var settingsBtn = CreateSlicedButton(menuRoot.transform, "BtnSettings", "⚙️  НАСТРОЙКИ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -120f), new Vector2(480f, 50f), 19, Color.white);
             settingsBtn.onClick.AddListener(() => OpenModal(settingsModal));
 
-            var quitBtn = CreateSlicedButton(menuRoot.transform, "BtnQuit", "🚪  ВЫХОД ИЗ ИГРЫ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -195f), new Vector2(480f, 54f), 18, new Color(0.95f, 0.75f, 0.8f));
+            var quitBtn = CreateSlicedButton(menuRoot.transform, "BtnQuit", "🚪  ВЫХОД ИЗ ИГРЫ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -176f), new Vector2(480f, 48f), 18, new Color(0.95f, 0.75f, 0.8f));
             quitBtn.onClick.AddListener(SceneLoader.Quit);
         }
 
@@ -438,8 +441,17 @@ namespace KANYE.UI
 
         private void OnPlayClicked()
         {
+            AudioManager.PlayClick();
+            GameRules.CurrentMode = GameMode.Campaign;
             var index = SaveManager.Instance != null ? SaveManager.Instance.CurrentMission : 0;
             MissionCatalog.Select(index);
+            SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
+        }
+
+        private void OnRogueClicked()
+        {
+            AudioManager.PlayClick();
+            GameRules.CurrentMode = GameMode.RogueExpedition;
             SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
         }
 

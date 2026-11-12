@@ -25,6 +25,13 @@ namespace KANYE.Gameplay
 
         private void Awake()
         {
+            if (GameRules.CurrentMode == GameMode.RogueExpedition)
+            {
+                gameObject.AddComponent<RogueExpeditionController>();
+                enabled = false;
+                return;
+            }
+
             var index = MissionCatalog.Selected;
             mission = MissionCatalog.All[Mathf.Clamp(index, 0, MissionCatalog.All.Length - 1)];
 
@@ -198,7 +205,7 @@ namespace KANYE.Gameplay
 
             var asteroid = asteroidObject.AddComponent<Asteroid>();
             var speed = large ? mission.AsteroidSpeed * 0.8f : mission.AsteroidSpeed * Random.Range(0.95f, 1.25f);
-            asteroid.Configure(speed, large ? mission.Damage + 1 : mission.Damage, large ? 0.95f : 0.52f, large ? 2 : 1);
+            asteroid.Configure(speed, mission.Damage, large ? 0.95f : 0.52f, large ? 2 : 1);
         }
 
         private void SpawnMissile()

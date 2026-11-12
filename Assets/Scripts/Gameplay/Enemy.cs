@@ -8,11 +8,15 @@ namespace KANYE.Gameplay
     {
         [SerializeField] private float speed = 2.8f;
         [SerializeField] private int albumsOnHit = 1;
-        [SerializeField] private float radius = 0.4f;
+        [SerializeField] private float radius = 0.48f;
         [SerializeField] private float despawnX = -11f;
+        [SerializeField] private int maxHealth = 1;
+        [SerializeField] private bool isHeavy;
 
+        private int currentHealth;
         private Rigidbody2D body;
         private SpriteRenderer spriteRenderer;
+        private CircleCollider2D hitBox;
         private float hoverOffset;
         private float initialY;
         private Transform thrusterTransform;
@@ -22,8 +26,12 @@ namespace KANYE.Gameplay
         private float telegraphTimer;
         private Color originalColor = Color.white;
 
+        public bool IsHeavy => isHeavy;
+
         private void Awake()
         {
+            currentHealth = maxHealth;
+
             body = GetComponent<Rigidbody2D>();
             if (body == null)
                 body = gameObject.AddComponent<Rigidbody2D>();
@@ -31,7 +39,7 @@ namespace KANYE.Gameplay
             body.bodyType = RigidbodyType2D.Kinematic;
             body.gravityScale = 0f;
 
-            var hitBox = GetComponent<CircleCollider2D>();
+            hitBox = GetComponent<CircleCollider2D>();
             if (hitBox == null)
                 hitBox = gameObject.AddComponent<CircleCollider2D>();
 
@@ -42,7 +50,25 @@ namespace KANYE.Gameplay
 
             hoverOffset = Random.Range(0f, 10f);
             initialY = transform.position.y;
-            shootCooldown = Random.Range(1.8f, 3.2f);
+            shootCooldown = Random.Range(1.6f, 3.0f);
+        }
+
+        public void Configure(bool heavy, int hp, float moveSpeed)
+        {
+            isHeavy = heavy;
+            maxHealth = hp;
+            currentHealth = hp;
+            speed = moveSpeed;
+            radius = heavy ? 0.62f : 0.48f;
+            albumsOnHit = heavy ? 2 : 1;
+
+            if (hitBox != null)
+                hitBox.radius = radius;
+
+            EnsureVisible();
+
+            if (thrusterTransform != null)
+                thrusterTransform.localPosition = new Vector3(heavy ? 0.65f : 0.55f, 0f, 0f);
         }
 
         private void CreateThruster()
@@ -50,7 +76,7 @@ namespace KANYE.Gameplay
             var thrusterObj = new GameObject("EnemyThruster");
             thrusterTransform = thrusterObj.transform;
             thrusterTransform.SetParent(transform, false);
-            thrusterTransform.localPosition = new Vector3(0.5f, 0f, 0f); // Rear of enemy (flying left)
+            thrusterTransform.localPosition = new Vector3(isHeavy ? 0.65f : 0.55f, 0f, 0f);
             thrusterTransform.localRotation = Quaternion.Euler(0f, 0f, 180f);
 
             var sr = thrusterObj.AddComponent<SpriteRenderer>();
@@ -58,21 +84,22 @@ namespace KANYE.Gameplay
             if (sprite != null)
                 sr.sprite = sprite;
             PlaceholderShipVisual.UseSpriteMaterial(sr);
-            sr.color = new Color(1f, 0.35f, 0.2f, 0.85f);
+            sr.color = isHeavy ? new Color(1f, 0.45f, 0.1f, 0.95f) : new Color(1f, 0.25f, 0.35f, 0.85f);
             sr.sortingOrder = 0;
         }
 
         private void FixedUpdate()
         {
             // Hover bobbing motion
-            var bob = Mathf.Sin((Time.time + hoverOffset) * 4f) * 0.25f;
+            var bob = Mathf.Sin((Time.time + hoverOffset) * (isHeavy ? 2.5f : 4f)) * (isHeavy ? 0.35f : 0.25f);
             var targetPos = new Vector2(body.position.x - speed * Time.fixedDeltaTime, initialY + bob);
             body.MovePosition(targetPos);
 
             if (thrusterTransform != null)
             {
                 var flicker = 0.9f + Mathf.Sin(Time.time * 30f) * 0.2f;
-                thrusterTransform.localScale = new Vector3(flicker * 0.8f, flicker * 0.6f, 1f);
+                var scale = isHeavy ? 1.25f : 0.95f;
+                thrusterTransform.localScale = new Vector3(flicker * scale, flicker * scale * 0.75f, 1f);
             }
 
             if (body.position.x < despawnX)
@@ -86,7 +113,6 @@ namespace KANYE.Gameplay
 
         private void HandleCombatAI()
         {
-            // Don't shoot during tutorial or when off-screen
             if (UI.TutorialHints.IsTutorialActive)
                 return;
 
@@ -96,10 +122,9 @@ namespace KANYE.Gameplay
             if (isTelegraphing)
             {
                 telegraphTimer -= Time.deltaTime;
-                // Telegraph flash (Cuphead / retro shmup attack telegraph)
                 if (spriteRenderer != null)
                 {
-                    var flash = Mathf.PingPong(Time.time * 20f, 1f);
+                    var flash = Mathf.PingPong(Time.time * 24f, 1f);
                     spriteRenderer.color = Color.Lerp(originalColor, new Color(1f, 0.9f, 0.2f), flash);
                 }
 
@@ -108,7 +133,7 @@ namespace KANYE.Gameplay
                     isTelegraphing = false;
                     if (spriteRenderer != null)
                         spriteRenderer.color = originalColor;
-                    FireLaser();
+                    FireAttack();
                 }
                 return;
             }
@@ -116,7 +141,7 @@ namespace KANYE.Gameplay
             shootCooldown -= Time.deltaTime;
             if (shootCooldown <= 0f)
             {
-                shootCooldown = Random.Range(2.5f, 4.0f);
+                shootCooldown = isHeavy ? Random.Range(2.2f, 3.5f) : Random.Range(2.0f, 3.8f);
                 StartTelegraph();
             }
         }
@@ -124,17 +149,29 @@ namespace KANYE.Gameplay
         private void StartTelegraph()
         {
             isTelegraphing = true;
-            telegraphTimer = 0.42f; // 420ms attack warning
-            EffectsManager.PlayImpact(transform.position + new Vector3(-0.55f, 0f, 0f), Vector2.left, Color.yellow);
+            telegraphTimer = isHeavy ? 0.5f : 0.4f;
+            EffectsManager.PlayImpact(transform.position + new Vector3(-0.6f, 0f, 0f), Vector2.left, Color.yellow);
         }
 
-        private void FireLaser()
+        private void FireAttack()
         {
-            var spawnPos = transform.position + new Vector3(-0.6f, 0f, 0f);
+            var spawnPos = transform.position + new Vector3(isHeavy ? -0.75f : -0.6f, 0f, 0f);
+
+            // Heavy gunship occasionally fires parry hazard if unlocked
+            if (isHeavy && GameRules.IsParryUnlocked && Random.value < 0.35f)
+            {
+                var hazardObj = new GameObject("EnemyParryOrb", typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(Rigidbody2D));
+                hazardObj.transform.position = spawnPos;
+                var hazard = hazardObj.AddComponent<ParryHazard>();
+                hazard.Launch(Vector2.left, 4.2f);
+                return;
+            }
+
+            // Normal laser fire
             var laserObj = new GameObject("EnemyLaser", typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(Rigidbody2D));
             laserObj.transform.position = spawnPos;
             var proj = laserObj.AddComponent<EnemyProjectile>();
-            proj.Launch(Vector2.left, 6.2f);
+            proj.Launch(Vector2.left, isHeavy ? 7.0f : 6.2f);
 
             EffectsManager.PlayMuzzleFlash(spawnPos);
         }
@@ -154,19 +191,50 @@ namespace KANYE.Gameplay
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (other.TryGetComponent<SuperProjectile>(out _))
-                return; // SuperProjectile handles its own destruction
+                return;
 
             if (!other.TryGetComponent<Projectile>(out var projectile))
                 return;
 
-            EffectsManager.PlayImpact(projectile.transform.position, Vector2.left, new Color(1f, 0.4f, 0.2f));
-            EffectsManager.PlayExplosion(transform.position, new Color(0.95f, 0.25f, 0.15f), isMechanical: true);
-            CameraShake.Shake(0.2f, 0.22f);
+            var damage = Mathf.Max(1, projectile.Damage);
+            currentHealth -= damage;
+
+            EffectsManager.PlayImpact(projectile.transform.position, Vector2.left, new Color(1f, 0.5f, 0.2f));
+            projectile.HandleImpact(transform.position);
+
+            if (currentHealth > 0)
+            {
+                // Damage flash & sound
+                StartCoroutine(HitFlashRoutine());
+                Audio.AudioManager.PlayHit();
+                return;
+            }
+
+            // Enemy defeated
+            EffectsManager.PlayExplosion(transform.position, isHeavy ? new Color(1f, 0.5f, 0.1f) : new Color(0.95f, 0.25f, 0.15f), isMechanical: true);
+            CameraShake.Shake(isHeavy ? 0.3f : 0.2f, 0.25f);
 
             GameRules.NotifyAsteroidDestroyed(albumsOnHit);
 
-            projectile.HandleImpact(transform.position);
+            // Chance to drop Nanite Repair Capsule (10% standard, 25% heavy)
+            var dropChance = isHeavy ? 0.25f : 0.10f;
+            if (Random.value < dropChance)
+            {
+                var drop = new GameObject("NaniteRepair", typeof(SpriteRenderer), typeof(CircleCollider2D));
+                drop.transform.position = transform.position;
+                drop.AddComponent<NaniteRepair>();
+            }
+
             Destroy(gameObject);
+        }
+
+        private System.Collections.IEnumerator HitFlashRoutine()
+        {
+            if (spriteRenderer == null) yield break;
+            spriteRenderer.color = new Color(1f, 0.9f, 0.9f, 1f);
+            yield return new WaitForSeconds(0.06f);
+            if (spriteRenderer != null)
+                spriteRenderer.color = originalColor;
         }
 
         private void EnsureVisible()
@@ -177,7 +245,8 @@ namespace KANYE.Gameplay
             PlaceholderShipVisual.UseSpriteMaterial(spriteRenderer);
             spriteRenderer.sortingOrder = 1;
 
-            var loadedSprite = Resources.Load<Sprite>("Sprites/enemy");
+            var spritePath = isHeavy ? "Sprites/enemy_heavy" : "Sprites/enemy";
+            var loadedSprite = Resources.Load<Sprite>(spritePath);
             if (loadedSprite != null)
             {
                 spriteRenderer.sprite = loadedSprite;
@@ -189,36 +258,19 @@ namespace KANYE.Gameplay
 
         private static Sprite MakeSprite()
         {
-            const int width = 16;
-            const int height = 10;
+            const int width = 56;
+            const int height = 38;
             var texture = new Texture2D(width, height);
             texture.filterMode = FilterMode.Point;
             var pixels = new Color[width * height];
-            var body = new Color(0.85f, 0.18f, 0.22f, 1f);
-            var dark = new Color(0.35f, 0.05f, 0.08f, 1f);
-            var window = new Color(1f, 0.85f, 0.45f, 1f);
+            var body = new Color(0.2f, 0.24f, 0.3f, 1f);
 
-            for (var y = 0; y < height; y++)
-            {
-                for (var x = 0; x < width; x++)
-                {
-                    var inHull = y >= 3 && y <= 6 && x >= 1 && x <= 13;
-                    var inDome = y >= 5 && y <= 8 && x >= 5 && x <= 10;
-                    if (!inHull && !inDome)
-                    {
-                        pixels[y * width + x] = Color.clear;
-                        continue;
-                    }
-
-                    var edge = y == 3 || y == 6 || x == 1 || x == 13 || y == 8;
-                    var cockpit = y >= 6 && y <= 7 && x >= 6 && x <= 8;
-                    pixels[y * width + x] = cockpit ? window : edge ? dark : body;
-                }
-            }
+            for (var i = 0; i < pixels.Length; i++)
+                pixels[i] = body;
 
             texture.SetPixels(pixels);
             texture.Apply();
-            return Sprite.Create(texture, new Rect(0f, 0f, width, height), new Vector2(0.5f, 0.5f), 16f);
+            return Sprite.Create(texture, new Rect(0f, 0f, width, height), new Vector2(0.5f, 0.5f), 48f);
         }
     }
 }

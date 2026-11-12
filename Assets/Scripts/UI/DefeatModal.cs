@@ -17,6 +17,7 @@ namespace KANYE.UI
         private GameObject modalRoot;
         private Action onReviveCallback;
         private Button reviveButton;
+        private Text titleText;
         private Text statusText;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -57,6 +58,21 @@ namespace KANYE.UI
 
             if (reviveButton != null)
                 reviveButton.gameObject.SetActive(canRevive);
+
+            if (Systems.GameRules.CurrentMode == Systems.GameMode.RogueExpedition)
+            {
+                if (titleText != null)
+                    titleText.text = "ЭКСПЕДИЦИЯ ЗАВЕРШЕНА";
+                if (statusText != null)
+                    statusText.text = $"Пройдено волн: {Gameplay.RogueExpeditionController.CurrentWave}\n🪙 Собрано ресурсов: +{Gameplay.RogueExpeditionController.CoinsEarnedThisRun} / 150 (сохранено в ангар)";
+            }
+            else
+            {
+                if (titleText != null)
+                    titleText.text = "КОРАБЛЬ РАЗБИТ";
+                if (statusText != null)
+                    statusText.text = "Сектор не пройден. Связь с ядром потеряна.";
+            }
         }
 
         private void DoHide()
@@ -93,8 +109,8 @@ namespace KANYE.UI
             panel.rectTransform.sizeDelta = new Vector2(620f, 440f);
 
             // Title
-            var title = CreateLabel(panel.transform, "Title", "КОРАБЛЬ РАЗБИТ", 34, new Vector2(0f, 140f), new Color(1f, 0.35f, 0.35f, 1f));
-            title.fontStyle = FontStyle.Bold;
+            titleText = CreateLabel(panel.transform, "Title", "КОРАБЛЬ РАЗБИТ", 34, new Vector2(0f, 140f), new Color(1f, 0.35f, 0.35f, 1f));
+            titleText.fontStyle = FontStyle.Bold;
 
             statusText = CreateLabel(panel.transform, "Subtitle", "Сектор не пройден. Связь с ядром потеряна.", 20, new Vector2(0f, 85f), new Color(0.8f, 0.88f, 0.95f, 1f));
 

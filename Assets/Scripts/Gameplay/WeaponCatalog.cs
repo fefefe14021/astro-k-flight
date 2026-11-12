@@ -28,6 +28,9 @@ namespace KANYE.Gameplay
         public WeaponType Type;
         public string ProjectileSprite;
         public Color ThemeColor;
+        public int RequiredMissionIndex;
+        public int UpgradeCostLv2;
+        public int UpgradeCostLv3;
 
         public WeaponDefinition(
             string id,
@@ -39,7 +42,10 @@ namespace KANYE.Gameplay
             float fireInterval,
             WeaponType type,
             string projectileSprite,
-            Color themeColor)
+            Color themeColor,
+            int requiredMissionIndex = 0,
+            int upgradeCostLv2 = 75,
+            int upgradeCostLv3 = 160)
         {
             Id = id;
             Title = title;
@@ -51,6 +57,9 @@ namespace KANYE.Gameplay
             Type = type;
             ProjectileSprite = projectileSprite;
             ThemeColor = themeColor;
+            RequiredMissionIndex = requiredMissionIndex;
+            UpgradeCostLv2 = upgradeCostLv2;
+            UpgradeCostLv3 = upgradeCostLv3;
         }
     }
 
@@ -68,67 +77,73 @@ namespace KANYE.Gameplay
                 0.14f,
                 WeaponType.TwinBlaster,
                 "Sprites/bolt",
-                new Color(0.2f, 0.9f, 1f, 1f)),
+                new Color(0.2f, 0.9f, 1f, 1f),
+                0, 75, 160),
 
             new WeaponDefinition(
                 "scatter_shotgun",
                 "Дробовик «Громобой»",
                 "Scatter Cannon",
-                45,
+                120,
                 "Broforce & Cuphead Spread стиль! Залп из 5 раскаленных дробинок веером. Колоссальный урон в упор по крупным целям и боссам!",
                 1,
                 0.32f,
                 WeaponType.ScatterShotgun,
                 "Sprites/proj_spread",
-                new Color(1f, 0.55f, 0.15f, 1f)),
+                new Color(1f, 0.55f, 0.15f, 1f),
+                1, 140, 260),
 
             new WeaponDefinition(
                 "homing_missiles",
                 "Микроракеты «Оса»",
                 "Homing Swarm",
-                80,
+                260,
                 "Cuphead Chaser! Залпы умных микроракет, огибающих препятствия и самостоятельно выслеживающих ближайших дронов и босса.",
                 1,
                 0.22f,
                 WeaponType.HomingMissiles,
                 "Sprites/proj_homing",
-                new Color(0.4f, 1f, 0.5f, 1f)),
+                new Color(0.4f, 1f, 0.5f, 1f),
+                3, 240, 420),
 
             new WeaponDefinition(
                 "heavy_railgun",
                 "Рельсотрон «Квазар»",
                 "Hyper Railgun",
-                120,
+                480,
                 "Бронебойный сверхсветовой заряд. Пробивает астероиды и врагов насквозь единым лучом высокой плотности!",
                 3,
                 0.38f,
                 WeaponType.HeavyRailgun,
                 "Sprites/proj_rail",
-                new Color(0.95f, 0.85f, 0.2f, 1f)),
+                new Color(0.95f, 0.85f, 0.2f, 1f),
+                6, 380, 650),
 
             new WeaponDefinition(
                 "saw_disc",
                 "Пиломет «Циркулярка»",
                 "Buzzsaw Roundabout",
-                160,
+                720,
                 "Cuphead Roundabout! Выстреливает зубчатые пилы-диски, рикошетящие от границ космоса и наносящие повторный урон при обратном полете.",
                 2,
                 0.28f,
                 WeaponType.SawDisc,
                 "Sprites/proj_saw",
-                new Color(1f, 0.25f, 0.25f, 1f)),
+                new Color(1f, 0.25f, 0.25f, 1f),
+                9, 520, 880),
 
             new WeaponDefinition(
                 "plasma_mortar",
                 "Мортира «Лоббер»",
                 "Plasma Lobber",
-                210,
+                1050,
                 "Тяжелые гравитационные шары нестабильной плазмы, детонирующие при столкновении разрушительным взрывом по площади (AoE).",
                 4,
                 0.48f,
                 WeaponType.PlasmaMortar,
                 "Sprites/proj_mortar",
-                new Color(0.7f, 0.35f, 1f, 1f))
+                new Color(0.7f, 0.35f, 1f, 1f),
+                11, 780, 1350)
         };
 
         public static WeaponDefinition Find(string id)
@@ -209,6 +224,13 @@ namespace KANYE.Gameplay
                 default:
                     return 1;
             }
+        }
+
+        public static int GetUpgradeCost(string weaponId, int currentLevel)
+        {
+            var def = Find(weaponId);
+            if (def == null || currentLevel >= 3) return -1;
+            return currentLevel == 1 ? def.UpgradeCostLv2 : def.UpgradeCostLv3;
         }
 
         public static string GetUpgradeSummary(string weaponId, int currentLevel)

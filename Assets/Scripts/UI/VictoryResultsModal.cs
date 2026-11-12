@@ -96,7 +96,9 @@ namespace KANYE.UI
                 gradeText.color = (grade == "S") ? new Color(1f, 0.85f, 0.2f) : (grade.StartsWith("A")) ? new Color(0.3f, 1f, 0.5f) : Color.white;
             }
 
-            var reward = 50 + (missionIndex + 1) * 20 + (grade == "S" ? 40 : 15);
+            var baseReward = 30 + (missionIndex + 1) * 8;
+            var gradeBonus = (grade == "S") ? 25 : (grade.StartsWith("A") ? 15 : 5);
+            var reward = baseReward + gradeBonus;
             SaveManager.Instance?.AddCoins(reward);
 
             if (rewardText != null)

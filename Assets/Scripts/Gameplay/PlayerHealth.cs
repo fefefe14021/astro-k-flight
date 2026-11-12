@@ -92,6 +92,28 @@ namespace KANYE.Gameplay
             StartCoroutine(ParryShieldBlinkRoutine(duration));
         }
 
+        public bool Heal(int amount = 1)
+        {
+            if (IsDead || Lives >= MaxLives)
+                return false;
+
+            Lives = Mathf.Min(MaxLives, Lives + amount);
+            NotifyChanged();
+            Changed?.Invoke(Lives);
+            AudioManager.PlayPowerup();
+            EffectsManager.PlayImpact(transform.position, Vector2.up, Color.green);
+            return true;
+        }
+
+        public void IncreaseMaxLives(int bonus = 1)
+        {
+            maxLives += bonus;
+            Lives = Mathf.Min(maxLives, Lives + bonus);
+            NotifyChanged();
+            Changed?.Invoke(Lives);
+            AudioManager.PlayPowerup();
+        }
+
         private IEnumerator ParryShieldBlinkRoutine(float duration)
         {
             var end = Time.time + duration;

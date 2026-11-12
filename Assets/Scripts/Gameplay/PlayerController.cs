@@ -2,6 +2,7 @@
 // Namespace: KANYE.Gameplay
 // Tight, responsive arcade flight controls.
 
+using KANYE.Systems;
 using KANYE.UI;
 using UnityEngine;
 
@@ -52,7 +53,11 @@ namespace KANYE.Gameplay
                 return;
             }
 
-            var targetVelocity = (shipInput != null ? shipInput.Move : Vector2.zero) * moveSpeed;
+            var speed = moveSpeed;
+            if (GameRules.CurrentMode == GameMode.RogueExpedition)
+                speed *= RogueExpeditionController.MoveSpeedMultiplier;
+
+            var targetVelocity = (shipInput != null ? shipInput.Move : Vector2.zero) * speed;
             currentVelocity = Vector2.MoveTowards(currentVelocity, targetVelocity, acceleration * Time.fixedDeltaTime);
 
             var nextPos = rb.position + currentVelocity * Time.fixedDeltaTime;

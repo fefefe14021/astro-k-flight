@@ -10,7 +10,7 @@ namespace KANYE.Gameplay
     public class ShipHealth : MonoBehaviour
     {
         [SerializeField] protected int maxLives = 3;
-        [SerializeField] protected float invulnerableSeconds = 0.85f;
+        [SerializeField] protected float invulnerableSeconds = 1.35f;
 
         public int Lives { get; protected set; }
         public int MaxLives => maxLives;

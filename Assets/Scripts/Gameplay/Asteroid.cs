@@ -121,6 +121,14 @@ namespace KANYE.Gameplay
             TutorialHints.NotifyAsteroidDestroyed();
 
             projectile.HandleImpact(transform.position);
+
+            if (albumsOnHit >= 2 && Random.value < 0.12f)
+            {
+                var drop = new GameObject("NaniteRepair", typeof(SpriteRenderer), typeof(CircleCollider2D));
+                drop.transform.position = transform.position;
+                drop.AddComponent<NaniteRepair>();
+            }
+
             Destroy(gameObject);
         }
 

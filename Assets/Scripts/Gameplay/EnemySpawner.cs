@@ -48,9 +48,17 @@ namespace KANYE.Gameplay
 
         private void SpawnSingleEnemy(float y, float offsetX = 0f)
         {
-            var enemy = new GameObject("Enemy", typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(Rigidbody2D));
-            enemy.transform.position = new Vector3(spawnX + offsetX, y, 0f);
-            enemy.AddComponent<Enemy>();
+            var enemyObj = new GameObject("Enemy", typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(Rigidbody2D));
+            enemyObj.transform.position = new Vector3(spawnX + offsetX, y, 0f);
+            var enemy = enemyObj.AddComponent<Enemy>();
+
+            var missionIdx = MissionCatalog.Selected;
+            var heavyChance = missionIdx >= 7 ? 0.40f : (missionIdx >= 3 ? 0.25f : 0.05f);
+            var isHeavy = Random.value < heavyChance;
+            var hp = isHeavy ? (missionIdx >= 7 ? 4 : 3) : (missionIdx >= 6 ? 2 : 1);
+            var speed = isHeavy ? 2.1f : Mathf.Min(3.6f, 2.4f + missionIdx * 0.08f);
+
+            enemy.Configure(isHeavy, hp, speed);
         }
     }
 }

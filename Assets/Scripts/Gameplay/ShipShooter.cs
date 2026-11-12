@@ -163,6 +163,12 @@ namespace KANYE.Gameplay
             var fireInterval = WeaponCatalog.GetFireInterval(weaponId, level);
             var projCount = WeaponCatalog.GetProjectileCount(weaponId, level);
 
+            if (GameRules.CurrentMode == GameMode.RogueExpedition)
+            {
+                damage += RogueExpeditionController.BonusDamage;
+                fireInterval /= Mathf.Max(0.5f, RogueExpeditionController.FireRateMultiplier);
+            }
+
             // Muzzle points according to the tilted saucer's nose!
             var baseDirection = (Vector2)transform.right;
             var origin = (Vector2)(transform.position + transform.rotation * (Vector3)muzzleOffset);

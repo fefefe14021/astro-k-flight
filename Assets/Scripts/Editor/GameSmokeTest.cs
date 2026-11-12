@@ -245,6 +245,53 @@ namespace KANYE.EditorTools
                     throw new Exception("Missing barney_portrait sprite in Resources/Sprites");
             }, ref passed, ref failed);
 
+            Test("14. Economy Balance, Progression Tiers & Nanite Repair", () =>
+            {
+                var upg1 = WeaponCatalog.GetUpgradeCost("twin_blaster", 1);
+                var upg2 = WeaponCatalog.GetUpgradeCost("twin_blaster", 2);
+                if (upg1 != 75 || upg2 != 160)
+                    throw new Exception($"Expected upgrade costs 75/160, got {upg1}/{upg2}");
+
+                var shotgun = WeaponCatalog.Find("scatter_shotgun");
+                if (shotgun == null || shotgun.Price != 120 || shotgun.RequiredMissionIndex != 1)
+                    throw new Exception("Scatter shotgun tier definition invalid");
+
+                var mortar = WeaponCatalog.Find("plasma_mortar");
+                if (mortar == null || mortar.Price != 1050 || mortar.RequiredMissionIndex != 11)
+                    throw new Exception("Plasma mortar endgame tier definition invalid");
+
+                // Test player healing via Nanite
+                var playerGo = new GameObject("PlayerHealthTest");
+                var ph = playerGo.AddComponent<PlayerHealth>();
+                ph.TakeDamage(2);
+                if (ph.Lives != 1) throw new Exception($"Expected 1 life after 2 damage, got {ph.Lives}");
+                var healed = ph.Heal(1);
+                if (!healed || ph.Lives != 2) throw new Exception($"Expected 2 lives after healing, got {ph.Lives}");
+                UnityEngine.Object.DestroyImmediate(playerGo);
+            }, ref passed, ref failed);
+
+            Test("15. Rogue-Lite Expedition Mode & Anti-Overfarm 150-Coin Cap", () =>
+            {
+                RogueExpeditionController.ResetRunModifiers();
+                if (RogueExpeditionController.CurrentWave != 1) throw new Exception("Expected wave 1 after reset");
+
+                // Test anti-overfarm coin cap
+                RogueExpeditionController.AddRogueCoins(80);
+                if (RogueExpeditionController.CoinsEarnedThisRun != 80)
+                    throw new Exception($"Expected 80 coins earned, got {RogueExpeditionController.CoinsEarnedThisRun}");
+
+                RogueExpeditionController.AddRogueCoins(120); // 80 + 120 = 200, but cap is 150!
+                if (RogueExpeditionController.CoinsEarnedThisRun != 150)
+                    throw new Exception($"Expected capped 150 coins, got {RogueExpeditionController.CoinsEarnedThisRun}");
+
+                // Validate detailed enemy sprite size
+                var enemySprite = Resources.Load<Sprite>("Sprites/enemy");
+                if (enemySprite == null || enemySprite.rect.width < 40)
+                    throw new Exception("Enemy sprite missing or still has low resolution (<40px)");
+                if (Mathf.Abs(enemySprite.pixelsPerUnit - 48f) > 0.1f)
+                    throw new Exception($"Expected enemy PPU 48, got {enemySprite.pixelsPerUnit}");
+            }, ref passed, ref failed);
+
             Debug.Log("==================================================");
             Debug.Log($"[SMOKE TEST FINISHED] Passed: {passed}, Failed: {failed}");
             Debug.Log("==================================================");

@@ -314,13 +314,15 @@ namespace KANYE.UI
                     var isEquipped = w.Id == equippedId;
                     var isSelected = index == selectedWeaponIndex;
                     var lvl = save != null ? save.GetWeaponLevel(w.Id) : 1;
+                    var isLocked = !isOwned && save != null && !save.IsWeaponAccessible(w.Id);
+                    var lockBadge = isLocked ? $"🔒 СЕК.{(w.RequiredMissionIndex / 3) + 1}" : null;
                     var itemTitle = isOwned ? $"{w.Title} [Ур.{lvl}]" : w.Title;
 
                     var btn = CreateListItem(listContainer, itemTitle, w.Subtitle, w.Price, isOwned, isEquipped, isSelected, () =>
                     {
                         selectedWeaponIndex = index;
                         Refresh();
-                    });
+                    }, isLocked, lockBadge);
                     activeListButtons.Add(btn);
                 }
 
@@ -339,12 +341,14 @@ namespace KANYE.UI
                     var isOwned = save != null && save.Data.unlockedSkinIds.Contains(s.Id);
                     var isEquipped = s.Id == equippedId;
                     var isSelected = index == selectedSkinIndex;
+                    var isLocked = !isOwned && save != null && !save.IsSkinAccessible(s.Id);
+                    var lockBadge = isLocked ? $"🔒 СЕК.{(s.RequiredMissionIndex / 3) + 1}" : null;
 
                     var btn = CreateListItem(listContainer, s.Title, s.Subtitle, s.Price, isOwned, isEquipped, isSelected, () =>
                     {
                         selectedSkinIndex = index;
                         Refresh();
-                    });
+                    }, isLocked, lockBadge);
                     activeListButtons.Add(btn);
                 }
 
@@ -441,10 +445,22 @@ namespace KANYE.UI
             }
             else
             {
-                var canAfford = save != null && save.Data.coins >= weapon.Price;
-                actionButtonText.text = $"КУПИТЬ ЗА {weapon.Price} 💰";
-                actionButton.interactable = canAfford;
-                actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.6f, 0.15f) : new Color(0.5f, 0.25f, 0.25f);
+                var isAccessible = save == null || save.IsWeaponAccessible(weapon.Id);
+                if (!isAccessible)
+                {
+                    var reqMission = weapon.RequiredMissionIndex + 1;
+                    var reqSector = (weapon.RequiredMissionIndex / 3) + 1;
+                    actionButtonText.text = $"🔒 СЕКТОР {reqSector} (МИССИЯ {reqMission})";
+                    actionButton.interactable = false;
+                    actionButton.GetComponent<Image>().color = new Color(0.35f, 0.25f, 0.25f);
+                }
+                else
+                {
+                    var canAfford = save != null && save.Data.coins >= weapon.Price;
+                    actionButtonText.text = $"КУПИТЬ ЗА {weapon.Price} 💰";
+                    actionButton.interactable = canAfford;
+                    actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.6f, 0.15f) : new Color(0.5f, 0.25f, 0.25f);
+                }
             }
         }
 
@@ -503,10 +519,21 @@ namespace KANYE.UI
             }
             else
             {
-                var canAfford = save != null && save.Data.coins >= skin.Price;
-                actionButtonText.text = $"КУПИТЬ ЗА {skin.Price} 💰";
-                actionButton.interactable = canAfford;
-                actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.6f, 0.15f) : new Color(0.5f, 0.25f, 0.25f);
+                var isAccessible = save == null || save.IsSkinAccessible(skin.Id);
+                if (!isAccessible)
+                {
+                    var reqSector = (skin.RequiredMissionIndex / 3) + 1;
+                    actionButtonText.text = $"🔒 ТРЕБУЕТСЯ СЕКТОР {reqSector}";
+                    actionButton.interactable = false;
+                    actionButton.GetComponent<Image>().color = new Color(0.35f, 0.25f, 0.25f);
+                }
+                else
+                {
+                    var canAfford = save != null && save.Data.coins >= skin.Price;
+                    actionButtonText.text = $"КУПИТЬ ЗА {skin.Price} 💰";
+                    actionButton.interactable = canAfford;
+                    actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.6f, 0.15f) : new Color(0.5f, 0.25f, 0.25f);
+                }
             }
         }
 
@@ -534,15 +561,23 @@ namespace KANYE.UI
                 var isOwned = save.Data.unlockedWeaponIds.Contains(w.Id);
                 if (!isOwned)
                 {
+                    if (!save.IsWeaponAccessible(w.Id))
+                    {
+                        AudioManager.PlayHit();
+                        return;
+                    }
+
                     if (save.TrySpendCoins(w.Price))
                     {
                         save.UnlockWeapon(w.Id);
                         save.EquipWeapon(w.Id);
+                        AudioManager.PlayPowerup();
                     }
                 }
                 else
                 {
                     save.EquipWeapon(w.Id);
+                    AudioManager.PlayClick();
                 }
             }
             else
@@ -551,22 +586,30 @@ namespace KANYE.UI
                 var isOwned = save.Data.unlockedSkinIds.Contains(s.Id);
                 if (!isOwned)
                 {
+                    if (!save.IsSkinAccessible(s.Id))
+                    {
+                        AudioManager.PlayHit();
+                        return;
+                    }
+
                     if (save.TrySpendCoins(s.Price))
                     {
                         save.UnlockSkin(s.Id);
                         save.EquipSkin(s.Id);
+                        AudioManager.PlayPowerup();
                     }
                 }
                 else
                 {
                     save.EquipSkin(s.Id);
+                    AudioManager.PlayClick();
                 }
             }
 
             Refresh();
         }
 
-        private GameObject CreateListItem(Transform parent, string title, string sub, int price, bool isOwned, bool isEquipped, bool isSelected, System.Action onClick)
+        private GameObject CreateListItem(Transform parent, string title, string sub, int price, bool isOwned, bool isEquipped, bool isSelected, System.Action onClick, bool isLocked = false, string lockBadge = null)
         {
             var btnObj = new GameObject("ItemBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(LayoutElement));
             btnObj.transform.SetParent(parent, false);
@@ -614,6 +657,11 @@ namespace KANYE.UI
             {
                 statusStr = "В АНГАРЕ";
                 statusCol = new Color(0.85f, 0.95f, 1f);
+            }
+            else if (isLocked)
+            {
+                statusStr = lockBadge ?? "🔒 БЛОК";
+                statusCol = new Color(0.95f, 0.45f, 0.45f);
             }
             else
             {

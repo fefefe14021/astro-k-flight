@@ -152,14 +152,21 @@ namespace KANYE.Systems
         public int GetUpgradeCost(string weaponId)
         {
             var lvl = GetWeaponLevel(weaponId);
-            if (lvl >= 3) return -1;
+            return WeaponCatalog.GetUpgradeCost(weaponId, lvl);
+        }
 
+        public bool IsWeaponAccessible(string weaponId)
+        {
             var def = WeaponCatalog.Find(weaponId);
-            var basePrice = def != null ? def.Price : 40;
-            if (lvl == 1)
-                return Mathf.RoundToInt(basePrice * 0.75f) + 35;
-            else
-                return Mathf.RoundToInt(basePrice * 1.35f) + 65;
+            if (def == null) return false;
+            return CurrentMission >= def.RequiredMissionIndex;
+        }
+
+        public bool IsSkinAccessible(string skinId)
+        {
+            var s = ShipSkinCatalog.Find(skinId);
+            if (s == null) return false;
+            return CurrentMission >= s.RequiredMissionIndex;
         }
 
         public bool UpgradeWeapon(string weaponId)

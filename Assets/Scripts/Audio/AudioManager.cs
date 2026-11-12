@@ -30,6 +30,7 @@ namespace KANYE.Audio
         private AudioClip clickClip;
         private AudioClip radioBeepClip;
         private AudioClip radioOpenClip;
+        private AudioClip powerupClip;
         private AudioClip arcadeMusicLoop;
 
         public static float MasterVolume { get; private set; } = 0.75f;
@@ -191,6 +192,11 @@ namespace KANYE.Audio
         public static void PlayRadioOpen()
         {
             Instance?.PlayOneShot(Instance.radioOpenClip, 0.85f);
+        }
+
+        public static void PlayPowerup()
+        {
+            Instance?.PlayOneShot(Instance.powerupClip, 0.9f, 0.04f);
         }
 
         // ==========================================
@@ -359,6 +365,20 @@ namespace KANYE.Audio
                 var wave = Mathf.Sin(2f * Mathf.PI * freq * t);
                 var env = 1f - ((t % 0.075f) / 0.075f);
                 return wave * env * 0.55f;
+            });
+
+            // 15. Powerup / Nanite Healing Chime (0.28s rising arpeggio C-E-G-C)
+            powerupClip = SynthesizeClip("Sfx_Powerup", sampleRate, 0.28f, (t, dur) =>
+            {
+                var step = Mathf.FloorToInt(t / (dur / 4f));
+                float freq = 523.25f; // C5
+                if (step == 1) freq = 659.25f; // E5
+                else if (step == 2) freq = 783.99f; // G5
+                else if (step >= 3) freq = 1046.50f; // C6
+
+                var env = 1f - ((t % (dur / 4f)) / (dur / 4f));
+                var wave = Mathf.Sin(2f * Mathf.PI * freq * t) * 0.7f + Mathf.Sin(4f * Mathf.PI * freq * t) * 0.3f;
+                return wave * env * 0.6f;
             });
         }
 

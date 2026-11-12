@@ -3,9 +3,17 @@ using UnityEngine;
 
 namespace KANYE.Systems
 {
+    public enum GameMode
+    {
+        Campaign,
+        RogueExpedition
+    }
+
     public static class GameRules
     {
         private static GameRulesConfig config;
+
+        public static GameMode CurrentMode = GameMode.Campaign;
 
         public static int ParriesThisRun { get; private set; }
         public static int SupersUsedThisRun { get; private set; }
@@ -14,9 +22,9 @@ namespace KANYE.Systems
         public static int ActiveMissionProgress =>
             Mathf.Max(MissionCatalog.Selected, SaveManager.Instance != null ? SaveManager.Instance.CurrentMission : 0);
 
-        public static bool IsParryUnlocked => ActiveMissionProgress >= 1;
-        public static bool IsEXUnlocked => ActiveMissionProgress >= 3;
-        public static bool IsSuperUnlocked => ActiveMissionProgress >= 6;
+        public static bool IsParryUnlocked => CurrentMode == GameMode.RogueExpedition || ActiveMissionProgress >= 1;
+        public static bool IsEXUnlocked => CurrentMode == GameMode.RogueExpedition || ActiveMissionProgress >= 3;
+        public static bool IsSuperUnlocked => CurrentMode == GameMode.RogueExpedition || ActiveMissionProgress >= 6;
 
         public static void ResetMissionStats()
         {
@@ -28,7 +36,7 @@ namespace KANYE.Systems
         public static void NotifyParry()
         {
             ParriesThisRun++;
-            SaveManager.Instance?.AddCoins(8);
+            SaveManager.Instance?.AddCoins(3);
         }
 
         public static void NotifySuperUsed()
@@ -68,7 +76,8 @@ namespace KANYE.Systems
             if (hype != null && albums > 0)
                 hype.AddAlbum(albums);
 
-            SaveManager.Instance?.AddCoins(Config.coinsPerAsteroid);
+            var coinDrop = albums >= 2 ? 2 : 1;
+            SaveManager.Instance?.AddCoins(coinDrop);
             RegisterKill();
 
             var achievements = AchievementManager.Instance;
@@ -86,7 +95,7 @@ namespace KANYE.Systems
 
         public static void NotifyMissileDestroyed()
         {
-            SaveManager.Instance?.AddCoins(5);
+            SaveManager.Instance?.AddCoins(2);
             RegisterKill();
             var achievements = AchievementManager.Instance;
             if (achievements == null)
