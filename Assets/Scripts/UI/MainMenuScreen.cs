@@ -32,6 +32,7 @@ namespace KANYE.UI
         private GameObject shopModal;
         private GameObject achievementsModal;
         private GameObject settingsModal;
+        private GameObject loreModal;
         private RectTransform achievementScrollContent;
         private readonly List<Button> skinActionButtons = new List<Button>();
         private readonly List<Text> skinActionLabels = new List<Text>();
@@ -112,10 +113,11 @@ namespace KANYE.UI
             // 4. Right Section - Main Command Buttons
             BuildCommandConsole(canvas.transform);
 
-            // 5. Modals (Shop, Achievements, Settings)
+            // 5. Modals (Shop, Achievements, Settings, Lore)
             BuildShopModal(canvas.transform);
             BuildAchievementsModal(canvas.transform);
             BuildSettingsModal(canvas.transform);
+            BuildLoreModal(canvas.transform);
 
             CloseAllModals();
         }
@@ -224,20 +226,23 @@ namespace KANYE.UI
             rect.sizeDelta = new Vector2(520f, 540f);
 
             // Primary Hero Button - PLAY / FLY (Sliced golden arcade button)
-            var playBtn = CreateSlicedButton(menuRoot.transform, "BtnPlay", "В ПОЛЁТ [СТАРТ]", PixelUiAtlas.ButtonPrimary, new Vector2(0f, 155f), new Vector2(480f, 92f), 32, new Color(1f, 0.98f, 0.85f));
+            var playBtn = CreateSlicedButton(menuRoot.transform, "BtnPlay", "В ПОЛЁТ [СТАРТ]", PixelUiAtlas.ButtonPrimary, new Vector2(0f, 160f), new Vector2(480f, 82f), 30, new Color(1f, 0.98f, 0.85f));
             playBtn.onClick.AddListener(OnPlayClicked);
 
             // Secondary Navigation Buttons (Sliced cyber-blue arcade buttons)
-            var hangarBtn = CreateSlicedButton(menuRoot.transform, "BtnHangar", "🚀  АНГАР И ОБЛИКИ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, 55f), new Vector2(480f, 72f), 22, Color.white);
-            hangarBtn.onClick.AddListener(() => OpenModal(shopModal));
+            var hangarBtn = CreateSlicedButton(menuRoot.transform, "BtnHangar", "🚀  АНГАР И АРСЕНАЛ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, 85f), new Vector2(480f, 58f), 20, Color.white);
+            hangarBtn.onClick.AddListener(() => SceneLoader.LoadSceneByName(SceneLoader.ShopScene));
 
-            var achBtn = CreateSlicedButton(menuRoot.transform, "BtnAchievements", "🏆  ДОСТИЖЕНИЯ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -35f), new Vector2(480f, 72f), 22, Color.white);
+            var loreBtn = CreateSlicedButton(menuRoot.transform, "BtnLore", "📖  БОРТОВОЙ ЖУРНАЛ // ЛОР", PixelUiAtlas.ButtonSecondary, new Vector2(0f, 15f), new Vector2(480f, 58f), 20, new Color(0.9f, 0.95f, 1f));
+            loreBtn.onClick.AddListener(() => OpenModal(loreModal));
+
+            var achBtn = CreateSlicedButton(menuRoot.transform, "BtnAchievements", "🏆  ДОСТИЖЕНИЯ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -55f), new Vector2(480f, 58f), 20, Color.white);
             achBtn.onClick.AddListener(() => OpenModal(achievementsModal));
 
-            var settingsBtn = CreateSlicedButton(menuRoot.transform, "BtnSettings", "⚙️  НАСТРОЙКИ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -125f), new Vector2(480f, 72f), 22, Color.white);
+            var settingsBtn = CreateSlicedButton(menuRoot.transform, "BtnSettings", "⚙️  НАСТРОЙКИ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -125f), new Vector2(480f, 58f), 20, Color.white);
             settingsBtn.onClick.AddListener(() => OpenModal(settingsModal));
 
-            var quitBtn = CreateSlicedButton(menuRoot.transform, "BtnQuit", "🚪  ВЫХОД ИЗ ИГРЫ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -215f), new Vector2(480f, 64f), 20, new Color(0.95f, 0.75f, 0.8f));
+            var quitBtn = CreateSlicedButton(menuRoot.transform, "BtnQuit", "🚪  ВЫХОД ИЗ ИГРЫ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -195f), new Vector2(480f, 54f), 18, new Color(0.95f, 0.75f, 0.8f));
             quitBtn.onClick.AddListener(SceneLoader.Quit);
         }
 
@@ -351,6 +356,40 @@ namespace KANYE.UI
             closeBtn.onClick.AddListener(CloseAllModals);
         }
 
+        private void BuildLoreModal(Transform parent)
+        {
+            loreModal = CreateModalContainer(parent, "LoreModal", out var card);
+            CreateText(card.transform, "Title", "БОРТОВОЙ ЖУРНАЛ // ЛОР HYPEVERSE", new Vector2(0.5f, 1f), new Vector2(0f, -38f), new Vector2(760f, 38f), 30, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
+            CreateText(card.transform, "Sub", "Хроники Капитана Зигги, досье боссов Синдиката и тайны реликвий Hype Core", new Vector2(0.5f, 1f), new Vector2(0f, -76f), new Vector2(760f, 26f), 16, new Color(0.7f, 0.85f, 0.95f), FontStyle.Normal);
+
+            var scroll = CreateScroll(card.transform, new Vector2(0f, -95f), new Vector2(800f, 500f));
+            var entries = LoreCatalog.Entries;
+
+            for (var i = 0; i < entries.Length; i++)
+            {
+                var entry = entries[i];
+                var itemObj = CreateImage("LoreItem" + i, scroll, PixelUiAtlas.SubPanel, Color.white);
+                itemObj.type = Image.Type.Sliced;
+                var itemRect = itemObj.rectTransform;
+                itemRect.sizeDelta = new Vector2(740f, 160f);
+
+                // Category tag
+                var tag = CreateText(itemObj.transform, "Tag", $"[{entry.Category}]", new Vector2(0f, 1f), new Vector2(24f, -14f), new Vector2(300f, 22f), 14, new Color(0.4f, 0.85f, 1f), FontStyle.Bold);
+                tag.alignment = TextAnchor.MiddleLeft;
+
+                // Title
+                var title = CreateText(itemObj.transform, "Title", entry.Title, new Vector2(0f, 1f), new Vector2(24f, -38f), new Vector2(680f, 26f), 18, new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
+                title.alignment = TextAnchor.MiddleLeft;
+
+                // Content
+                var content = CreateText(itemObj.transform, "Content", entry.Content, new Vector2(0f, 1f), new Vector2(24f, -66f), new Vector2(690f, 85f), 14, new Color(0.88f, 0.92f, 0.98f), FontStyle.Normal);
+                content.alignment = TextAnchor.UpperLeft;
+            }
+
+            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", "ЗАКРЫТЬ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -330f), new Vector2(300f, 54f), 20, Color.white);
+            closeBtn.onClick.AddListener(CloseAllModals);
+        }
+
         private GameObject CreateModalContainer(Transform parent, string name, out GameObject cardObj)
         {
             var modal = new GameObject(name, typeof(RectTransform));
@@ -389,6 +428,7 @@ namespace KANYE.UI
             if (shopModal != null) shopModal.SetActive(false);
             if (achievementsModal != null) achievementsModal.SetActive(false);
             if (settingsModal != null) settingsModal.SetActive(false);
+            if (loreModal != null) loreModal.SetActive(false);
         }
 
         #endregion
@@ -449,7 +489,12 @@ namespace KANYE.UI
                 shipSkinTitleText.text = $"КОРПУС: {equippedSkin.Title.ToUpper()}";
 
             if (shipDisplayImage != null)
-                shipDisplayImage.color = equippedSkin.Color;
+            {
+                var sprite = Resources.Load<Sprite>(equippedSkin.SpriteName);
+                if (sprite != null)
+                    shipDisplayImage.sprite = sprite;
+                shipDisplayImage.color = Color.white;
+            }
 
             // Update shop button states
             for (var i = 0; i < skinActionButtons.Count && i < ShipSkinCatalog.All.Length; i++)

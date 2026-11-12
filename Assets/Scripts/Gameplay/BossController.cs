@@ -336,8 +336,8 @@ namespace KANYE.Gameplay
 
             if (other.TryGetComponent<Projectile>(out var p))
             {
-                TakeDamage(1);
-                Destroy(p.gameObject);
+                TakeDamage(p.Damage);
+                p.HandleImpact(transform.position);
             }
             else if (other.TryGetComponent<SuperProjectile>(out _))
             {

@@ -165,7 +165,7 @@ namespace KANYE.Gameplay
 
             GameRules.NotifyAsteroidDestroyed(albumsOnHit);
 
-            Destroy(projectile.gameObject);
+            projectile.HandleImpact(transform.position);
             Destroy(gameObject);
         }
 

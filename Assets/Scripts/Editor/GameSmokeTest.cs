@@ -165,9 +165,9 @@ namespace KANYE.EditorTools
                 boss.ExecuteNextAttack();
                 boss.ExecuteNextAttack();
 
-                var missiles = UnityEngine.Object.FindObjectsByType<Missile>(FindObjectsSortMode.None);
-                var parries = UnityEngine.Object.FindObjectsByType<ParryHazard>(FindObjectsSortMode.None);
-                var lasers = UnityEngine.Object.FindObjectsByType<EnemyProjectile>(FindObjectsSortMode.None);
+                var missiles = UnityEngine.Object.FindObjectsByType<Missile>(FindObjectsInactive.Exclude);
+                var parries = UnityEngine.Object.FindObjectsByType<ParryHazard>(FindObjectsInactive.Exclude);
+                var lasers = UnityEngine.Object.FindObjectsByType<EnemyProjectile>(FindObjectsInactive.Exclude);
 
                 if (missiles.Length == 0) throw new Exception("Boss torpedo salvo did not spawn missiles");
                 if (parries.Length == 0) throw new Exception("Boss parry volley did not spawn parry orbs");
@@ -197,6 +197,30 @@ namespace KANYE.EditorTools
                 if (!TutorialHints.IsTutorialCompleted) throw new Exception("IsTutorialCompleted should be true");
 
                 UnityEngine.Object.DestroyImmediate(go);
+            }, ref passed, ref failed);
+
+            Test("13. Weapon & Skin Catalogs & Lore Verification", () =>
+            {
+                if (WeaponCatalog.All.Length < 6)
+                    throw new Exception($"Expected 6 weapons, found {WeaponCatalog.All.Length}");
+                for (var i = 0; i < WeaponCatalog.All.Length; i++)
+                {
+                    var w = WeaponCatalog.All[i];
+                    if (string.IsNullOrEmpty(w.Id) || w.Damage <= 0 || w.FireInterval <= 0f)
+                        throw new Exception($"Invalid weapon definition at index {i}");
+                }
+
+                if (ShipSkinCatalog.All.Length < 6)
+                    throw new Exception($"Expected 6 skins, found {ShipSkinCatalog.All.Length}");
+                for (var i = 0; i < ShipSkinCatalog.All.Length; i++)
+                {
+                    var s = ShipSkinCatalog.All[i];
+                    if (string.IsNullOrEmpty(s.Id) || string.IsNullOrEmpty(s.SpriteName))
+                        throw new Exception($"Invalid skin definition at index {i}");
+                }
+
+                if (LoreCatalog.Entries.Length < 5)
+                    throw new Exception($"Expected at least 5 lore entries, found {LoreCatalog.Entries.Length}");
             }, ref passed, ref failed);
 
             Debug.Log("==================================================");

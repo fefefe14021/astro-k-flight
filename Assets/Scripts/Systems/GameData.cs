@@ -19,6 +19,8 @@ namespace KANYE.Systems
         public int currentMission;
         public string equippedSkinId = "default";
         public List<string> unlockedSkinIds = new List<string>();
+        public string equippedWeaponId = "twin_blaster";
+        public List<string> unlockedWeaponIds = new List<string>();
         public List<AchievementProgressEntry> achievements = new List<AchievementProgressEntry>();
     }
 }

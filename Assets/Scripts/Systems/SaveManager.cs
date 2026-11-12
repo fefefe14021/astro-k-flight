@@ -9,6 +9,7 @@ namespace KANYE.Systems
     {
         public const string SaveKey = "KANYE.SaveData";
         public const string DefaultSkinId = "default";
+        public const string DefaultWeaponId = "twin_blaster";
 
         public static SaveManager Instance { get; private set; }
 
@@ -49,12 +50,20 @@ namespace KANYE.Systems
 
             if (Data.unlockedSkinIds == null)
                 Data.unlockedSkinIds = new List<string>();
+            if (Data.unlockedWeaponIds == null)
+                Data.unlockedWeaponIds = new List<string>();
             if (Data.achievements == null)
                 Data.achievements = new List<AchievementProgressEntry>();
+
             if (string.IsNullOrEmpty(Data.equippedSkinId))
                 Data.equippedSkinId = DefaultSkinId;
             if (!Data.unlockedSkinIds.Contains(DefaultSkinId))
                 Data.unlockedSkinIds.Add(DefaultSkinId);
+
+            if (string.IsNullOrEmpty(Data.equippedWeaponId))
+                Data.equippedWeaponId = DefaultWeaponId;
+            if (!Data.unlockedWeaponIds.Contains(DefaultWeaponId))
+                Data.unlockedWeaponIds.Add(DefaultWeaponId);
         }
 
         public void Save()
@@ -99,6 +108,26 @@ namespace KANYE.Systems
                 return false;
 
             Data.equippedSkinId = skinId;
+            Save();
+            return true;
+        }
+
+        public bool UnlockWeapon(string weaponId)
+        {
+            if (string.IsNullOrEmpty(weaponId) || Data.unlockedWeaponIds.Contains(weaponId))
+                return false;
+
+            Data.unlockedWeaponIds.Add(weaponId);
+            Save();
+            return true;
+        }
+
+        public bool EquipWeapon(string weaponId)
+        {
+            if (!Data.unlockedWeaponIds.Contains(weaponId))
+                return false;
+
+            Data.equippedWeaponId = weaponId;
             Save();
             return true;
         }
@@ -159,6 +188,8 @@ namespace KANYE.Systems
                 coins = 0,
                 equippedSkinId = DefaultSkinId,
                 unlockedSkinIds = new List<string> { DefaultSkinId },
+                equippedWeaponId = DefaultWeaponId,
+                unlockedWeaponIds = new List<string> { DefaultWeaponId },
                 achievements = new List<AchievementProgressEntry>()
             };
         }

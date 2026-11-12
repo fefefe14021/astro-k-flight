@@ -36,6 +36,7 @@ namespace KANYE.Gameplay
             health = GetComponent<PlayerHealth>();
             rb.gravityScale = 0f;
             rb.bodyType = RigidbodyType2D.Dynamic;
+            rb.freezeRotation = true;
             rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
         }
 

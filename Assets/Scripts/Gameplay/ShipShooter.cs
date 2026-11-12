@@ -1,6 +1,6 @@
 // Assets/Scripts/Gameplay/ShipShooter.cs
 // Namespace: KANYE.Gameplay
-// Manages primary fire, EX special rockets, and Super Art mega beam.
+// Manages primary weapon arsenal, EX special rockets, and Super Art mega beam.
 
 using KANYE.Audio;
 using KANYE.Systems;
@@ -15,8 +15,7 @@ namespace KANYE.Gameplay
     {
         [SerializeField] private Projectile projectilePrefab;
         [SerializeField] private Vector2 fireDirection = Vector2.right;
-        [SerializeField] private Vector2 muzzleOffset = new Vector2(0.72f, 0f);
-        [SerializeField] private float fireInterval = 0.16f;
+        [SerializeField] private Vector2 muzzleOffset = new Vector2(0.68f, 0.02f);
 
         private ShipInput shipInput;
         private HypeState hypeState;
@@ -78,7 +77,6 @@ namespace KANYE.Gameplay
                 return;
 
             Shoot();
-            cooldown = fireInterval;
         }
 
         public bool TryFireEX()
@@ -114,11 +112,12 @@ namespace KANYE.Gameplay
 
         private void FireEXRocket()
         {
-            var origin = (Vector2)transform.position + muzzleOffset;
+            var launchDir = (Vector2)transform.right;
+            var origin = (Vector2)(transform.position + transform.rotation * (Vector3)muzzleOffset);
             var exObj = new GameObject("EXRocket", typeof(SpriteRenderer), typeof(Rigidbody2D), typeof(CircleCollider2D));
             exObj.transform.position = origin;
             var rocket = exObj.AddComponent<EXMissile>();
-            rocket.Launch(fireDirection);
+            rocket.Launch(launchDir);
 
             AudioManager.PlayEXShoot();
             EffectsManager.PlayMuzzleFlash(origin);
@@ -128,11 +127,12 @@ namespace KANYE.Gameplay
 
         private void FireSuperBeam()
         {
-            var origin = (Vector2)transform.position + muzzleOffset;
+            var launchDir = (Vector2)transform.right;
+            var origin = (Vector2)(transform.position + transform.rotation * (Vector3)muzzleOffset);
             var superObj = new GameObject("SuperBeam", typeof(SpriteRenderer), typeof(Rigidbody2D), typeof(CircleCollider2D));
             superObj.transform.position = origin;
             var beam = superObj.AddComponent<SuperProjectile>();
-            beam.Launch(fireDirection);
+            beam.Launch(launchDir);
 
             AudioManager.PlaySuperBeam();
             EffectsManager.PlayMuzzleFlash(origin);
@@ -143,26 +143,78 @@ namespace KANYE.Gameplay
 
         private void Shoot()
         {
-            var direction = fireDirection.sqrMagnitude > 0.0001f ? fireDirection.normalized : Vector2.right;
-            var origin = (Vector2)transform.position + muzzleOffset;
+            var weaponId = SaveManager.Instance != null ? SaveManager.Instance.Data.equippedWeaponId : "twin_blaster";
+            var weapon = WeaponCatalog.Find(weaponId);
 
-            if (projectilePrefab != null)
+            // Muzzle points according to the tilted saucer's nose!
+            var baseDirection = (Vector2)transform.right;
+            var origin = (Vector2)(transform.position + transform.rotation * (Vector3)muzzleOffset);
+
+            switch (weapon.Type)
             {
-                var projectile = Instantiate(projectilePrefab, origin, Quaternion.identity);
-                projectile.Launch(direction);
-            }
-            else
-            {
-                var fallbackProj = new GameObject("Projectile", typeof(SpriteRenderer), typeof(Rigidbody2D), typeof(CircleCollider2D));
-                fallbackProj.transform.position = origin;
-                var p = fallbackProj.AddComponent<Projectile>();
-                p.Launch(direction);
+                case WeaponType.TwinBlaster:
+                    var upOffset = (Vector2)(transform.up * 0.16f);
+                    SpawnProjectile(origin + upOffset, baseDirection, weapon);
+                    SpawnProjectile(origin - upOffset, baseDirection, weapon);
+                    AudioManager.PlayShoot();
+                    CameraShake.Shake(0.035f, 0.1f);
+                    break;
+
+                case WeaponType.ScatterShotgun:
+                    float[] angles = { -15f, -7.5f, 0f, 7.5f, 15f };
+                    for (var i = 0; i < angles.Length; i++)
+                    {
+                        var rot = Quaternion.Euler(0f, 0f, angles[i]);
+                        var dir = (Vector2)(rot * (Vector3)baseDirection);
+                        SpawnProjectile(origin, dir, weapon);
+                    }
+                    AudioManager.PlayEXShoot();
+                    CameraShake.Shake(0.18f, 0.15f);
+                    break;
+
+                case WeaponType.HomingMissiles:
+                    SpawnProjectile(origin + (Vector2)(transform.up * 0.18f), (Vector2)(Quaternion.Euler(0f, 0f, 12f) * (Vector3)baseDirection), weapon);
+                    SpawnProjectile(origin - (Vector2)(transform.up * 0.18f), (Vector2)(Quaternion.Euler(0f, 0f, -12f) * (Vector3)baseDirection), weapon);
+                    AudioManager.PlayShoot();
+                    CameraShake.Shake(0.05f, 0.12f);
+                    break;
+
+                case WeaponType.HeavyRailgun:
+                    SpawnProjectile(origin, baseDirection, weapon);
+                    AudioManager.PlaySuperBeam();
+                    CameraShake.Shake(0.22f, 0.2f);
+                    break;
+
+                case WeaponType.SawDisc:
+                    SpawnProjectile(origin, baseDirection, weapon);
+                    AudioManager.PlayShoot();
+                    CameraShake.Shake(0.08f, 0.14f);
+                    break;
+
+                case WeaponType.PlasmaMortar:
+                    SpawnProjectile(origin, baseDirection, weapon);
+                    AudioManager.PlayEXShoot();
+                    CameraShake.Shake(0.2f, 0.18f);
+                    break;
+
+                default:
+                    SpawnProjectile(origin, baseDirection, weapon);
+                    AudioManager.PlayShoot();
+                    CameraShake.Shake(0.035f, 0.1f);
+                    break;
             }
 
-            AudioManager.PlayShoot();
             EffectsManager.PlayMuzzleFlash(origin);
-            CameraShake.Shake(0.035f, 0.1f);
             GetComponent<ShipThrusterVisual>()?.TriggerRecoil();
+            cooldown = weapon.FireInterval;
+        }
+
+        private static void SpawnProjectile(Vector2 pos, Vector2 dir, WeaponDefinition weapon)
+        {
+            var projObj = new GameObject("Projectile", typeof(SpriteRenderer), typeof(Rigidbody2D), typeof(CircleCollider2D));
+            projObj.transform.position = pos;
+            var p = projObj.AddComponent<Projectile>();
+            p.Configure(weapon, dir);
         }
     }
 }
