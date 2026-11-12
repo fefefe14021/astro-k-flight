@@ -120,8 +120,8 @@ namespace KANYE.UI
             rowImg.color = Color.white;
 
             var element = row.gameObject.AddComponent<LayoutElement>();
-            element.minHeight = 80f;
-            element.preferredHeight = 80f;
+            element.minHeight = 88f;
+            element.preferredHeight = 88f;
 
             var accent = new GameObject("Accent", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             accent.transform.SetParent(row, false);
@@ -135,10 +135,10 @@ namespace KANYE.UI
             accentImg.color = unlocked ? new Color(0.3f, 1f, 0.6f, 1f) : new Color(0.25f, 0.4f, 0.6f, 0.6f);
 
             var badge = unlocked ? "★ " : "○ ";
-            var header = CreateLabel(row, badge + title + "  —  [" + status + "]", new Vector2(0f, 1f), new Vector2(24f, -18f), new Vector2(720f, 26f), 19, unlocked ? new Color(0.7f, 1f, 0.75f) : Color.white);
+            var header = CreateLabel(row, badge + title + "  —  [" + status + "]", new Vector2(0f, 1f), new Vector2(24f, -22f), new Vector2(720f, 28f), 19, unlocked ? new Color(0.7f, 1f, 0.75f) : Color.white);
             header.alignment = TextAnchor.MiddleLeft;
 
-            var desc = CreateLabel(row, description, new Vector2(0f, 1f), new Vector2(24f, -48f), new Vector2(720f, 24f), 15, new Color(0.75f, 0.85f, 0.95f));
+            var desc = CreateLabel(row, description, new Vector2(0f, 1f), new Vector2(24f, -54f), new Vector2(720f, 26f), 15, new Color(0.75f, 0.85f, 0.95f));
             desc.alignment = TextAnchor.MiddleLeft;
         }
 
@@ -162,7 +162,7 @@ namespace KANYE.UI
             var rect = textObject.GetComponent<RectTransform>();
             rect.anchorMin = anchor;
             rect.anchorMax = anchor;
-            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(anchor.x == 0f ? 0f : (anchor.x == 1f ? 1f : 0.5f), 0.5f);
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
             var text = textObject.GetComponent<Text>();
@@ -172,6 +172,7 @@ namespace KANYE.UI
             text.color = color;
             text.text = value;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
             return text;
         }
 

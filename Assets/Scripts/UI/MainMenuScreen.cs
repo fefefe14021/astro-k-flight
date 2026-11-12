@@ -178,10 +178,10 @@ namespace KANYE.UI
             holoRing.rectTransform.anchoredPosition = new Vector2(0f, -65f);
             holoRing.rectTransform.sizeDelta = new Vector2(280f, 22f);
 
-            // Floating Ship Sprite (Original sleek ship facing right)
+            // Floating Ship Sprite (Original sleek saucer facing right)
             var shipObj = CreateImage("ShipVisual", shipContainer.transform, shipSprite, Color.white);
-            shipObj.rectTransform.anchoredPosition = Vector2.zero;
-            shipObj.rectTransform.sizeDelta = new Vector2(128f, 100f);
+            shipObj.rectTransform.anchoredPosition = new Vector2(10f, 0f);
+            shipObj.rectTransform.sizeDelta = new Vector2(160f, 110f);
             shipObj.rectTransform.localEulerAngles = Vector3.zero;
             shipObj.preserveAspect = true;
             shipDisplayImage = shipObj;
@@ -193,7 +193,7 @@ namespace KANYE.UI
             flameRect.anchorMax = new Vector2(0f, 0.5f);
             flameRect.pivot = new Vector2(1f, 0.5f);
             flameRect.anchoredPosition = new Vector2(-4f, 0f);
-            flameRect.sizeDelta = new Vector2(40f, 30f);
+            flameRect.sizeDelta = new Vector2(55f, 32f);
             flameRect.localEulerAngles = Vector3.zero;
             thrusterFlameTransform = flameRect;
 
@@ -370,19 +370,20 @@ namespace KANYE.UI
                 var entry = entries[i];
                 var itemObj = CreateImage("LoreItem" + i, scroll, PixelUiAtlas.SubPanel, Color.white);
                 itemObj.type = Image.Type.Sliced;
-                var itemRect = itemObj.rectTransform;
-                itemRect.sizeDelta = new Vector2(740f, 160f);
+                var le = itemObj.gameObject.AddComponent<LayoutElement>();
+                le.minHeight = 168f;
+                le.preferredHeight = 168f;
 
                 // Category tag
-                var tag = CreateText(itemObj.transform, "Tag", $"[{entry.Category}]", new Vector2(0f, 1f), new Vector2(24f, -14f), new Vector2(300f, 22f), 14, new Color(0.4f, 0.85f, 1f), FontStyle.Bold);
+                var tag = CreateText(itemObj.transform, "Tag", $"[{entry.Category}]", new Vector2(0f, 1f), new Vector2(24f, -16f), new Vector2(300f, 22f), 14, new Color(0.4f, 0.85f, 1f), FontStyle.Bold);
                 tag.alignment = TextAnchor.MiddleLeft;
 
                 // Title
-                var title = CreateText(itemObj.transform, "Title", entry.Title, new Vector2(0f, 1f), new Vector2(24f, -38f), new Vector2(680f, 26f), 18, new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
+                var title = CreateText(itemObj.transform, "Title", entry.Title, new Vector2(0f, 1f), new Vector2(24f, -40f), new Vector2(680f, 26f), 18, new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
                 title.alignment = TextAnchor.MiddleLeft;
 
                 // Content
-                var content = CreateText(itemObj.transform, "Content", entry.Content, new Vector2(0f, 1f), new Vector2(24f, -66f), new Vector2(690f, 85f), 14, new Color(0.88f, 0.92f, 0.98f), FontStyle.Normal);
+                var content = CreateText(itemObj.transform, "Content", entry.Content, new Vector2(0f, 1f), new Vector2(24f, -72f), new Vector2(690f, 88f), 14, new Color(0.88f, 0.92f, 0.98f), FontStyle.Normal);
                 content.alignment = TextAnchor.UpperLeft;
             }
 
@@ -496,6 +497,18 @@ namespace KANYE.UI
                 shipDisplayImage.color = Color.white;
             }
 
+            if (thrusterFlameTransform != null)
+            {
+                var flameImg = thrusterFlameTransform.GetComponent<Image>();
+                if (flameImg != null)
+                {
+                    var tSpr = Resources.Load<Sprite>(equippedSkin.ThrusterSprite);
+                    if (tSpr != null)
+                        flameImg.sprite = tSpr;
+                    flameImg.color = equippedSkin.ThrusterColor;
+                }
+            }
+
             // Update shop button states
             for (var i = 0; i < skinActionButtons.Count && i < ShipSkinCatalog.All.Length; i++)
             {
@@ -553,8 +566,8 @@ namespace KANYE.UI
                 var row = CreateImage("AchRow" + i, achievementScrollContent, PixelUiAtlas.SubPanel, Color.white);
                 row.type = Image.Type.Sliced;
                 var layout = row.gameObject.AddComponent<LayoutElement>();
-                layout.minHeight = 82f;
-                layout.preferredHeight = 82f;
+                layout.minHeight = 88f;
+                layout.preferredHeight = 88f;
 
                 var accent = CreateImage("Accent", row.transform, PixelUiAtlas.White, unlocked ? new Color(0.3f, 1f, 0.6f, 1f) : new Color(0.25f, 0.4f, 0.6f, 0.6f));
                 accent.rectTransform.anchorMin = new Vector2(0f, 0f);
@@ -563,10 +576,10 @@ namespace KANYE.UI
                 accent.rectTransform.sizeDelta = new Vector2(4f, 0f);
 
                 var badge = unlocked ? "★ " : "○ ";
-                var nameText = CreateText(row.transform, "Title", badge + data.displayName + "  —  [" + status + "]", new Vector2(0f, 1f), new Vector2(25f, -18f), new Vector2(720f, 26f), 19, unlocked ? new Color(0.7f, 1f, 0.75f) : Color.white, FontStyle.Bold);
+                var nameText = CreateText(row.transform, "Title", badge + data.displayName + "  —  [" + status + "]", new Vector2(0f, 1f), new Vector2(25f, -22f), new Vector2(720f, 28f), 19, unlocked ? new Color(0.7f, 1f, 0.75f) : Color.white, FontStyle.Bold);
                 nameText.alignment = TextAnchor.MiddleLeft;
 
-                var descText = CreateText(row.transform, "Desc", data.description, new Vector2(0f, 1f), new Vector2(25f, -48f), new Vector2(720f, 24f), 15, new Color(0.75f, 0.85f, 0.95f), FontStyle.Normal);
+                var descText = CreateText(row.transform, "Desc", data.description, new Vector2(0f, 1f), new Vector2(25f, -54f), new Vector2(720f, 26f), 15, new Color(0.75f, 0.85f, 0.95f), FontStyle.Normal);
                 descText.alignment = TextAnchor.MiddleLeft;
             }
         }
@@ -614,7 +627,7 @@ namespace KANYE.UI
             var rect = go.GetComponent<RectTransform>();
             rect.anchorMin = anchor;
             rect.anchorMax = anchor;
-            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(anchor.x == 0f ? 0f : (anchor.x == 1f ? 1f : 0.5f), 0.5f);
             rect.anchoredPosition = pos;
             rect.sizeDelta = size;
 

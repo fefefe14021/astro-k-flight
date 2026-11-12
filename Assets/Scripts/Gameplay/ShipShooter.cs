@@ -120,7 +120,7 @@ namespace KANYE.Gameplay
             rocket.Launch(launchDir);
 
             AudioManager.PlayEXShoot();
-            EffectsManager.PlayMuzzleFlash(origin);
+            EffectsManager.PlayMuzzleFlash(origin, new Color(1f, 0.65f, 0.2f), 1.8f);
             CameraShake.Shake(0.35f, 0.25f);
             GetComponent<ShipThrusterVisual>()?.TriggerRecoil();
         }
@@ -135,7 +135,7 @@ namespace KANYE.Gameplay
             beam.Launch(launchDir);
 
             AudioManager.PlaySuperBeam();
-            EffectsManager.PlayMuzzleFlash(origin);
+            EffectsManager.PlayMuzzleFlash(origin, new Color(0.25f, 0.9f, 1f), 2.6f);
             CameraShake.HitStop(0.06f);
             CameraShake.Shake(0.6f, 0.5f);
             GetComponent<ShipThrusterVisual>()?.TriggerRecoil();
@@ -204,7 +204,10 @@ namespace KANYE.Gameplay
                     break;
             }
 
-            EffectsManager.PlayMuzzleFlash(origin);
+            var flashScale = weapon.Type == WeaponType.HeavyRailgun ? 2.0f :
+                             weapon.Type == WeaponType.PlasmaMortar ? 1.7f :
+                             weapon.Type == WeaponType.ScatterShotgun ? 1.8f : 1.25f;
+            EffectsManager.PlayMuzzleFlash(origin, weapon.ThemeColor, flashScale);
             GetComponent<ShipThrusterVisual>()?.TriggerRecoil();
             cooldown = weapon.FireInterval;
         }

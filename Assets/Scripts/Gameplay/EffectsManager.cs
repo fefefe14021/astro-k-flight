@@ -130,10 +130,31 @@ namespace KANYE.Gameplay
 
         public static void PlayMuzzleFlash(Vector3 position)
         {
+            PlayMuzzleFlash(position, new Color(1f, 0.9f, 0.5f, 1f), 1.2f);
+        }
+
+        public static void PlayMuzzleFlash(Vector3 position, Color flashColor, float scale = 1.2f)
+        {
             if (Instance == null)
                 AutoCreate();
 
-            Instance?.DoMuzzleFlash(position);
+            Instance?.DoMuzzleFlashCustom(position, flashColor, scale);
+        }
+
+        public static void PlayWeaponImpact(Vector3 position, Color impactColor, float blastRadius = 0.5f, bool isAoE = false)
+        {
+            if (Instance == null)
+                AutoCreate();
+
+            Instance?.DoWeaponImpact(position, impactColor, blastRadius, isAoE);
+        }
+
+        public static void EmitExhaustParticle(Vector3 position, Color particleColor, Vector2 velocity, string particleType)
+        {
+            if (Instance == null)
+                AutoCreate();
+
+            Instance?.DoExhaustParticle(position, particleColor, velocity, particleType);
         }
 
         private void DoExplosion(Vector3 position, Color baseColor, bool isMechanical)
@@ -249,16 +270,91 @@ namespace KANYE.Gameplay
 
         private void DoMuzzleFlash(Vector3 position)
         {
+            DoMuzzleFlashCustom(position, new Color(1f, 0.9f, 0.5f, 1f), 1.2f);
+        }
+
+        private void DoMuzzleFlashCustom(Vector3 position, Color flashColor, float scale)
+        {
             var piece = GetDebrisPiece();
             piece.go.transform.position = position;
             piece.velocity = Vector2.zero;
             piece.angularVelocity = Random.Range(-360f, 360f);
             piece.lifetime = 0f;
-            piece.maxLifetime = 0.05f; // single frame flash
-            piece.baseColor = new Color(1f, 0.9f, 0.5f, 1f);
-            piece.renderer.color = piece.baseColor;
+            piece.maxLifetime = 0.06f;
+            piece.baseColor = flashColor;
+            piece.renderer.color = flashColor;
             piece.renderer.sprite = muzzleSprite;
-            piece.go.transform.localScale = Vector3.one * Random.Range(1.1f, 1.4f);
+            piece.go.transform.localScale = Vector3.one * (scale * Random.Range(0.9f, 1.2f));
+            piece.go.SetActive(true);
+            activeDebris.Add(piece);
+
+            // Muzzle spark burst forward
+            for (var i = 0; i < 2; i++)
+            {
+                var spark = GetDebrisPiece();
+                spark.go.transform.position = position;
+                var angle = Random.Range(-0.35f, 0.35f);
+                var speed = Random.Range(4f, 8f);
+                spark.velocity = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * speed;
+                spark.angularVelocity = 0f;
+                spark.lifetime = 0f;
+                spark.maxLifetime = Random.Range(0.08f, 0.16f);
+                spark.baseColor = Color.Lerp(flashColor, Color.white, 0.6f);
+                spark.renderer.color = spark.baseColor;
+                spark.renderer.sprite = sparkSprite;
+                spark.go.transform.localScale = Vector3.one * Random.Range(0.4f, 0.75f);
+                spark.go.SetActive(true);
+                activeDebris.Add(spark);
+            }
+        }
+
+        private void DoWeaponImpact(Vector3 position, Color impactColor, float blastRadius, bool isAoE)
+        {
+            var sparkCount = isAoE ? 16 : Random.Range(4, 7);
+            for (var i = 0; i < sparkCount; i++)
+            {
+                var piece = GetDebrisPiece();
+                piece.go.transform.position = position;
+                var angle = Random.Range(0f, Mathf.PI * 2f);
+                var speed = isAoE ? Random.Range(4f, 10f) : Random.Range(2.5f, 7f);
+                piece.velocity = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * speed;
+                piece.angularVelocity = Random.Range(-300f, 300f);
+                piece.lifetime = 0f;
+                piece.maxLifetime = isAoE ? Random.Range(0.3f, 0.55f) : Random.Range(0.12f, 0.28f);
+                piece.baseColor = Color.Lerp(impactColor, Color.white, Random.value * 0.45f);
+                piece.renderer.color = piece.baseColor;
+                piece.renderer.sprite = isAoE ? (i % 2 == 0 ? smokeSprite : sparkSprite) : sparkSprite;
+                piece.go.transform.localScale = Vector3.one * (isAoE ? Random.Range(0.8f, 1.5f) : Random.Range(0.4f, 0.85f));
+                piece.go.SetActive(true);
+                activeDebris.Add(piece);
+            }
+        }
+
+        private void DoExhaustParticle(Vector3 position, Color particleColor, Vector2 velocity, string particleType)
+        {
+            var piece = GetDebrisPiece();
+            piece.go.transform.position = position;
+            piece.velocity = velocity;
+            piece.angularVelocity = Random.Range(-120f, 120f);
+            piece.lifetime = 0f;
+
+            if (particleType == "steam")
+            {
+                piece.maxLifetime = Random.Range(0.28f, 0.42f);
+                piece.baseColor = new Color(0.9f, 0.92f, 0.95f, 0.75f);
+                piece.renderer.color = piece.baseColor;
+                piece.renderer.sprite = smokeSprite;
+                piece.go.transform.localScale = Vector3.one * Random.Range(0.5f, 0.9f);
+            }
+            else
+            {
+                piece.maxLifetime = Random.Range(0.18f, 0.32f);
+                piece.baseColor = Color.Lerp(particleColor, Color.white, Random.value * 0.35f);
+                piece.renderer.color = piece.baseColor;
+                piece.renderer.sprite = sparkSprite;
+                piece.go.transform.localScale = Vector3.one * Random.Range(0.4f, 0.75f);
+            }
+
             piece.go.SetActive(true);
             activeDebris.Add(piece);
         }

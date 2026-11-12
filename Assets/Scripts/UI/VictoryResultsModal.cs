@@ -152,16 +152,28 @@ namespace KANYE.UI
             subPanel.rectTransform.anchoredPosition = new Vector2(0f, 40f);
             subPanel.rectTransform.sizeDelta = new Vector2(620f, 180f);
 
-            timeText = CreateLabel(subPanel.transform, "Time", "⏱ Время: 00:00", 20, new Vector2(-130f, 45f), Color.white);
+            timeText = CreateLabel(subPanel.transform, "Time", "⏱ Время: 00:00", 20, new Vector2(35f, 45f), Color.white);
+            timeText.rectTransform.anchorMin = new Vector2(0f, 0.5f);
+            timeText.rectTransform.anchorMax = new Vector2(0f, 0.5f);
+            timeText.rectTransform.pivot = new Vector2(0f, 0.5f);
             timeText.alignment = TextAnchor.MiddleLeft;
 
-            hpText = CreateLabel(subPanel.transform, "HP", "❤️ Прочность: 3 / 3", 20, new Vector2(-130f, 10f), Color.white);
+            hpText = CreateLabel(subPanel.transform, "HP", "❤️ Прочность: 3 / 3", 20, new Vector2(35f, 10f), Color.white);
+            hpText.rectTransform.anchorMin = new Vector2(0f, 0.5f);
+            hpText.rectTransform.anchorMax = new Vector2(0f, 0.5f);
+            hpText.rectTransform.pivot = new Vector2(0f, 0.5f);
             hpText.alignment = TextAnchor.MiddleLeft;
 
-            parryText = CreateLabel(subPanel.transform, "Parry", "⚡ Парирования: 0", 20, new Vector2(-130f, -25f), Color.white);
+            parryText = CreateLabel(subPanel.transform, "Parry", "⚡ Парирования: 0", 20, new Vector2(35f, -25f), Color.white);
+            parryText.rectTransform.anchorMin = new Vector2(0f, 0.5f);
+            parryText.rectTransform.anchorMax = new Vector2(0f, 0.5f);
+            parryText.rectTransform.pivot = new Vector2(0f, 0.5f);
             parryText.alignment = TextAnchor.MiddleLeft;
 
-            superText = CreateLabel(subPanel.transform, "Super", "💥 Супервыстрелы: 0", 20, new Vector2(-130f, -60f), Color.white);
+            superText = CreateLabel(subPanel.transform, "Super", "💥 Супервыстрелы: 0", 20, new Vector2(35f, -60f), Color.white);
+            superText.rectTransform.anchorMin = new Vector2(0f, 0.5f);
+            superText.rectTransform.anchorMax = new Vector2(0f, 0.5f);
+            superText.rectTransform.pivot = new Vector2(0f, 0.5f);
             superText.alignment = TextAnchor.MiddleLeft;
 
             // Cuphead Grade Stamp Box
@@ -228,6 +240,8 @@ namespace KANYE.UI
             label.alignment = TextAnchor.MiddleCenter;
             label.color = color;
             label.text = text;
+            label.horizontalOverflow = HorizontalWrapMode.Overflow;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
             return label;
         }
 

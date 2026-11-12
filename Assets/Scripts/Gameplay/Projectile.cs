@@ -1,6 +1,6 @@
 // Assets/Scripts/Gameplay/Projectile.cs
 // Namespace: KANYE.Gameplay
-// GameObject: Projectile prefab or dynamically created bullet
+// GameObject: Projectile prefab or dynamically created bullet with distinct per-weapon particle effects.
 
 using KANYE.Systems;
 using UnityEngine;
@@ -22,6 +22,7 @@ namespace KANYE.Gameplay
         public bool IsBouncing { get; private set; }
         public bool IsHoming { get; private set; }
         public bool IsExplosive { get; private set; }
+        public WeaponType WeaponType { get; private set; }
 
         private Rigidbody2D body;
         private SpriteRenderer spriteRenderer;
@@ -30,6 +31,7 @@ namespace KANYE.Gameplay
         private int bouncesRemaining;
         private Transform homingTarget;
         private string customSpriteName = "Sprites/bolt";
+        private float trailTimer;
 
         public void Launch(Vector2 newDirection)
         {
@@ -46,43 +48,44 @@ namespace KANYE.Gameplay
             damage = def.Damage;
             color = def.ThemeColor;
             customSpriteName = def.ProjectileSprite;
+            WeaponType = def.Type;
 
             switch (def.Type)
             {
                 case WeaponType.ScatterShotgun:
-                    speed = 15f;
-                    lifetime = 0.65f;
-                    hitRadius = 0.20f;
+                    speed = 15.5f;
+                    lifetime = 0.7f;
+                    hitRadius = 0.22f;
                     break;
                 case WeaponType.HomingMissiles:
-                    speed = 11.5f;
+                    speed = 12f;
                     lifetime = 2.8f;
-                    hitRadius = 0.25f;
+                    hitRadius = 0.26f;
                     IsHoming = true;
                     FindHomingTarget();
                     break;
                 case WeaponType.HeavyRailgun:
-                    speed = 26f;
+                    speed = 28f;
                     lifetime = 1.2f;
-                    hitRadius = 0.35f;
+                    hitRadius = 0.38f;
                     IsPiercing = true;
-                    piercesRemaining = 3;
+                    piercesRemaining = 4;
                     break;
                 case WeaponType.SawDisc:
-                    speed = 9.5f;
-                    lifetime = 3.2f;
-                    hitRadius = 0.32f;
+                    speed = 10f;
+                    lifetime = 3.5f;
+                    hitRadius = 0.34f;
                     IsBouncing = true;
                     bouncesRemaining = 3;
                     break;
                 case WeaponType.PlasmaMortar:
-                    speed = 8.5f;
-                    lifetime = 2.0f;
-                    hitRadius = 0.40f;
+                    speed = 9f;
+                    lifetime = 2.2f;
+                    hitRadius = 0.44f;
                     IsExplosive = true;
                     break;
                 default:
-                    speed = 14f;
+                    speed = 14.5f;
                     lifetime = 2.0f;
                     hitRadius = 0.22f;
                     break;
@@ -115,7 +118,13 @@ namespace KANYE.Gameplay
         {
             if (body == null) return;
 
-            // Homing trajectory steering
+            // 1. Spinning Buzzsaw Disc
+            if (WeaponType == WeaponType.SawDisc)
+            {
+                transform.Rotate(0f, 0f, -850f * Time.fixedDeltaTime);
+            }
+
+            // 2. Homing trajectory steering & missile smoke trail
             if (IsHoming)
             {
                 if (homingTarget == null || !homingTarget.gameObject.activeInHierarchy)
@@ -124,19 +133,47 @@ namespace KANYE.Gameplay
                 if (homingTarget != null)
                 {
                     var desiredDir = ((Vector2)homingTarget.position - body.position).normalized;
-                    direction = Vector2.MoveTowards(direction, desiredDir, 7.5f * Time.fixedDeltaTime).normalized;
+                    direction = Vector2.MoveTowards(direction, desiredDir, 8.5f * Time.fixedDeltaTime).normalized;
                     UpdateVisualAngle();
+                }
+
+                trailTimer += Time.fixedDeltaTime;
+                if (trailTimer >= 0.045f)
+                {
+                    trailTimer = 0f;
+                    var trailPos = body.position - direction * 0.22f;
+                    EffectsManager.EmitExhaustParticle(trailPos, new Color(1f, 0.5f, 0.2f), -direction * 2f, "steam");
+                }
+            }
+            else if (IsExplosive)
+            {
+                // Plasma mortar unstable energy particles
+                trailTimer += Time.fixedDeltaTime;
+                if (trailTimer >= 0.05f)
+                {
+                    trailTimer = 0f;
+                    EffectsManager.EmitExhaustParticle(body.position, color, Vector2.zero, "bio");
+                }
+            }
+            else if (IsPiercing)
+            {
+                // Railgun electric spark trail
+                trailTimer += Time.fixedDeltaTime;
+                if (trailTimer >= 0.035f)
+                {
+                    trailTimer = 0f;
+                    EffectsManager.EmitExhaustParticle(body.position, Color.Lerp(color, Color.white, 0.5f), Vector2.zero, "ion");
                 }
             }
 
-            // Bouncing trajectory off screen top/bottom borders
+            // 3. Bouncing trajectory off screen top/bottom borders
             if (IsBouncing && bouncesRemaining > 0)
             {
                 if ((body.position.y > 4.1f && direction.y > 0f) || (body.position.y < -4.1f && direction.y < 0f))
                 {
                     direction.y = -direction.y;
                     bouncesRemaining--;
-                    EffectsManager.PlayImpact(body.position, direction, Color.yellow);
+                    EffectsManager.PlayWeaponImpact(body.position, Color.yellow, 0.4f, isAoE: false);
                     UpdateVisualAngle();
                 }
             }
@@ -150,13 +187,15 @@ namespace KANYE.Gameplay
 
         private void UpdateVisualAngle()
         {
+            if (WeaponType == WeaponType.SawDisc)
+                return; // Let it spin freely on Z
+
             var angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.Euler(0f, 0f, angle);
         }
 
         private void FindHomingTarget()
         {
-            // First check for active Boss
             var boss = BossController.ActiveBoss;
             if (boss != null && !boss.IsDead)
             {
@@ -164,14 +203,13 @@ namespace KANYE.Gameplay
                 return;
             }
 
-            // Otherwise check closest enemy
             var enemies = FindObjectsByType<Enemy>();
             float closestDist = float.MaxValue;
             Transform best = null;
             for (var i = 0; i < enemies.Length; i++)
             {
                 if (enemies[i].transform.position.x < transform.position.x - 0.5f)
-                    continue; // Skip enemies far behind
+                    continue;
                 var d = Vector2.Distance(transform.position, enemies[i].transform.position);
                 if (d < closestDist)
                 {
@@ -186,15 +224,14 @@ namespace KANYE.Gameplay
         {
             if (IsExplosive)
             {
-                // Area of Effect detonation!
-                EffectsManager.PlayExplosion(impactPos, color, isMechanical: true);
-                CameraShake.Shake(0.35f, 0.25f);
+                // Massive AoE plasma detonation!
+                EffectsManager.PlayWeaponImpact(impactPos, color, blastRadius: 2.2f, isAoE: true);
+                CameraShake.Shake(0.38f, 0.28f);
 
-                // Damage surrounding enemies
                 var enemies = FindObjectsByType<Enemy>();
                 for (var i = 0; i < enemies.Length; i++)
                 {
-                    if (Vector2.Distance(impactPos, enemies[i].transform.position) < 2.0f)
+                    if (Vector2.Distance(impactPos, enemies[i].transform.position) < 2.2f)
                     {
                         GameRules.NotifyAsteroidDestroyed(1);
                         Destroy(enemies[i].gameObject);
@@ -207,10 +244,11 @@ namespace KANYE.Gameplay
             if (IsPiercing && piercesRemaining > 0)
             {
                 piercesRemaining--;
-                EffectsManager.PlayImpact(impactPos, direction, Color.white);
+                EffectsManager.PlayWeaponImpact(impactPos, color, blastRadius: 0.5f, isAoE: false);
                 return;
             }
 
+            EffectsManager.PlayWeaponImpact(impactPos, color, blastRadius: 0.4f, isAoE: false);
             Destroy(gameObject);
         }
 

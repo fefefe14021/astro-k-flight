@@ -1,6 +1,7 @@
 // Assets/Scripts/UI/ShopScreen.cs
 // Namespace: KANYE.UI
 // Complete Armory & Hangar Shop: Flying Saucer Hulls and Diverse Weapon Arsenal.
+// Features scrollable item list, responsive text wrapping, live thruster preview, and crystal-clear UI.
 
 using System.Collections.Generic;
 using KANYE.Gameplay;
@@ -26,12 +27,13 @@ namespace KANYE.UI
         private int selectedSkinIndex = 0;
 
         private Text coinsLabel;
-        private Text tabTitleLabel;
         private Transform listContainer;
-        private List<GameObject> activeListButtons = new List<GameObject>();
+        private readonly List<GameObject> activeListButtons = new List<GameObject>();
 
         // Detail View UI Elements
         private Image previewImage;
+        private Image previewThruster;
+        private Image previewGlow;
         private Text previewTitle;
         private Text previewSubtitle;
         private Text previewDescription;
@@ -94,33 +96,64 @@ namespace KANYE.UI
             mainRect.anchorMin = new Vector2(0.5f, 0.5f);
             mainRect.anchorMax = new Vector2(0.5f, 0.5f);
             mainRect.pivot = new Vector2(0.5f, 0.5f);
-            mainRect.sizeDelta = new Vector2(1100f, 740f);
+            mainRect.sizeDelta = new Vector2(1140f, 760f);
             var panelImg = mainPanel.GetComponent<Image>();
             panelImg.sprite = PixelUiAtlas.Panel;
             panelImg.type = Image.Type.Sliced;
 
             // Header Title
-            CreateText(mainPanel.transform, "HeaderTitle", "АНГАР И АРСЕНАЛ КАПИТАНА ЗИГГИ", 30, new Vector2(0f, 325f), new Color(1f, 0.85f, 0.35f));
-            coinsLabel = CreateText(mainPanel.transform, "CoinsLabel", CoinsText(), 22, new Vector2(0f, 285f), new Color(1f, 0.95f, 0.7f));
+            CreateText(mainPanel.transform, "HeaderTitle", "АНГАР И АРСЕНАЛ КАПИТАНА ЗИГГИ", 30, new Vector2(0f, 335f), new Vector2(800f, 40f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
+            coinsLabel = CreateText(mainPanel.transform, "CoinsLabel", CoinsText(), 22, new Vector2(0f, 292f), new Vector2(600f, 32f), new Color(1f, 0.95f, 0.7f), FontStyle.Bold);
 
             // Tab Buttons
-            tabWeaponsBtn = CreateTabButton(mainPanel.transform, "TabWeapons", "🚀 ОРУЖЕЙНЫЙ АРСЕНАЛ", new Vector2(-220f, 235f), () => SetTab(ShopTab.Weapons));
-            tabSkinsBtn = CreateTabButton(mainPanel.transform, "TabSkins", "🛸 КОРПУСА ТАРЕЛКИ", new Vector2(220f, 235f), () => SetTab(ShopTab.Skins));
+            tabWeaponsBtn = CreateTabButton(mainPanel.transform, "TabWeapons", "🚀 ОРУЖЕЙНЫЙ АРСЕНАЛ", new Vector2(-220f, 240f), () => SetTab(ShopTab.Weapons));
+            tabSkinsBtn = CreateTabButton(mainPanel.transform, "TabSkins", "🛸 КОРПУСА ТАРЕЛКИ", new Vector2(220f, 240f), () => SetTab(ShopTab.Skins));
 
-            // Left Side: List Container
-            var listPanel = new GameObject("ListPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            // Left Side: Scrollable List Viewport
+            var listPanel = new GameObject("ListPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(RectMask2D));
             listPanel.transform.SetParent(mainPanel.transform, false);
             var listRect = listPanel.GetComponent<RectTransform>();
             listRect.anchorMin = new Vector2(0f, 0.5f);
             listRect.anchorMax = new Vector2(0f, 0.5f);
             listRect.pivot = new Vector2(0f, 0.5f);
             listRect.anchoredPosition = new Vector2(40f, -25f);
-            listRect.sizeDelta = new Vector2(480f, 440f);
+            listRect.sizeDelta = new Vector2(500f, 440f);
+
             var listBg = listPanel.GetComponent<Image>();
             listBg.sprite = PixelUiAtlas.SubPanel;
             listBg.type = Image.Type.Sliced;
-            listBg.color = new Color(0.08f, 0.12f, 0.2f, 0.85f);
-            listContainer = listPanel.transform;
+            listBg.color = new Color(0.08f, 0.12f, 0.2f, 0.88f);
+
+            var scroll = listPanel.AddComponent<ScrollRect>();
+            scroll.horizontal = false;
+            scroll.vertical = true;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 35f;
+
+            var contentObj = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+            contentObj.transform.SetParent(listPanel.transform, false);
+            var contentRect = contentObj.GetComponent<RectTransform>();
+            contentRect.anchorMin = new Vector2(0f, 1f);
+            contentRect.anchorMax = new Vector2(1f, 1f);
+            contentRect.pivot = new Vector2(0.5f, 1f);
+            contentRect.anchoredPosition = Vector2.zero;
+            contentRect.sizeDelta = new Vector2(-16f, 0f);
+
+            var vlg = contentObj.GetComponent<VerticalLayoutGroup>();
+            vlg.padding = new RectOffset(10, 10, 10, 10);
+            vlg.spacing = 8f;
+            vlg.childControlWidth = true;
+            vlg.childControlHeight = false;
+            vlg.childForceExpandWidth = true;
+            vlg.childForceExpandHeight = false;
+
+            var csf = contentObj.GetComponent<ContentSizeFitter>();
+            csf.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            scroll.content = contentRect;
+            scroll.viewport = listRect;
+            listContainer = contentObj.transform;
 
             // Right Side: Card Preview & Specs
             var previewPanel = new GameObject("PreviewPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
@@ -130,40 +163,68 @@ namespace KANYE.UI
             prevRect.anchorMax = new Vector2(1f, 0.5f);
             prevRect.pivot = new Vector2(1f, 0.5f);
             prevRect.anchoredPosition = new Vector2(-40f, -25f);
-            prevRect.sizeDelta = new Vector2(500f, 440f);
+            prevRect.sizeDelta = new Vector2(520f, 440f);
             var prevBg = previewPanel.GetComponent<Image>();
             prevBg.sprite = PixelUiAtlas.SubPanel;
             prevBg.type = Image.Type.Sliced;
+            prevBg.color = new Color(0.08f, 0.12f, 0.2f, 0.92f);
 
-            // Preview Frame for Sprite
+            // Preview Frame for Sprite & Thruster
             var frameObj = new GameObject("SpriteFrame", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             frameObj.transform.SetParent(previewPanel.transform, false);
             var frameRect = frameObj.GetComponent<RectTransform>();
             frameRect.anchorMin = new Vector2(0.5f, 1f);
             frameRect.anchorMax = new Vector2(0.5f, 1f);
             frameRect.pivot = new Vector2(0.5f, 1f);
-            frameRect.anchoredPosition = new Vector2(0f, -20f);
-            frameRect.sizeDelta = new Vector2(260f, 140f);
+            frameRect.anchoredPosition = new Vector2(0f, -16f);
+            frameRect.sizeDelta = new Vector2(280f, 150f);
             var frameImg = frameObj.GetComponent<Image>();
             frameImg.sprite = PixelUiAtlas.SubPanel;
             frameImg.type = Image.Type.Sliced;
-            frameImg.color = new Color(0.04f, 0.06f, 0.12f, 0.95f);
+            frameImg.color = new Color(0.03f, 0.05f, 0.1f, 0.98f);
 
+            // Ventral Glow preview under the saucer
+            var glowObj = new GameObject("GlowPreview", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            glowObj.transform.SetParent(frameObj.transform, false);
+            var glowRect = glowObj.GetComponent<RectTransform>();
+            glowRect.anchorMin = new Vector2(0.5f, 0.5f);
+            glowRect.anchorMax = new Vector2(0.5f, 0.5f);
+            glowRect.pivot = new Vector2(0.5f, 0.5f);
+            glowRect.anchoredPosition = new Vector2(10f, -36f);
+            glowRect.sizeDelta = new Vector2(130f, 26f);
+            previewGlow = glowObj.GetComponent<Image>();
+            previewGlow.sprite = Resources.Load<Sprite>("Sprites/spark");
+            previewGlow.color = new Color(0.2f, 0.85f, 1f, 0.65f);
+
+            // Thruster Flame preview behind the saucer
+            var thrusterObj = new GameObject("ThrusterPreview", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            thrusterObj.transform.SetParent(frameObj.transform, false);
+            var thrustRect = thrusterObj.GetComponent<RectTransform>();
+            thrustRect.anchorMin = new Vector2(0.5f, 0.5f);
+            thrustRect.anchorMax = new Vector2(0.5f, 0.5f);
+            thrustRect.pivot = new Vector2(1f, 0.5f);
+            thrustRect.anchoredPosition = new Vector2(-60f, 2f);
+            thrustRect.sizeDelta = new Vector2(75f, 44f);
+            previewThruster = thrusterObj.GetComponent<Image>();
+            previewThruster.preserveAspect = true;
+
+            // Main Sprite Preview
             var spriteObj = new GameObject("SpritePreview", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             spriteObj.transform.SetParent(frameObj.transform, false);
             var sprRect = spriteObj.GetComponent<RectTransform>();
             sprRect.anchorMin = new Vector2(0.5f, 0.5f);
             sprRect.anchorMax = new Vector2(0.5f, 0.5f);
             sprRect.pivot = new Vector2(0.5f, 0.5f);
-            sprRect.sizeDelta = new Vector2(160f, 110f);
+            sprRect.anchoredPosition = new Vector2(10f, 2f);
+            sprRect.sizeDelta = new Vector2(170f, 115f);
             previewImage = spriteObj.GetComponent<Image>();
             previewImage.preserveAspect = true;
 
-            previewTitle = CreateText(previewPanel.transform, "PrevTitle", "ОРУЖИЕ", 22, new Vector2(0f, 25f), new Color(1f, 0.85f, 0.3f));
-            previewSubtitle = CreateText(previewPanel.transform, "PrevSub", "Категория", 15, new Vector2(0f, 0f), new Color(0.4f, 0.85f, 1f));
-            previewStats = CreateText(previewPanel.transform, "PrevStats", "Урон: 1 | Скорость: 14", 16, new Vector2(0f, -32f), new Color(0.9f, 1f, 0.8f));
-            previewDescription = CreateText(previewPanel.transform, "PrevDesc", "Описание технологии...", 15, new Vector2(0f, -85f), new Color(0.8f, 0.88f, 0.95f));
-            previewDescription.rectTransform.sizeDelta = new Vector2(440f, 80f);
+            // Info Labels
+            previewTitle = CreateText(previewPanel.transform, "PrevTitle", "ОРУЖИЕ", 23, new Vector2(0f, 32f), new Vector2(480f, 32f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
+            previewSubtitle = CreateText(previewPanel.transform, "PrevSub", "Категория", 15, new Vector2(0f, 4f), new Vector2(480f, 24f), new Color(0.45f, 0.85f, 1f), FontStyle.Normal);
+            previewStats = CreateText(previewPanel.transform, "PrevStats", "УРОН: 1 | ТЕМП: 7.1 выстр/сек", 16, new Vector2(0f, -26f), new Vector2(480f, 26f), new Color(0.9f, 1f, 0.8f), FontStyle.Bold);
+            previewDescription = CreateText(previewPanel.transform, "PrevDesc", "Описание технологии...", 14, new Vector2(0f, -88f), new Vector2(480f, 96f), new Color(0.88f, 0.92f, 0.98f), FontStyle.Normal);
 
             // Action Button (Buy / Equip)
             var btnObj = new GameObject("ActionButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
@@ -172,14 +233,14 @@ namespace KANYE.UI
             btnRect.anchorMin = new Vector2(0.5f, 0f);
             btnRect.anchorMax = new Vector2(0.5f, 0f);
             btnRect.pivot = new Vector2(0.5f, 0f);
-            btnRect.anchoredPosition = new Vector2(0f, 24f);
-            btnRect.sizeDelta = new Vector2(340f, 48f);
+            btnRect.anchoredPosition = new Vector2(0f, 22f);
+            btnRect.sizeDelta = new Vector2(360f, 50f);
             var btnImg = btnObj.GetComponent<Image>();
             btnImg.sprite = PixelUiAtlas.ButtonPrimary;
             btnImg.type = Image.Type.Sliced;
             actionButton = btnObj.GetComponent<Button>();
             actionButton.onClick.AddListener(OnActionButtonClicked);
-            actionButtonText = CreateText(btnObj.transform, "BtnText", "ВЫБРАТЬ", 19, Vector2.zero, Color.white);
+            actionButtonText = CreateText(btnObj.transform, "BtnText", "ВЫБРАТЬ", 20, Vector2.zero, new Vector2(340f, 40f), Color.white, FontStyle.Bold);
 
             // Return to Main Menu
             var backBtn = new GameObject("BackBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
@@ -189,12 +250,12 @@ namespace KANYE.UI
             backRect.anchorMax = new Vector2(0.5f, 0f);
             backRect.pivot = new Vector2(0.5f, 0f);
             backRect.anchoredPosition = new Vector2(0f, 18f);
-            backRect.sizeDelta = new Vector2(280f, 42f);
+            backRect.sizeDelta = new Vector2(280f, 44f);
             var backImg = backBtn.GetComponent<Image>();
             backImg.sprite = PixelUiAtlas.ButtonSecondary;
             backImg.type = Image.Type.Sliced;
             backBtn.GetComponent<Button>().onClick.AddListener(SceneLoader.ReturnToMainMenu);
-            CreateText(backBtn.transform, "BackText", "В ГЛАВНОЕ МЕНЮ", 17, Vector2.zero, Color.white);
+            CreateText(backBtn.transform, "BackText", "В ГЛАВНОЕ МЕНЮ", 18, Vector2.zero, new Vector2(260f, 36f), Color.white, FontStyle.Bold);
         }
 
         private void SetTab(ShopTab tab)
@@ -278,8 +339,13 @@ namespace KANYE.UI
             var isOwned = save != null && save.Data.unlockedWeaponIds.Contains(weapon.Id);
             var isEquipped = save != null && save.Data.equippedWeaponId == weapon.Id;
 
+            if (previewThruster != null) previewThruster.gameObject.SetActive(false);
+            if (previewGlow != null) previewGlow.gameObject.SetActive(false);
+
             if (previewImage != null)
             {
+                previewImage.rectTransform.anchoredPosition = Vector2.zero;
+                previewImage.rectTransform.sizeDelta = new Vector2(160f, 100f);
                 var sprite = Resources.Load<Sprite>(weapon.ProjectileSprite);
                 previewImage.sprite = sprite;
                 previewImage.color = Color.white;
@@ -326,9 +392,27 @@ namespace KANYE.UI
 
             if (previewImage != null)
             {
+                previewImage.rectTransform.anchoredPosition = new Vector2(12f, 2f);
+                previewImage.rectTransform.sizeDelta = new Vector2(170f, 115f);
                 var sprite = Resources.Load<Sprite>(skin.SpriteName);
                 previewImage.sprite = sprite;
                 previewImage.color = Color.white;
+            }
+
+            if (previewThruster != null)
+            {
+                previewThruster.gameObject.SetActive(true);
+                var thrusterSprite = Resources.Load<Sprite>(skin.ThrusterSprite);
+                if (thrusterSprite == null)
+                    thrusterSprite = Resources.Load<Sprite>("Sprites/thruster");
+                previewThruster.sprite = thrusterSprite;
+                previewThruster.color = skin.ThrusterColor;
+            }
+
+            if (previewGlow != null)
+            {
+                previewGlow.gameObject.SetActive(true);
+                previewGlow.color = skin.AntiGravColor;
             }
 
             if (previewTitle != null) previewTitle.text = skin.Title;
@@ -402,15 +486,12 @@ namespace KANYE.UI
 
         private GameObject CreateListItem(Transform parent, string title, string sub, int price, bool isOwned, bool isEquipped, bool isSelected, System.Action onClick)
         {
-            var btnObj = new GameObject("ItemBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            var btnObj = new GameObject("ItemBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(LayoutElement));
             btnObj.transform.SetParent(parent, false);
 
-            var rect = btnObj.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0.5f, 1f);
-            rect.sizeDelta = new Vector2(-20f, 62f);
-            rect.anchoredPosition = new Vector2(0f, -10f - activeListButtons.Count * 70f);
+            var le = btnObj.GetComponent<LayoutElement>();
+            le.minHeight = 64f;
+            le.preferredHeight = 64f;
 
             var img = btnObj.GetComponent<Image>();
             img.sprite = PixelUiAtlas.ButtonSecondary;
@@ -422,19 +503,24 @@ namespace KANYE.UI
             var btn = btnObj.GetComponent<Button>();
             btn.onClick.AddListener(() => onClick?.Invoke());
 
-            // Title
-            var titleText = CreateText(btnObj.transform, "T", title, 16, new Vector2(-70f, 12f), Color.white);
+            // Left Title & Subtitle container
+            var titleText = CreateText(btnObj.transform, "T", title, 16, Vector2.zero, new Vector2(300f, 26f), Color.white, FontStyle.Bold);
             titleText.rectTransform.anchorMin = new Vector2(0f, 0.5f);
-            titleText.rectTransform.anchorMax = new Vector2(0.7f, 0.5f);
+            titleText.rectTransform.anchorMax = new Vector2(0.68f, 0.5f);
+            titleText.rectTransform.pivot = new Vector2(0f, 0.5f);
+            titleText.rectTransform.anchoredPosition = new Vector2(16f, 12f);
             titleText.alignment = TextAnchor.MiddleLeft;
+            titleText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
-            // Subtitle
-            var subText = CreateText(btnObj.transform, "S", sub, 12, new Vector2(-70f, -14f), new Color(0.6f, 0.8f, 1f));
+            var subText = CreateText(btnObj.transform, "S", sub, 13, Vector2.zero, new Vector2(300f, 22f), new Color(0.65f, 0.85f, 1f), FontStyle.Normal);
             subText.rectTransform.anchorMin = new Vector2(0f, 0.5f);
-            subText.rectTransform.anchorMax = new Vector2(0.7f, 0.5f);
+            subText.rectTransform.anchorMax = new Vector2(0.68f, 0.5f);
+            subText.rectTransform.pivot = new Vector2(0f, 0.5f);
+            subText.rectTransform.anchoredPosition = new Vector2(16f, -14f);
             subText.alignment = TextAnchor.MiddleLeft;
+            subText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
-            // Status Badge
+            // Right Status Badge
             string statusStr;
             Color statusCol;
             if (isEquipped)
@@ -445,7 +531,7 @@ namespace KANYE.UI
             else if (isOwned)
             {
                 statusStr = "В АНГАРЕ";
-                statusCol = new Color(0.85f, 0.9f, 1f);
+                statusCol = new Color(0.85f, 0.95f, 1f);
             }
             else
             {
@@ -453,10 +539,13 @@ namespace KANYE.UI
                 statusCol = new Color(1f, 0.85f, 0.3f);
             }
 
-            var badge = CreateText(btnObj.transform, "B", statusStr, 14, new Vector2(10f, 0f), statusCol);
-            badge.rectTransform.anchorMin = new Vector2(0.7f, 0.5f);
-            badge.rectTransform.anchorMax = new Vector2(0.98f, 0.5f);
+            var badge = CreateText(btnObj.transform, "B", statusStr, 15, Vector2.zero, new Vector2(160f, 28f), statusCol, FontStyle.Bold);
+            badge.rectTransform.anchorMin = new Vector2(0.68f, 0.5f);
+            badge.rectTransform.anchorMax = new Vector2(1f, 0.5f);
+            badge.rectTransform.pivot = new Vector2(1f, 0.5f);
+            badge.rectTransform.anchoredPosition = new Vector2(-16f, 0f);
             badge.alignment = TextAnchor.MiddleRight;
+            badge.horizontalOverflow = HorizontalWrapMode.Overflow;
 
             return btnObj;
         }
@@ -480,25 +569,28 @@ namespace KANYE.UI
             var btn = btnObj.GetComponent<Button>();
             btn.onClick.AddListener(() => onClick?.Invoke());
 
-            CreateText(btnObj.transform, "T", label, 18, Vector2.zero, Color.white);
+            CreateText(btnObj.transform, "T", label, 18, Vector2.zero, new Vector2(360f, 36f), Color.white, FontStyle.Bold);
             return btn;
         }
 
-        private static Text CreateText(Transform parent, string name, string text, int fontSize, Vector2 pos, Color color)
+        private static Text CreateText(Transform parent, string name, string text, int fontSize, Vector2 pos, Vector2 size, Color color, FontStyle fontStyle)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             go.transform.SetParent(parent, false);
 
             var rect = go.GetComponent<RectTransform>();
             rect.anchoredPosition = pos;
-            rect.sizeDelta = new Vector2(460f, 40f);
+            rect.sizeDelta = size;
 
             var label = go.GetComponent<Text>();
             label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             label.fontSize = fontSize;
+            label.fontStyle = fontStyle;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = color;
             label.text = text;
+            label.horizontalOverflow = HorizontalWrapMode.Wrap;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
             return label;
         }
 

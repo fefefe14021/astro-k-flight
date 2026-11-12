@@ -1,7 +1,9 @@
 // Assets/Scripts/Gameplay/ShipThrusterVisual.cs
 // Namespace: KANYE.Gameplay
 // GameObject: Player (UFO Flying Saucer)
+// Custom per-skin engine flame, ventral anti-grav levitation ring, and dynamic exhaust particles.
 
+using KANYE.Systems;
 using UnityEngine;
 
 namespace KANYE.Gameplay
@@ -17,12 +19,43 @@ namespace KANYE.Gameplay
         private Transform antiGravTransform;
         private float flameFlickerTimer;
         private float recoilPunch;
+        private float particleTimer;
+        private ShipSkin currentSkin;
 
         private void Awake()
         {
             shipInput = GetComponent<ShipInput>();
             CreateFlame();
             CreateAntiGravGlow();
+            ApplySkinVisuals();
+        }
+
+        private void OnEnable()
+        {
+            ApplySkinVisuals();
+        }
+
+        public void ApplySkinVisuals()
+        {
+            var skinId = SaveManager.Instance != null ? SaveManager.Instance.Data.equippedSkinId : SaveManager.DefaultSkinId;
+            currentSkin = ShipSkinCatalog.Find(skinId);
+
+            if (flameRenderer != null && currentSkin != null)
+            {
+                var spr = Resources.Load<Sprite>(currentSkin.ThrusterSprite);
+                if (spr == null)
+                    spr = Resources.Load<Sprite>("Sprites/thruster");
+
+                if (spr != null)
+                    flameRenderer.sprite = spr;
+
+                flameRenderer.color = currentSkin.ThrusterColor;
+            }
+
+            if (antiGravRenderer != null && currentSkin != null)
+            {
+                antiGravRenderer.color = currentSkin.AntiGravColor;
+            }
         }
 
         private void CreateFlame()
@@ -39,12 +72,15 @@ namespace KANYE.Gameplay
             flameTransform = flameObject.transform;
             flameTransform.SetParent(transform, false);
 
-            // Rear exhaust nozzle of the saucer (-X)
-            flameTransform.localPosition = new Vector3(-0.65f, 0.02f, 0f);
+            // Base of nozzle at the rear of saucer (-X)
+            flameTransform.localPosition = new Vector3(-0.64f, 0.02f, 0f);
             flameTransform.localRotation = Quaternion.identity;
 
             flameRenderer = flameObject.AddComponent<SpriteRenderer>();
-            var thrusterSprite = Resources.Load<Sprite>("Sprites/thruster");
+            var thrusterSprite = Resources.Load<Sprite>("Sprites/thruster_ion");
+            if (thrusterSprite == null)
+                thrusterSprite = Resources.Load<Sprite>("Sprites/thruster");
+
             if (thrusterSprite != null)
                 flameRenderer.sprite = thrusterSprite;
 
@@ -73,48 +109,68 @@ namespace KANYE.Gameplay
                 antiGravRenderer.sprite = spark;
 
             PlaceholderShipVisual.UseSpriteMaterial(antiGravRenderer);
-            antiGravRenderer.color = new Color(0.2f, 0.85f, 1f, 0.6f);
+            antiGravRenderer.color = new Color(0.2f, 0.85f, 1f, 0.7f);
             antiGravRenderer.sortingOrder = 8;
         }
 
         public void TriggerRecoil()
         {
-            recoilPunch = 0.28f;
+            recoilPunch = 0.32f;
         }
 
         private void Update()
         {
+            if (currentSkin == null)
+                ApplySkinVisuals();
+
             var move = shipInput != null ? shipInput.Move : Vector2.zero;
 
-            // 1. Thruster flame animation and scaling
-            flameFlickerTimer += Time.deltaTime * 24f;
-            var flicker = Mathf.Sin(flameFlickerTimer) * 0.12f + (Random.value * 0.15f - 0.075f);
+            // 1. Dynamic Flame Animation & Hot Burn scaling
+            flameFlickerTimer += Time.deltaTime * 28f;
+            var flicker = Mathf.Sin(flameFlickerTimer) * 0.14f + (Random.value * 0.16f - 0.08f);
 
-            var thrustIntensity = Mathf.Clamp01(0.8f + move.x * 0.5f);
-            var scaleX = (0.95f + flicker + recoilPunch * 0.7f) * thrustIntensity;
-            var scaleY = 0.85f + flicker * 0.35f;
+            var thrustIntensity = move.x > 0.1f ? (1.25f + move.x * 0.45f) : 0.95f;
+            var scaleX = (1.0f + flicker + recoilPunch * 0.85f) * thrustIntensity;
+            var scaleY = 0.9f + flicker * 0.3f;
 
             if (flameTransform != null)
             {
                 flameTransform.localScale = new Vector3(scaleX, scaleY, 1f);
             }
 
-            if (flameRenderer != null)
+            if (flameRenderer != null && currentSkin != null)
             {
-                var c = move.x > 0.1f
-                    ? new Color(0.95f, 0.98f, 1f, 0.95f)
-                    : new Color(0.3f, 0.8f, 1f, 0.85f);
-                flameRenderer.color = c;
+                var baseCol = currentSkin.ThrusterColor;
+                var hotCol = Color.Lerp(baseCol, Color.white, 0.5f);
+                flameRenderer.color = move.x > 0.1f ? hotCol : baseCol;
             }
 
             // 2. Anti-gravity ventral glow pulsation
             if (antiGravTransform != null)
             {
-                var pulse = 0.9f + Mathf.Sin(Time.time * 8f) * 0.25f;
-                antiGravTransform.localScale = new Vector3(pulse * 1.4f, pulse * 0.6f, 1f);
+                var pulse = 1.0f + Mathf.Sin(Time.time * 9f) * 0.22f;
+                antiGravTransform.localScale = new Vector3(pulse * 1.5f, pulse * 0.55f, 1f);
             }
 
-            // 3. Controlled flight pitch & subtle aiming challenge (clamped between -7 and +7 deg)
+            // 3. Custom Per-Skin Particle Emissions
+            particleTimer += Time.deltaTime;
+            var interval = move.x > 0.1f ? 0.038f : 0.065f;
+            if (particleTimer >= interval && currentSkin != null && flameTransform != null)
+            {
+                particleTimer = 0f;
+                var tipPos = flameTransform.position + Vector3.left * (scaleX * 0.42f) + (Vector3)Random.insideUnitCircle * 0.08f;
+                var pVel = new Vector2(-3.5f - Random.value * 2.5f, Random.Range(-0.5f, 0.5f));
+                EffectsManager.EmitExhaustParticle(tipPos, currentSkin.ParticleColor, pVel, currentSkin.ParticleType);
+
+                // Ventral anti-grav hover motes
+                if (Random.value > 0.65f && antiGravTransform != null)
+                {
+                    var ventralPos = antiGravTransform.position + (Vector3)new Vector2(Random.Range(-0.35f, 0.35f), -0.05f);
+                    EffectsManager.EmitExhaustParticle(ventralPos, currentSkin.AntiGravColor, new Vector2(-1.2f, -0.8f), currentSkin.ParticleType);
+                }
+            }
+
+            // 4. Controlled flight pitch & subtle aiming challenge (clamped between -8 and +8 deg)
             var targetTilt = 0f;
             if (move.y > 0.1f)
                 targetTilt = 6.5f;   // Pitching up slightly directs fire upward
@@ -122,7 +178,7 @@ namespace KANYE.Gameplay
                 targetTilt = -6.5f;  // Pitching down slightly directs fire downward
 
             // Gun recoil kick pushes nose slightly
-            targetTilt -= recoilPunch * 6.0f;
+            targetTilt -= recoilPunch * 6.5f;
             targetTilt = Mathf.Clamp(targetTilt, -8f, 8f);
 
             var currentZ = transform.localEulerAngles.z;
@@ -131,10 +187,10 @@ namespace KANYE.Gameplay
             var newZ = Mathf.MoveTowards(currentZ, targetTilt, Time.deltaTime * 140f);
             transform.localRotation = Quaternion.Euler(0f, 0f, newZ);
 
-            // 4. Gun recoil dampening
+            // 5. Gun recoil dampening
             if (recoilPunch > 0f)
             {
-                recoilPunch = Mathf.MoveTowards(recoilPunch, 0f, Time.deltaTime * 2.8f);
+                recoilPunch = Mathf.MoveTowards(recoilPunch, 0f, Time.deltaTime * 3.0f);
             }
         }
     }

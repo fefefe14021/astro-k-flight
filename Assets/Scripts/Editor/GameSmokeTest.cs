@@ -217,6 +217,8 @@ namespace KANYE.EditorTools
                     var s = ShipSkinCatalog.All[i];
                     if (string.IsNullOrEmpty(s.Id) || string.IsNullOrEmpty(s.SpriteName))
                         throw new Exception($"Invalid skin definition at index {i}");
+                    if (string.IsNullOrEmpty(s.ThrusterSprite) || string.IsNullOrEmpty(s.ParticleType))
+                        throw new Exception($"Skin {s.Id} missing thruster or particle parameters");
                 }
 
                 if (LoreCatalog.Entries.Length < 5)

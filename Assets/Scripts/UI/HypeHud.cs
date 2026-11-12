@@ -431,6 +431,8 @@ namespace KANYE.UI
             label.alignment = TextAnchor.MiddleCenter;
             label.color = color;
             label.text = text;
+            label.horizontalOverflow = HorizontalWrapMode.Overflow;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
             return label;
         }
 

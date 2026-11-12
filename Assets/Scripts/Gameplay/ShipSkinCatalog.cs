@@ -18,7 +18,26 @@ namespace KANYE.Gameplay
         public Color ThemeColor;
         public Color Color => ThemeColor;
 
-        public ShipSkin(string id, string title, string subtitle, int price, string spriteName, string description, Color themeColor)
+        // Custom Thruster Flame & Particle System parameters
+        public string ThrusterSprite;
+        public Color ThrusterColor;
+        public Color AntiGravColor;
+        public Color ParticleColor;
+        public string ParticleType;
+
+        public ShipSkin(
+            string id,
+            string title,
+            string subtitle,
+            int price,
+            string spriteName,
+            string description,
+            Color themeColor,
+            string thrusterSprite = "Sprites/thruster_ion",
+            Color? thrusterColor = null,
+            Color? antiGravColor = null,
+            Color? particleColor = null,
+            string particleType = "ion")
         {
             Id = id;
             Title = title;
@@ -27,6 +46,11 @@ namespace KANYE.Gameplay
             SpriteName = spriteName;
             Description = description;
             ThemeColor = themeColor;
+            ThrusterSprite = thrusterSprite;
+            ThrusterColor = thrusterColor ?? themeColor;
+            AntiGravColor = antiGravColor ?? new Color(themeColor.r, themeColor.g, themeColor.b, 0.7f);
+            ParticleColor = particleColor ?? themeColor;
+            ParticleType = particleType;
         }
     }
 
@@ -41,7 +65,12 @@ namespace KANYE.Gameplay
                 0,
                 "Sprites/ship",
                 "Классическая летающая тарелка из зеркального хрома с бирюзовым стеклянным куполом. В кабине — отважный Капитан Зигги у штурвала.",
-                new Color(0.3f, 0.8f, 1f, 1f)),
+                new Color(0.3f, 0.85f, 1f, 1f),
+                "Sprites/thruster_ion",
+                new Color(0.3f, 0.85f, 1f, 1f),
+                new Color(0.2f, 0.8f, 1f, 0.7f),
+                new Color(0.5f, 0.9f, 1f, 0.95f),
+                "ion"),
 
             new ShipSkin(
                 "cyberpunk",
@@ -50,7 +79,12 @@ namespace KANYE.Gameplay
                 35,
                 "Sprites/ship_cyberpunk",
                 "Неоновый ночной перехватчик с темно-фиолетовым композитным диском, неоново-розовыми огнями и пилотом в кибер-визоре.",
-                new Color(1f, 0.2f, 0.65f, 1f)),
+                new Color(1f, 0.2f, 0.75f, 1f),
+                "Sprites/thruster_cyber",
+                new Color(1f, 0.25f, 0.8f, 1f),
+                new Color(1f, 0.15f, 0.7f, 0.75f),
+                new Color(0.95f, 0.3f, 1f, 0.95f),
+                "cyber"),
 
             new ShipSkin(
                 "gold",
@@ -59,7 +93,12 @@ namespace KANYE.Gameplay
                 70,
                 "Sprites/ship_gold",
                 "Роскошная тарелка из 24-каратного сплава со сверкающим янтарным куполом и пилотом в стильных темных очках.",
-                new Color(1f, 0.85f, 0.2f, 1f)),
+                new Color(1f, 0.85f, 0.2f, 1f),
+                "Sprites/thruster_gold",
+                new Color(1f, 0.82f, 0.2f, 1f),
+                new Color(1f, 0.75f, 0.15f, 0.8f),
+                new Color(1f, 0.95f, 0.45f, 0.95f),
+                "solar"),
 
             new ShipSkin(
                 "bio",
@@ -68,7 +107,12 @@ namespace KANYE.Gameplay
                 100,
                 "Sprites/ship_bio",
                 "Живой органический экзоскелет из изумрудного хитина и пульсирующих био-жил. В кабине управляет инопланетный симбиот.",
-                new Color(0.3f, 1f, 0.45f, 1f)),
+                new Color(0.3f, 1f, 0.45f, 1f),
+                "Sprites/thruster_bio",
+                new Color(0.35f, 1f, 0.45f, 1f),
+                new Color(0.25f, 0.95f, 0.35f, 0.8f),
+                new Color(0.45f, 1f, 0.55f, 0.95f),
+                "bio"),
 
             new ShipSkin(
                 "void",
@@ -77,7 +121,12 @@ namespace KANYE.Gameplay
                 140,
                 "Sprites/ship_void",
                 "Сверхсекретная стелс-тарелка из матового обсидиана с багровым антигравитационным полем и светящимися алыми глазами пилота.",
-                new Color(1f, 0.25f, 0.25f, 1f)),
+                new Color(1f, 0.22f, 0.28f, 1f),
+                "Sprites/thruster_void",
+                new Color(1f, 0.18f, 0.25f, 1f),
+                new Color(0.95f, 0.1f, 0.22f, 0.85f),
+                new Color(1f, 0.35f, 0.35f, 0.95f),
+                "void"),
 
             new ShipSkin(
                 "steampunk",
@@ -86,7 +135,12 @@ namespace KANYE.Gameplay
                 180,
                 "Sprites/ship_steampunk",
                 "Винтажный викторианский аппарат на паро-ионной тяге с медными заклепками, янтарным стеклом и пилотом в авиаторских очках.",
-                new Color(0.9f, 0.65f, 0.35f, 1f))
+                new Color(0.95f, 0.65f, 0.3f, 1f),
+                "Sprites/thruster_steam",
+                new Color(1f, 0.6f, 0.2f, 1f),
+                new Color(0.95f, 0.7f, 0.3f, 0.75f),
+                new Color(0.95f, 0.92f, 0.85f, 0.9f),
+                "steam")
         };
 
         public static ShipSkin Find(string id)
