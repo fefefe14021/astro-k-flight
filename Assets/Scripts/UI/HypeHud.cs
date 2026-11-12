@@ -98,7 +98,7 @@ namespace KANYE.UI
             while (MissionRadioComms.IsCommsActive)
                 yield return null;
 
-            yield return new WaitForSeconds(0.25f);
+            yield return new WaitForSecondsRealtime(0.25f);
             ShowBanner("READY? FIGHT!", "Сокруши вражеский флот и собери ресурсы!", 2.0f, new Color(1f, 0.85f, 0.2f));
         }
 

@@ -15,7 +15,7 @@ namespace KANYE.Gameplay
 
         private void Update()
         {
-            if (TutorialHints.IsTutorialActive)
+            if (TutorialHints.IsTutorialActive || MissionRadioComms.IsCommsActive || Time.timeScale <= 0f)
                 return;
 
             var health = FindAnyObjectByType<ShipHealth>();

@@ -2,6 +2,7 @@
 // Namespace: KANYE.Gameplay
 // Tight, responsive arcade flight controls.
 
+using KANYE.UI;
 using UnityEngine;
 
 namespace KANYE.Gameplay
@@ -44,6 +45,12 @@ namespace KANYE.Gameplay
         {
             if (health != null && health.IsDead)
                 return;
+
+            if (MissionRadioComms.IsCommsActive || Time.timeScale <= 0f)
+            {
+                currentVelocity = Vector2.zero;
+                return;
+            }
 
             var targetVelocity = (shipInput != null ? shipInput.Move : Vector2.zero) * moveSpeed;
             currentVelocity = Vector2.MoveTowards(currentVelocity, targetVelocity, acceleration * Time.fixedDeltaTime);

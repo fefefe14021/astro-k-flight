@@ -22,6 +22,7 @@ namespace KANYE.UI
         public static bool IsCommsActive { get; private set; }
 
         private GameObject canvasObj;
+        private GameObject dimOverlayObj;
         private GameObject consoleRoot;
         private Image portraitImage;
         private Text channelTagText;
@@ -59,6 +60,8 @@ namespace KANYE.UI
         private void Awake()
         {
             Instance = this;
+            IsCommsActive = true;
+            Time.timeScale = 0f;
             BuildUI();
             HideConsole();
         }
@@ -75,12 +78,13 @@ namespace KANYE.UI
             {
                 Instance = null;
                 IsCommsActive = false;
+                Time.timeScale = 1f;
             }
         }
 
         private IEnumerator StartMissionIntroRoutine()
         {
-            yield return new WaitForSeconds(0.45f);
+            yield return null;
 
             var sector = MissionCatalog.Selected;
             var dialogue = LoreCatalog.GetDialogue(sector);
@@ -88,18 +92,12 @@ namespace KANYE.UI
             if (TutorialHints.IsTutorialActive && !string.IsNullOrEmpty(dialogue.TutorialIntro))
             {
                 // Play tutorial introduction from Barney
-                StartTransmission(dialogue.Header, new[] { dialogue.TutorialIntro }, () =>
-                {
-                    // Dialogue complete
-                });
+                StartTransmission(dialogue.Header, new[] { dialogue.TutorialIntro }, null);
             }
             else
             {
                 // Play standard sector narrative introduction
-                StartTransmission(dialogue.Header, dialogue.IntroLines, () =>
-                {
-                    // Dialogue complete
-                });
+                StartTransmission(dialogue.Header, dialogue.IntroLines, null);
             }
         }
 
@@ -120,6 +118,8 @@ namespace KANYE.UI
         {
             if (lines == null || lines.Length == 0)
             {
+                IsCommsActive = false;
+                Time.timeScale = 1f;
                 onComplete?.Invoke();
                 return;
             }
@@ -131,6 +131,7 @@ namespace KANYE.UI
             currentLineIndex = 0;
             onCompleteCallback = onComplete;
             IsCommsActive = true;
+            Time.timeScale = 0f;
 
             if (channelTagText != null)
                 channelTagText.text = header;
@@ -212,17 +213,26 @@ namespace KANYE.UI
             }
         }
 
-        private void CloseTransmission()
+        public void CloseTransmission()
         {
             if (activeTransmission != null)
                 StopCoroutine(activeTransmission);
 
             IsCommsActive = false;
+            Time.timeScale = 1f;
             HideConsole();
 
             var cb = onCompleteCallback;
             onCompleteCallback = null;
             cb?.Invoke();
+        }
+
+        public void SkipAll()
+        {
+            if (!IsCommsActive)
+                return;
+
+            CloseTransmission();
         }
 
         private void Update()
@@ -239,6 +249,7 @@ namespace KANYE.UI
 
             // Input listener to advance or skip dialogue
             var advancePressed = false;
+            var skipAllPressed = false;
 
 #if ENABLE_INPUT_SYSTEM
             if (Keyboard.current != null)
@@ -249,6 +260,12 @@ namespace KANYE.UI
                 {
                     advancePressed = true;
                 }
+
+                if (Keyboard.current.escapeKey.wasPressedThisFrame ||
+                    Keyboard.current.tabKey.wasPressedThisFrame)
+                {
+                    skipAllPressed = true;
+                }
             }
             if (Gamepad.current != null)
             {
@@ -257,24 +274,37 @@ namespace KANYE.UI
                 {
                     advancePressed = true;
                 }
+                if (Gamepad.current.startButton.wasPressedThisFrame ||
+                    Gamepad.current.selectButton.wasPressedThisFrame)
+                {
+                    skipAllPressed = true;
+                }
             }
 #else
             if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.E))
                 advancePressed = true;
+            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Tab))
+                skipAllPressed = true;
 #endif
 
-            if (advancePressed)
+            if (skipAllPressed)
+                SkipAll();
+            else if (advancePressed)
                 AdvanceDialogue();
         }
 
         private void ShowConsole()
         {
+            if (dimOverlayObj != null)
+                dimOverlayObj.SetActive(true);
             if (consoleRoot != null)
                 consoleRoot.SetActive(true);
         }
 
         private void HideConsole()
         {
+            if (dimOverlayObj != null)
+                dimOverlayObj.SetActive(false);
             if (consoleRoot != null)
                 consoleRoot.SetActive(false);
         }
@@ -292,6 +322,18 @@ namespace KANYE.UI
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
+
+            // Fullscreen Dim Overlay
+            dimOverlayObj = new GameObject("RadioDimOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            dimOverlayObj.transform.SetParent(canvasObj.transform, false);
+            var dimRect = dimOverlayObj.GetComponent<RectTransform>();
+            dimRect.anchorMin = Vector2.zero;
+            dimRect.anchorMax = Vector2.one;
+            dimRect.sizeDelta = Vector2.zero;
+            var dimImg = dimOverlayObj.GetComponent<Image>();
+            dimImg.color = new Color(0.015f, 0.025f, 0.06f, 0.65f); // Deep dark cinematic tint
+            var dimBtn = dimOverlayObj.GetComponent<Button>();
+            dimBtn.onClick.AddListener(AdvanceDialogue);
 
             consoleRoot = new GameObject("RadioConsole", typeof(RectTransform));
             consoleRoot.transform.SetParent(canvasObj.transform, false);
@@ -391,6 +433,30 @@ namespace KANYE.UI
 
             promptText = CreateLabel(advanceObj.transform, "Prompt", "[ ПРОДОЛЖИТЬ (ПРОБЕЛ) >> ]", 14, Vector2.zero, new Vector2(230f, 30f), Color.white, FontStyle.Bold);
             promptText.alignment = TextAnchor.MiddleCenter;
+
+            // Skip All Button [ESC]
+            var skipObj = new GameObject("SkipAllButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            skipObj.transform.SetParent(consoleRoot.transform, false);
+            var skipRect = skipObj.GetComponent<RectTransform>();
+            skipRect.anchorMin = new Vector2(1f, 1f);
+            skipRect.anchorMax = new Vector2(1f, 1f);
+            skipRect.pivot = new Vector2(1f, 1f);
+            skipRect.anchoredPosition = new Vector2(-22f, -14f);
+            skipRect.sizeDelta = new Vector2(170f, 30f);
+
+            var skipImg = skipObj.GetComponent<Image>();
+            skipImg.sprite = PixelUiAtlas.ButtonSecondary;
+            skipImg.type = Image.Type.Sliced;
+            skipImg.color = new Color(0.2f, 0.28f, 0.42f, 0.9f);
+
+            var skipBtn = skipObj.GetComponent<Button>();
+            skipBtn.onClick.AddListener(SkipAll);
+
+            var skipLabel = CreateLabel(skipObj.transform, "SkipText", "ПРОПУСТИТЬ [ESC]", 13, Vector2.zero, new Vector2(160f, 26f), new Color(0.85f, 0.92f, 1f), FontStyle.Bold);
+            skipLabel.rectTransform.anchorMin = Vector2.zero;
+            skipLabel.rectTransform.anchorMax = Vector2.one;
+            skipLabel.rectTransform.sizeDelta = Vector2.zero;
+            skipLabel.alignment = TextAnchor.MiddleCenter;
         }
 
         private static Text CreateLabel(Transform parent, string name, string text, int fontSize, Vector2 pos, Vector2 size, Color color, FontStyle style)

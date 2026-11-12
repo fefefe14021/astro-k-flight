@@ -105,20 +105,20 @@ namespace KANYE.Gameplay
         {
             bossSpawned = true;
 
-            // Clear remaining weak asteroids
+            // Clear remaining asteroids so arena is clear
             var asteroids = FindObjectsByType<Asteroid>();
             for (var i = 0; i < asteroids.Length; i++)
             {
-                if (asteroids[i].transform.position.x > 8f)
-                    Destroy(asteroids[i].gameObject);
+                Destroy(asteroids[i].gameObject);
             }
 
             // Radio transmission from Navigator Barney warning about incoming Sector Boss!
-            MissionRadioComms.ShowBossAlert(MissionCatalog.Selected, null);
-
-            // Spawn the sector boss
-            currentBoss = BossController.SpawnBoss(MissionCatalog.Selected);
-            currentBoss.Defeated += OnBossDefeated;
+            // Time is paused during transmission; boss spawns after player dismisses warning.
+            MissionRadioComms.ShowBossAlert(MissionCatalog.Selected, () =>
+            {
+                currentBoss = BossController.SpawnBoss(MissionCatalog.Selected);
+                currentBoss.Defeated += OnBossDefeated;
+            });
         }
 
         private void OnBossDefeated()

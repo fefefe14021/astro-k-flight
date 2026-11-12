@@ -1,5 +1,6 @@
 
 using System;
+using KANYE.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -57,6 +58,13 @@ namespace KANYE.Gameplay
 
         private void Update()
         {
+            if (MissionRadioComms.IsCommsActive || Time.timeScale <= 0f)
+            {
+                Move = Vector2.zero;
+                FireHeld = false;
+                return;
+            }
+
             Move = moveAction.ReadValue<Vector2>();
             FireHeld = fireAction.IsPressed();
 
@@ -79,6 +87,9 @@ namespace KANYE.Gameplay
 
         private void OnFireStarted(InputAction.CallbackContext context)
         {
+            if (MissionRadioComms.IsCommsActive || Time.timeScale <= 0f)
+                return;
+
             FirePressed?.Invoke();
         }
 

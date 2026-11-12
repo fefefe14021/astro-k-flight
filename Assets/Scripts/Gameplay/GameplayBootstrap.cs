@@ -67,13 +67,6 @@ namespace KANYE.Gameplay
                 tutorialHints = hintsObject.AddComponent<TutorialHints>();
             }
 
-            var shipInput = player?.GetComponent<ShipInput>();
-            if (shipInput != null && tutorialHints != null)
-            {
-                shipInput.OnFirstShot += tutorialHints.OnFirstShot;
-                shipInput.OnFirstMove += tutorialHints.OnFirstMove;
-            }
-
             // 8. Clean up stale pre-existing scene asteroids when NOT in tutorial
             if (!TutorialHints.IsTutorialActive)
             {

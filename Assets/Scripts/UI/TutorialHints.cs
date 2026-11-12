@@ -78,6 +78,22 @@ namespace KANYE.UI
                 return;
             }
 
+            // Keep tutorial HUD hidden while Barney is speaking via radio comms
+            if (canvasGroup != null)
+                canvasGroup.alpha = 0f;
+
+            StartCoroutine(WaitForCommsAndStartTutorialRoutine());
+        }
+
+        private IEnumerator WaitForCommsAndStartTutorialRoutine()
+        {
+            // Wait until Barney's radio transmission finishes
+            while (MissionRadioComms.IsCommsActive)
+                yield return null;
+
+            // Small settle pause after comms close
+            yield return new WaitForSecondsRealtime(0.2f);
+
             var player = GameObject.Find("Player");
             var input = player != null ? player.GetComponent<ShipInput>() : null;
             if (input != null)
@@ -86,11 +102,32 @@ namespace KANYE.UI
                 input.OnFirstShot += HandleShot;
             }
 
+            // Smooth fade-in of tutorial HUD
+            var t = 0f;
+            while (t < 0.35f)
+            {
+                t += Time.unscaledDeltaTime;
+                if (canvasGroup != null)
+                    canvasGroup.alpha = Mathf.Clamp01(t / 0.35f);
+                yield return null;
+            }
+            if (canvasGroup != null)
+                canvasGroup.alpha = 1f;
+
+            // Only now spawn the training target dummy!
             SpawnTrainingAsteroidInstance();
         }
 
         private void OnDestroy()
         {
+            var player = GameObject.Find("Player");
+            var input = player != null ? player.GetComponent<ShipInput>() : null;
+            if (input != null)
+            {
+                input.OnFirstMove -= HandleMove;
+                input.OnFirstShot -= HandleShot;
+            }
+
             if (Instance == this)
                 Instance = null;
         }

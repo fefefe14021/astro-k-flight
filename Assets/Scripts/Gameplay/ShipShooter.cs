@@ -4,6 +4,7 @@
 
 using KANYE.Audio;
 using KANYE.Systems;
+using KANYE.UI;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -33,6 +34,9 @@ namespace KANYE.Gameplay
 
         private void Update()
         {
+            if (MissionRadioComms.IsCommsActive || Time.timeScale <= 0f)
+                return;
+
             // Input checks for EX Move [Q] and Super Art [E]
             var superPressed = false;
             var exPressed = false;
@@ -67,6 +71,9 @@ namespace KANYE.Gameplay
 
         private void LateUpdate()
         {
+            if (MissionRadioComms.IsCommsActive || Time.timeScale <= 0f)
+                return;
+
             if (cooldown > 0f)
                 cooldown -= Time.deltaTime;
 
