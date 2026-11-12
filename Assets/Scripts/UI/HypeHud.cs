@@ -95,8 +95,11 @@ namespace KANYE.UI
 
         private IEnumerator ShowMissionStartBanner()
         {
-            yield return new WaitForSeconds(0.4f);
-            ShowBanner("READY? FIGHT!", "Сокруши вражеский флот и собери ресурсы!", 2.2f, new Color(1f, 0.85f, 0.2f));
+            while (MissionRadioComms.IsCommsActive)
+                yield return null;
+
+            yield return new WaitForSeconds(0.25f);
+            ShowBanner("READY? FIGHT!", "Сокруши вражеский флот и собери ресурсы!", 2.0f, new Color(1f, 0.85f, 0.2f));
         }
 
         private void Update()

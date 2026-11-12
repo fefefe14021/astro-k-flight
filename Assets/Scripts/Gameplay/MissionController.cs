@@ -49,7 +49,7 @@ namespace KANYE.Gameplay
 
         private void Update()
         {
-            if (missionCompleted || mission == null || TutorialHints.IsTutorialActive)
+            if (missionCompleted || mission == null || TutorialHints.IsTutorialActive || MissionRadioComms.IsCommsActive)
                 return;
 
             var player = FindAnyObjectByType<PlayerHealth>();
@@ -112,6 +112,9 @@ namespace KANYE.Gameplay
                 if (asteroids[i].transform.position.x > 8f)
                     Destroy(asteroids[i].gameObject);
             }
+
+            // Radio transmission from Navigator Barney warning about incoming Sector Boss!
+            MissionRadioComms.ShowBossAlert(MissionCatalog.Selected, null);
 
             // Spawn the sector boss
             currentBoss = BossController.SpawnBoss(MissionCatalog.Selected);

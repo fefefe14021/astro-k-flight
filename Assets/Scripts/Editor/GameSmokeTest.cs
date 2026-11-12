@@ -223,6 +223,19 @@ namespace KANYE.EditorTools
 
                 if (LoreCatalog.Entries.Length < 5)
                     throw new Exception($"Expected at least 5 lore entries, found {LoreCatalog.Entries.Length}");
+
+                if (LoreCatalog.Dialogues.Length < 5)
+                    throw new Exception($"Expected 5 sector dialogues, found {LoreCatalog.Dialogues.Length}");
+                for (var i = 0; i < LoreCatalog.Dialogues.Length; i++)
+                {
+                    var d = LoreCatalog.Dialogues[i];
+                    if (string.IsNullOrEmpty(d.Speaker) || string.IsNullOrEmpty(d.Header) || d.IntroLines == null || d.IntroLines.Length == 0)
+                        throw new Exception($"Invalid dialogue at sector {i}");
+                }
+
+                var portrait = Resources.Load<Sprite>("Sprites/barney_portrait");
+                if (portrait == null)
+                    throw new Exception("Missing barney_portrait sprite in Resources/Sprites");
             }, ref passed, ref failed);
 
             Debug.Log("==================================================");

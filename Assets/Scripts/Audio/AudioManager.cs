@@ -28,6 +28,8 @@ namespace KANYE.Audio
         private AudioClip victoryClip;
         private AudioClip defeatClip;
         private AudioClip clickClip;
+        private AudioClip radioBeepClip;
+        private AudioClip radioOpenClip;
         private AudioClip arcadeMusicLoop;
 
         public static float MasterVolume { get; private set; } = 0.75f;
@@ -181,6 +183,16 @@ namespace KANYE.Audio
             Instance?.PlayOneShot(Instance.clickClip, 0.7f);
         }
 
+        public static void PlayRadioBeep()
+        {
+            Instance?.PlayOneShot(Instance.radioBeepClip, 0.45f, 0.18f);
+        }
+
+        public static void PlayRadioOpen()
+        {
+            Instance?.PlayOneShot(Instance.radioOpenClip, 0.85f);
+        }
+
         // ==========================================
         // PROCEDURAL AUDIO SYNTHESIZERS (Zero assets)
         // ==========================================
@@ -330,6 +342,23 @@ namespace KANYE.Audio
                 var arpWave = Mathf.Sin(2f * Mathf.PI * arpScale[arpIdx] * t) * arpEnv * 0.16f;
 
                 return Mathf.Clamp((bassWave * bassEnv + hatNoise + arpWave) * 0.7f, -1f, 1f);
+            });
+
+            // 13. Radio Speech Beep (0.032s chirpy radio syllable)
+            radioBeepClip = SynthesizeClip("Sfx_RadioBeep", sampleRate, 0.032f, (t, dur) =>
+            {
+                var env = 1f - (t / dur);
+                var wave = Mathf.Sin(2f * Mathf.PI * 680f * t);
+                return wave * env * 0.45f;
+            });
+
+            // 14. Radio Open Chime (0.15s retro hologram connection sound)
+            radioOpenClip = SynthesizeClip("Sfx_RadioOpen", sampleRate, 0.15f, (t, dur) =>
+            {
+                var freq = t < 0.075f ? 480f : 740f;
+                var wave = Mathf.Sin(2f * Mathf.PI * freq * t);
+                var env = 1f - ((t % 0.075f) / 0.075f);
+                return wave * env * 0.55f;
             });
         }
 
