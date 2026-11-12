@@ -74,25 +74,13 @@ namespace KANYE.Gameplay
                 shipInput.OnFirstMove += tutorialHints.OnFirstMove;
             }
 
-            // 8. Ensure initial asteroid if none exist
-            if (Object.FindAnyObjectByType<Asteroid>() == null && TutorialHints.IsTutorialActive)
+            // 8. Clean up stale pre-existing scene asteroids when NOT in tutorial
+            if (!TutorialHints.IsTutorialActive)
             {
-                var asteroid = new GameObject("Asteroid");
-                asteroid.transform.position = AsteroidPosition;
-                asteroid.AddComponent<SpriteRenderer>();
-                asteroid.AddComponent<Asteroid>();
+                var staleAsteroids = Object.FindObjectsByType<Asteroid>();
+                for (var i = 0; i < staleAsteroids.Length; i++)
+                    Object.Destroy(staleAsteroids[i].gameObject);
             }
-        }
-
-        public static void EnsureEditorAsteroid()
-        {
-            if (Object.FindAnyObjectByType<Asteroid>() != null)
-                return;
-
-            var asteroid = new GameObject("Asteroid");
-            asteroid.transform.position = AsteroidPosition;
-            asteroid.AddComponent<SpriteRenderer>();
-            asteroid.AddComponent<Asteroid>();
         }
     }
 }

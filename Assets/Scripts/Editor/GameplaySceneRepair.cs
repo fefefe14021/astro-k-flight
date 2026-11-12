@@ -11,25 +11,7 @@ namespace KANYE.EditorTools
         static GameplaySceneRepair()
         {
             EditorSceneManager.playModeStartScene = null;
-            EditorApplication.delayCall += EnsureAsteroid;
             EditorApplication.delayCall += EnsureShipVisual;
-        }
-
-        private static void EnsureAsteroid()
-        {
-            if (EditorApplication.isPlayingOrWillChangePlaymode)
-                return;
-
-            var scene = EditorSceneManager.GetActiveScene();
-            if (!scene.IsValid() || scene.name != "Gameplay")
-                return;
-
-            if (Object.FindAnyObjectByType<Asteroid>() != null)
-                return;
-
-            GameplayBootstrap.EnsureEditorAsteroid();
-            EditorSceneManager.MarkSceneDirty(scene);
-            EditorSceneManager.SaveScene(scene);
         }
 
         private static void EnsureShipVisual()

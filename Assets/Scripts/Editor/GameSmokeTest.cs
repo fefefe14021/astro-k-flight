@@ -180,6 +180,25 @@ namespace KANYE.EditorTools
                 UnityEngine.Object.DestroyImmediate(boss.gameObject);
             }, ref passed, ref failed);
 
+            Test("12. FTUE Tutorial Dummy & Fail-Safe Progression", () =>
+            {
+                TutorialHints.ResetTutorial();
+                if (!TutorialHints.IsTutorialActive) throw new Exception("Tutorial should be active after ResetTutorial");
+
+                var go = new GameObject("TutorialTest");
+                var th = go.AddComponent<TutorialHints>();
+
+                // Simulate collision without destruction
+                TutorialHints.NotifyAsteroidCollided();
+
+                // Test complete / skip
+                th.CompleteTutorial();
+                if (TutorialHints.IsTutorialActive) throw new Exception("Tutorial should be inactive after CompleteTutorial");
+                if (!TutorialHints.IsTutorialCompleted) throw new Exception("IsTutorialCompleted should be true");
+
+                UnityEngine.Object.DestroyImmediate(go);
+            }, ref passed, ref failed);
+
             Debug.Log("==================================================");
             Debug.Log($"[SMOKE TEST FINISHED] Passed: {passed}, Failed: {failed}");
             Debug.Log("==================================================");

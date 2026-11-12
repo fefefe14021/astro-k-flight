@@ -1,12 +1,16 @@
 // Assets/Scripts/UI/TutorialHints.cs
 // Namespace: KANYE.UI
 // GameObject: TutorialHints
+// First-time pilot orientation with safe practice target dummy and skip support.
 
 using System.Collections;
 using KANYE.Gameplay;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace KANYE.UI
 {
@@ -23,11 +27,14 @@ namespace KANYE.UI
         private Text moveText;
         private Text fireText;
         private Text statusText;
+        private Button skipButton;
 
-        private bool moved = false;
-        private bool shot = false;
-        private bool targetSpawned = false;
-        private bool targetDestroyed = false;
+        private bool moved;
+        private bool shot;
+        private bool targetDestroyed;
+        private int collisionCount;
+        private int missCount;
+        private Asteroid activeTrainingAsteroid;
 
         public static void ResetTutorial()
         {
@@ -43,8 +50,8 @@ namespace KANYE.UI
             if (SceneManager.GetActiveScene().name != "Gameplay")
                 return;
 
-            // Check if player already completed tutorial
-            if (IsTutorialCompleted)
+            // Tutorial ONLY runs in Mission 0 (first sector) and only if not completed yet
+            if (MissionCatalog.Selected != 0 || IsTutorialCompleted)
             {
                 IsTutorialActive = false;
                 return;
@@ -79,14 +86,35 @@ namespace KANYE.UI
                 input.OnFirstShot += HandleShot;
             }
 
-            // Spawn the single training asteroid
-            SpawnTrainingAsteroid();
+            SpawnTrainingAsteroidInstance();
         }
 
         private void OnDestroy()
         {
             if (Instance == this)
                 Instance = null;
+        }
+
+        private void Update()
+        {
+            if (!IsTutorialActive || targetDestroyed)
+                return;
+
+            var skipPressed = false;
+#if ENABLE_INPUT_SYSTEM
+            if (Keyboard.current != null)
+            {
+                if (Keyboard.current.tabKey.wasPressedThisFrame || Keyboard.current.escapeKey.wasPressedThisFrame)
+                    skipPressed = true;
+            }
+#else
+            if (Input.GetKeyDown(KeyCode.Tab) || Input.GetKeyDown(KeyCode.Escape))
+                skipPressed = true;
+#endif
+            if (skipPressed)
+            {
+                CompleteTutorial();
+            }
         }
 
         public void OnFirstMove() => HandleMove();
@@ -136,6 +164,74 @@ namespace KANYE.UI
             }
         }
 
+        public static void NotifyAsteroidCollided()
+        {
+            if (Instance != null && IsTutorialActive)
+            {
+                Instance.HandleTargetCollision();
+            }
+        }
+
+        public static void NotifyAsteroidMissed()
+        {
+            if (Instance != null && IsTutorialActive)
+            {
+                Instance.HandleTargetMissed();
+            }
+        }
+
+        private void HandleTargetCollision()
+        {
+            if (targetDestroyed || !IsTutorialActive) return;
+
+            collisionCount++;
+            if (collisionCount >= 2)
+            {
+                // After 2 impacts, auto-complete tutorial so player is NEVER blocked
+                Debug.Log("[Tutorial] Авто-завершение обучения после серии столкновений.");
+                CompleteTutorial();
+                return;
+            }
+
+            if (statusText != null)
+            {
+                statusText.text = "Внимание: столкновение! Стреляй на [ПРОБЕЛ] или [ЛКМ]!";
+                statusText.color = new Color(1f, 0.45f, 0.45f);
+            }
+
+            StartCoroutine(RespawnTrainingAsteroidRoutine(1.2f));
+        }
+
+        private void HandleTargetMissed()
+        {
+            if (targetDestroyed || !IsTutorialActive) return;
+
+            missCount++;
+            if (missCount >= 2)
+            {
+                Debug.Log("[Tutorial] Авто-завершение обучения после пролета цели.");
+                CompleteTutorial();
+                return;
+            }
+
+            if (statusText != null)
+            {
+                statusText.text = "Астероид ушел! Целься и стреляй на [ПРОБЕЛ] или [ЛКМ]!";
+                statusText.color = new Color(1f, 0.75f, 0.3f);
+            }
+
+            StartCoroutine(RespawnTrainingAsteroidRoutine(1.0f));
+        }
+
+        private IEnumerator RespawnTrainingAsteroidRoutine(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (!targetDestroyed && IsTutorialActive)
+            {
+                SpawnTrainingAsteroidInstance();
+            }
+        }
+
         private void OnTargetHit()
         {
             if (targetDestroyed) return;
@@ -155,49 +251,59 @@ namespace KANYE.UI
             }
             if (moveText != null) moveText.gameObject.SetActive(false);
             if (fireText != null) fireText.gameObject.SetActive(false);
+            if (skipButton != null) skipButton.gameObject.SetActive(false);
 
-            yield return new WaitForSeconds(2.2f);
+            yield return new WaitForSeconds(1.8f);
 
             // Smooth fade out
             var t = 0f;
-            while (t < 0.5f)
+            while (t < 0.45f)
             {
                 t += Time.deltaTime;
                 if (canvasGroup != null)
-                    canvasGroup.alpha = Mathf.Lerp(1f, 0f, t / 0.5f);
+                    canvasGroup.alpha = Mathf.Lerp(1f, 0f, t / 0.45f);
                 yield return null;
             }
 
             CompleteTutorial();
         }
 
-        private void CompleteTutorial()
+        public void CompleteTutorial()
         {
             PlayerPrefs.SetInt(TutorialKey, 1);
             PlayerPrefs.Save();
             IsTutorialActive = false;
-            gameObject.SetActive(false);
-            Debug.Log("[FTUE] Обучение завершено. Обычный бой активирован.");
-        }
 
-        private void SpawnTrainingAsteroid()
-        {
-            if (targetSpawned) return;
-            targetSpawned = true;
-
-            var existing = FindObjectsByType<Asteroid>();
-            if (existing != null && existing.Length > 0)
+            // Clean up any remaining training asteroids
+            var asteroids = FindObjectsByType<Asteroid>();
+            for (var i = 0; i < asteroids.Length; i++)
             {
-                existing[0].Configure(1.2f, 1, 0.65f);
-                existing[0].transform.position = new Vector3(8.5f, 0f, 0f);
-                return;
+                if (asteroids[i] == activeTrainingAsteroid || asteroids[i].name.Contains("Tutorial"))
+                {
+                    Destroy(asteroids[i].gameObject);
+                }
             }
 
-            var asteroidObj = new GameObject("TutorialAsteroid");
+            gameObject.SetActive(false);
+            Debug.Log("[FTUE] Обучение успешно завершено. Полноценная миссия запущена.");
+        }
+
+        private void SpawnTrainingAsteroidInstance()
+        {
+            if (targetDestroyed || !IsTutorialActive) return;
+
+            // Clear any stale existing asteroid
+            var existing = FindObjectsByType<Asteroid>();
+            for (var i = 0; i < existing.Length; i++)
+            {
+                Destroy(existing[i].gameObject);
+            }
+
+            var asteroidObj = new GameObject("TutorialAsteroid", typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(Rigidbody2D));
             asteroidObj.transform.position = new Vector3(8.5f, 0f, 0f);
-            asteroidObj.AddComponent<SpriteRenderer>();
-            var asteroid = asteroidObj.AddComponent<Asteroid>();
-            asteroid.Configure(1.2f, 1, 0.65f);
+            activeTrainingAsteroid = asteroidObj.AddComponent<Asteroid>();
+            // Gentle speed (0.85f), 0 contact damage so beginner never loses HP on target dummy!
+            activeTrainingAsteroid.Configure(0.85f, 0, 0.65f);
         }
 
         private void BuildUI()
@@ -222,12 +328,13 @@ namespace KANYE.UI
             panelRect.anchorMin = new Vector2(0.5f, 1f);
             panelRect.anchorMax = new Vector2(0.5f, 1f);
             panelRect.pivot = new Vector2(0.5f, 1f);
-            panelRect.anchoredPosition = new Vector2(0f, -60f);
-            panelRect.sizeDelta = new Vector2(720f, 155f);
+            panelRect.anchoredPosition = new Vector2(0f, -50f);
+            panelRect.sizeDelta = new Vector2(760f, 160f);
 
             var bg = panelObj.GetComponent<Image>();
-            bg.sprite = WhiteSprite();
-            bg.color = new Color(0.04f, 0.06f, 0.12f, 0.94f);
+            bg.sprite = PixelUiAtlas.Panel;
+            bg.type = Image.Type.Sliced;
+            bg.color = new Color(0.04f, 0.07f, 0.14f, 0.95f);
 
             var accent = new GameObject("Accent", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             accent.transform.SetParent(panelObj.transform, false);
@@ -236,13 +343,37 @@ namespace KANYE.UI
             accentRect.anchorMax = new Vector2(1f, 0f);
             accentRect.pivot = new Vector2(0.5f, 0f);
             accentRect.sizeDelta = new Vector2(0f, 3f);
-            accent.GetComponent<Image>().sprite = WhiteSprite();
+            accent.GetComponent<Image>().sprite = PixelUiAtlas.White;
             accent.GetComponent<Image>().color = new Color(1f, 0.75f, 0.2f, 1f);
 
             titleText = CreateLabel(panelObj.transform, "Title", "БОРТОВОЕ ОБУЧЕНИЕ ПИЛОТА", 22, new Vector2(0f, -14f), new Color(1f, 0.85f, 0.4f));
             moveText = CreateLabel(panelObj.transform, "Move", "WASD / Стрелки / Стик — Маневрирование", 19, new Vector2(0f, -44f), Color.white);
             fireText = CreateLabel(panelObj.transform, "Fire", "ПРОБЕЛ / Кнопка — Огонь по курсу", 19, new Vector2(0f, -70f), Color.white);
             statusText = CreateLabel(panelObj.transform, "Status", "Опробуй управление и сбей первый астероид", 19, new Vector2(0f, -108f), new Color(0.75f, 0.88f, 1f));
+
+            // Skip Tutorial button
+            var skipObj = new GameObject("SkipButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            skipObj.transform.SetParent(panelObj.transform, false);
+            var skipRect = skipObj.GetComponent<RectTransform>();
+            skipRect.anchorMin = new Vector2(1f, 1f);
+            skipRect.anchorMax = new Vector2(1f, 1f);
+            skipRect.pivot = new Vector2(1f, 1f);
+            skipRect.anchoredPosition = new Vector2(-12f, -12f);
+            skipRect.sizeDelta = new Vector2(160f, 32f);
+
+            var skipImg = skipObj.GetComponent<Image>();
+            skipImg.sprite = PixelUiAtlas.ButtonSecondary;
+            skipImg.type = Image.Type.Sliced;
+            skipImg.color = new Color(0.2f, 0.3f, 0.45f, 0.9f);
+
+            skipButton = skipObj.GetComponent<Button>();
+            skipButton.onClick.AddListener(CompleteTutorial);
+
+            var skipLabel = CreateLabel(skipObj.transform, "SkipText", "Пропустить [TAB]", 14, Vector2.zero, Color.white);
+            skipLabel.rectTransform.anchorMin = Vector2.zero;
+            skipLabel.rectTransform.anchorMax = Vector2.one;
+            skipLabel.rectTransform.sizeDelta = Vector2.zero;
+            skipLabel.alignment = TextAnchor.MiddleCenter;
         }
 
         private static Text CreateLabel(Transform parent, string name, string text, int fontSize, Vector2 pos, Color color)
@@ -263,17 +394,6 @@ namespace KANYE.UI
             label.color = color;
             label.text = text;
             return label;
-        }
-
-        private static Sprite whiteSprite;
-        private static Sprite WhiteSprite()
-        {
-            if (whiteSprite != null) return whiteSprite;
-            var tex = new Texture2D(1, 1);
-            tex.SetPixel(0, 0, Color.white);
-            tex.Apply();
-            whiteSprite = Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
-            return whiteSprite;
         }
     }
 }

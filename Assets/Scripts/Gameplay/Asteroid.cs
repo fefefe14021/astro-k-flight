@@ -44,7 +44,11 @@ namespace KANYE.Gameplay
             transform.Rotate(0f, 0f, spinSpeed * Time.fixedDeltaTime);
 
             if (body.position.x < -12f)
+            {
+                if (TutorialHints.IsTutorialActive)
+                    TutorialHints.NotifyAsteroidMissed();
                 Destroy(gameObject);
+            }
         }
 
         private void OnCollisionEnter2D(Collision2D collision)
@@ -54,6 +58,15 @@ namespace KANYE.Gameplay
 
             if (!collision.collider.TryGetComponent<PlayerHealth>(out var health))
                 return;
+
+            if (TutorialHints.IsTutorialActive)
+            {
+                EffectsManager.PlayImpact(transform.position, Vector2.left, Color.yellow);
+                CameraShake.Shake(0.2f, 0.15f);
+                TutorialHints.NotifyAsteroidCollided();
+                Destroy(gameObject);
+                return;
+            }
 
             EffectsManager.PlayExplosion(transform.position, color, isMechanical: false);
             CameraShake.Shake(0.35f, 0.35f);
