@@ -1,38 +1,38 @@
+// Assets/Scripts/Gameplay/MissionController.cs
+// Namespace: KANYE.Gameplay
+// Manages sector pacing, hazard spawning, boss summoning, and sector completion.
+
+using KANYE.Audio;
 using KANYE.Services;
 using KANYE.Systems;
+using KANYE.UI;
 using UnityEngine;
 
 namespace KANYE.Gameplay
 {
     public class MissionController : MonoBehaviour
     {
-        private HypeState hype;
         private MissionDefinition mission;
+        private HypeState hype;
+        private BossController currentBoss;
+
+        private int spawnedAsteroids;
         private float spawnTimer;
         private float missileTimer;
-        private int spawned;
-        private bool won;
+        private float parryTimer;
+        private bool bossSpawned;
+        private bool missionCompleted;
 
         private void Awake()
         {
-            if (SaveManager.Instance != null)
-                MissionCatalog.Select(SaveManager.Instance.CurrentMission);
+            var index = MissionCatalog.Selected;
+            mission = MissionCatalog.All[Mathf.Clamp(index, 0, MissionCatalog.All.Length - 1)];
 
-            mission = MissionCatalog.Current;
             hype = FindAnyObjectByType<HypeState>();
             if (hype != null)
                 hype.BeginMission(mission.AlbumsRequired);
 
-            var existing = FindObjectsByType<Asteroid>(FindObjectsSortMode.None);
-            for (var i = 0; i < existing.Length; i++)
-                existing[i].Configure(mission.AsteroidSpeed, mission.Damage, 0.55f);
-        }
-
-        private void OnDestroy()
-        {
-            if (hype != null)
-                hype.Changed -= OnHypeChanged;
-            Time.timeScale = 1f;
+            GameRules.ResetMissionStats();
         }
 
         private void Start()
@@ -41,113 +41,138 @@ namespace KANYE.Gameplay
                 hype.Changed += OnHypeChanged;
         }
 
+        private void OnDestroy()
+        {
+            if (hype != null)
+                hype.Changed -= OnHypeChanged;
+        }
+
         private void Update()
         {
-            if (won || mission == null)
+            if (missionCompleted || mission == null || TutorialHints.IsTutorialActive)
                 return;
 
             var player = FindAnyObjectByType<PlayerHealth>();
             if (player != null && player.IsDead)
                 return;
 
-            spawnTimer += Time.deltaTime;
-            if (spawned < mission.ExtraAsteroids && spawnTimer >= mission.SpawnInterval)
+            // Spawning phase before boss
+            if (!bossSpawned)
             {
-                spawnTimer = 0f;
-                spawned++;
-                SpawnAsteroid();
+                spawnTimer += Time.deltaTime;
+                if (spawnedAsteroids < mission.ExtraAsteroids && spawnTimer >= mission.SpawnInterval)
+                {
+                    spawnTimer = 0f;
+                    spawnedAsteroids++;
+                    SpawnAsteroid();
+                }
+
+                // Falling missiles
+                if (mission.MissileInterval > 0f)
+                {
+                    missileTimer += Time.deltaTime;
+                    if (missileTimer >= mission.MissileInterval)
+                    {
+                        missileTimer = 0f;
+                        for (var i = 0; i < mission.MissileBurst; i++)
+                            SpawnMissile();
+                    }
+                }
+
+                // Cuphead parryable pink hazard orbs
+                parryTimer += Time.deltaTime;
+                if (parryTimer >= 4.5f)
+                {
+                    parryTimer = 0f;
+                    SpawnParryOrb();
+                }
             }
-
-            if (mission.MissileInterval <= 0f)
-                return;
-
-            missileTimer += Time.deltaTime;
-            if (missileTimer < mission.MissileInterval)
-                return;
-
-            missileTimer = 0f;
-            for (var i = 0; i < mission.MissileBurst; i++)
-                SpawnMissile();
         }
 
         private void OnHypeChanged()
         {
-            if (won || hype == null || hype.Hype < hype.HypeMax - 0.01f)
+            if (bossSpawned || hype == null || mission == null)
                 return;
 
-            won = true;
-            Time.timeScale = 0f;
+            // When required albums collected, summon Sector Boss!
+            if (hype.Albums >= mission.AlbumsRequired)
+            {
+                SummonBoss();
+            }
+        }
+
+        private void SummonBoss()
+        {
+            bossSpawned = true;
+
+            // Clear remaining weak asteroids
+            var asteroids = FindObjectsByType<Asteroid>();
+            for (var i = 0; i < asteroids.Length; i++)
+            {
+                if (asteroids[i].transform.position.x > 8f)
+                    Destroy(asteroids[i].gameObject);
+            }
+
+            // Spawn the sector boss
+            currentBoss = BossController.SpawnBoss(MissionCatalog.Selected);
+            currentBoss.Defeated += OnBossDefeated;
+        }
+
+        private void OnBossDefeated()
+        {
+            if (missionCompleted) return;
+            missionCompleted = true;
+
             var player = FindAnyObjectByType<PlayerHealth>();
             var untouched = player == null || !player.TookDamage;
+            var hp = player != null ? player.Current : 0;
+            var maxHp = player != null ? player.MaxLives : 3;
+
+            var clearTime = Time.time - GameRules.MissionStartTime;
             GameRules.NotifyMissionCleared(MissionCatalog.Selected, untouched);
-            var next = MissionCatalog.Selected + 1;
-            SaveManager.Instance?.RememberMission(next);
+
+            var nextMission = MissionCatalog.Selected + 1;
+            SaveManager.Instance?.RememberMission(nextMission);
+
+            VictoryResultsModal.Show(
+                MissionCatalog.Selected,
+                hp,
+                maxHp,
+                GameRules.ParriesThisRun,
+                GameRules.SupersUsedThisRun,
+                clearTime,
+                () =>
+                {
+                    MissionCatalog.Select(nextMission);
+                    SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
+                });
         }
 
         private void SpawnAsteroid()
         {
             var large = Random.value < mission.LargeChance;
-            var asteroidObject = new GameObject("Asteroid");
-            var y = large ? Random.Range(-2.4f, 2.4f) : Random.Range(-3.4f, 3.4f);
-            asteroidObject.transform.position = new Vector3(10f + Random.Range(0f, 1.5f), y, 0f);
-            asteroidObject.AddComponent<SpriteRenderer>();
+            var asteroidObject = new GameObject("Asteroid", typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(Rigidbody2D));
+            var y = large ? Random.Range(-2.4f, 2.4f) : Random.Range(-3.6f, 3.6f);
+            asteroidObject.transform.position = new Vector3(10.5f + Random.Range(0f, 1.5f), y, 0f);
             var asteroid = asteroidObject.AddComponent<Asteroid>();
-            var speed = large ? mission.AsteroidSpeed * 0.72f : mission.AsteroidSpeed * Random.Range(0.95f, 1.2f);
-            asteroid.Configure(speed, large ? mission.Damage + 1 : mission.Damage, large ? 0.95f : 0.48f);
+            var speed = large ? mission.AsteroidSpeed * 0.75f : mission.AsteroidSpeed * Random.Range(0.95f, 1.25f);
+            asteroid.Configure(speed, large ? mission.Damage + 1 : mission.Damage, large ? 0.95f : 0.52f);
         }
 
         private void SpawnMissile()
         {
-            var missileObject = new GameObject("Missile");
-            missileObject.transform.position = new Vector3(Random.Range(-6.5f, 7.5f), 6.4f, 0f);
-            missileObject.AddComponent<SpriteRenderer>();
+            var missileObject = new GameObject("Missile", typeof(SpriteRenderer), typeof(BoxCollider2D), typeof(Rigidbody2D));
+            missileObject.transform.position = new Vector3(Random.Range(-6.5f, 7.5f), 6.5f, 0f);
             var missile = missileObject.AddComponent<Missile>();
             missile.Configure(mission.MissileSpeed, 1);
         }
 
-        private void OnGUI()
+        private void SpawnParryOrb()
         {
-            if (mission == null)
-                return;
-
-            var title = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 22,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.UpperCenter,
-                wordWrap = true
-            };
-            title.normal.textColor = Color.white;
-            GUI.Label(new Rect(220f, 12f, Screen.width - 440f, 32f), mission.Title, title);
-
-            var body = new GUIStyle(title) { fontSize = 16, fontStyle = FontStyle.Normal };
-            GUI.Label(new Rect(160f, 44f, Screen.width - 320f, 78f), mission.Briefing, body);
-
-            if (!won)
-                return;
-
-            var hasNext = MissionCatalog.Selected + 1 < MissionCatalog.All.Length;
-            var showRestart = MissionCatalog.Selected > 0;
-            var buttonCount = 1 + (hasNext ? 1 : 0) + (showRestart ? 1 : 0);
-            var box = new Rect(Screen.width * 0.5f - 250f, Screen.height * 0.5f - 120f, 500f, 150f + buttonCount * 52f);
-            GUI.Box(box, "Победа");
-            var message = new GUIStyle(title) { fontSize = 20 };
-            GUI.Label(new Rect(box.x + 24f, box.y + 40f, box.width - 48f, 70f), mission.VictoryText, message);
-            var buttonY = box.y + 120f;
-            if (GUI.Button(new Rect(box.x + 40f, buttonY, box.width - 80f, 40f), "В меню"))
-                SceneLoader.ReturnToMainMenu();
-            buttonY += 52f;
-            if (hasNext && GUI.Button(new Rect(box.x + 40f, buttonY, box.width - 80f, 40f), "Дальше"))
-            {
-                Time.timeScale = 1f;
-                MissionCatalog.Select(MissionCatalog.Selected + 1);
-                SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
-            }
-
-            if (hasNext)
-                buttonY += 52f;
-            if (showRestart && GUI.Button(new Rect(box.x + 40f, buttonY, box.width - 80f, 40f), "Сначала"))
-                SceneLoader.RestartFromFirstMission();
+            var orbObject = new GameObject("ParryOrb", typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(Rigidbody2D));
+            orbObject.transform.position = new Vector3(10.5f, Random.Range(-3.2f, 3.2f), 0f);
+            var hazard = orbObject.AddComponent<ParryHazard>();
+            hazard.Launch(Vector2.left, 3.2f);
         }
     }
 }

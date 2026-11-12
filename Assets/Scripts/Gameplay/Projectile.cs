@@ -1,3 +1,7 @@
+// Assets/Scripts/Gameplay/Projectile.cs
+// Namespace: KANYE.Gameplay
+// GameObject: Projectile prefab or dynamically created bullet
+
 using UnityEngine;
 
 namespace KANYE.Gameplay
@@ -6,9 +10,9 @@ namespace KANYE.Gameplay
     [RequireComponent(typeof(Rigidbody2D))]
     public class Projectile : MonoBehaviour
     {
-        [SerializeField] private float speed = 12f;
+        [SerializeField] private float speed = 13f;
         [SerializeField] private float lifetime = 2f;
-        [SerializeField] private float hitRadius = 0.2f;
+        [SerializeField] private float hitRadius = 0.22f;
         [SerializeField] private Vector2 sizeWorldUnits = new Vector2(0.35f, 0.15f);
         [SerializeField] private Color color = new Color(1f, 0.85f, 0.2f, 1f);
 
@@ -21,12 +25,15 @@ namespace KANYE.Gameplay
                 direction = newDirection.normalized;
 
             var angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            transform.rotation = Quaternion.Euler(0f, 0f, angle - 90f);
+            transform.rotation = Quaternion.Euler(0f, 0f, angle);
         }
 
         private void Awake()
         {
             body = GetComponent<Rigidbody2D>();
+            if (body == null)
+                body = gameObject.AddComponent<Rigidbody2D>();
+
             body.bodyType = RigidbodyType2D.Kinematic;
             body.gravityScale = 0f;
 
@@ -43,14 +50,17 @@ namespace KANYE.Gameplay
         {
             body.MovePosition(body.position + direction * speed * Time.fixedDeltaTime);
             lifetime -= Time.fixedDeltaTime;
-            if (lifetime <= 0f)
+            if (lifetime <= 0f || transform.position.x > 14f)
                 Destroy(gameObject);
         }
 
         private void EnsureVisible()
         {
             var spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer == null)
+                spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
             PlaceholderShipVisual.UseSpriteMaterial(spriteRenderer);
+            spriteRenderer.sortingOrder = 8;
 
             var art = Resources.Load<Sprite>("Sprites/bolt");
             if (art != null)

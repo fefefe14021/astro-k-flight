@@ -141,6 +141,17 @@ namespace KANYE.Systems
             return entry;
         }
 
+        public void ResetAllProgress()
+        {
+            PlayerPrefs.DeleteKey(SaveKey);
+            PlayerPrefs.DeleteKey("TutorialShown");
+            PlayerPrefs.DeleteKey("TutorialCompleted");
+            PlayerPrefs.Save();
+            Data = CreateDefault();
+            Save();
+            Changed?.Invoke();
+        }
+
         private static GameData CreateDefault()
         {
             return new GameData

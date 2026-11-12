@@ -21,6 +21,12 @@ namespace KANYE.UI
                 Show(startPanelId);
         }
 
+        public void SetPanels(PanelEntry[] entries, string firstId = "main")
+        {
+            panels = entries;
+            Show(firstId);
+        }
+
         public void Show(string panelId)
         {
             if (panels == null)

@@ -1,4 +1,5 @@
 using KANYE.Systems;
+using KANYE.UI;
 using UnityEngine;
 
 namespace KANYE.Gameplay
@@ -27,6 +28,12 @@ namespace KANYE.Gameplay
         }
 
         private Rigidbody2D body;
+        private float spinSpeed;
+
+        private void Start()
+        {
+            spinSpeed = Random.Range(-55f, 55f);
+        }
 
         private void FixedUpdate()
         {
@@ -34,6 +41,8 @@ namespace KANYE.Gameplay
                 return;
 
             body.MovePosition(body.position + Vector2.left * moveSpeed * Time.fixedDeltaTime);
+            transform.Rotate(0f, 0f, spinSpeed * Time.fixedDeltaTime);
+
             if (body.position.x < -12f)
                 Destroy(gameObject);
         }
@@ -46,6 +55,8 @@ namespace KANYE.Gameplay
             if (!collision.collider.TryGetComponent<PlayerHealth>(out var health))
                 return;
 
+            EffectsManager.PlayExplosion(transform.position, color, isMechanical: false);
+            CameraShake.Shake(0.35f, 0.35f);
             health.TakeDamage(damage);
             Destroy(gameObject);
         }
@@ -88,7 +99,12 @@ namespace KANYE.Gameplay
             if (!other.TryGetComponent<Projectile>(out var projectile))
                 return;
 
+            EffectsManager.PlayImpact(projectile.transform.position, Vector2.left, new Color(1f, 0.85f, 0.3f));
+            EffectsManager.PlayExplosion(transform.position, color, isMechanical: false);
+            CameraShake.Shake(0.18f, 0.2f);
+
             GameRules.NotifyAsteroidDestroyed(albumsOnHit);
+            TutorialHints.NotifyAsteroidDestroyed();
 
             Destroy(projectile.gameObject);
             Destroy(gameObject);
@@ -97,6 +113,8 @@ namespace KANYE.Gameplay
         private void EnsureVisible()
         {
             var spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer == null)
+                spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
             PlaceholderShipVisual.UseSpriteMaterial(spriteRenderer);
 
             var art = Resources.Load<Sprite>("Sprites/asteroid");

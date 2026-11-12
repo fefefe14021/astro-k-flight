@@ -1,52 +1,75 @@
+// Assets/Scripts/Gameplay/PlayerHealth.cs
+// Namespace: KANYE.Gameplay
+// Canonical Player Health & State controller.
+
 using System;
-using KANYE.Services;
+using System.Collections;
+using KANYE.Audio;
 using KANYE.Systems;
+using KANYE.UI;
 using UnityEngine;
 
 namespace KANYE.Gameplay
 {
-    public class PlayerHealth : MonoBehaviour
+    public class PlayerHealth : ShipHealth
     {
-        [SerializeField] private int maxHealth = 3;
-        [SerializeField] private Vector2 hitSize = new Vector2(1.1f, 0.5f);
-        [SerializeField] private float crashY = -4.7f;
+        [SerializeField] private Vector2 hitBoxSize = new Vector2(1.1f, 0.5f);
+        [SerializeField] private float crashY = -4.6f;
 
-        public int Current { get; private set; }
-        public bool IsDead { get; private set; }
+        public int Current => Lives;
+        public bool IsDead => IsDefeated;
         public bool TookDamage { get; private set; }
-        public event Action<int> Changed;
+
+        public new event Action<int> Changed;
 
         private Rigidbody2D body;
+        private SpriteRenderer spriteRenderer;
         private bool crashed;
         private bool reviveUsed;
-        private bool showingAd;
-        private float adUntil;
 
-        private void Awake()
+        protected override void Awake()
         {
-            Current = maxHealth;
+            base.Awake();
             body = GetComponent<Rigidbody2D>();
+            spriteRenderer = GetComponent<SpriteRenderer>();
+
             var hitBox = GetComponent<BoxCollider2D>();
             if (hitBox == null)
                 hitBox = gameObject.AddComponent<BoxCollider2D>();
 
             hitBox.isTrigger = false;
-            hitBox.size = hitSize;
+            hitBox.size = hitBoxSize;
         }
 
         public void TakeDamage(int amount)
         {
-            if (IsDead || amount <= 0)
+            if (IsDead || amount <= 0 || IsInvulnerable)
                 return;
+
+            invulnerableUntil = Time.time + invulnerableSeconds;
+            StartCoroutine(DamageBlinkRoutine());
 
             TookDamage = true;
-            Current = Mathf.Max(0, Current - amount);
-            Changed?.Invoke(Current);
-            GetComponent<ShipHealth>()?.Mirror(Current, Current == 0);
-            if (Current > 0)
+            Lives = Mathf.Max(0, Lives - amount);
+
+            NotifyChanged();
+            Changed?.Invoke(Lives);
+
+            // Audio & visual juice
+            AudioManager.PlayHit();
+            EffectsManager.PlayImpact(transform.position, Vector2.left, Color.red);
+            EffectsManager.PlayExplosion(transform.position, new Color(1f, 0.35f, 0.2f), isMechanical: true);
+            CameraShake.Shake(0.35f, 0.3f);
+
+            if (Lives > 0)
                 return;
 
-            IsDead = true;
+            // Player defeated
+            IsDefeated = true;
+            AudioManager.PlayDefeat();
+            CameraShake.HitStop(0.1f);
+            CameraShake.Shake(0.65f, 0.6f);
+
             var controller = GetComponent<PlayerController>();
             if (controller != null)
                 controller.enabled = false;
@@ -58,28 +81,55 @@ namespace KANYE.Gameplay
             if (body != null)
             {
                 body.gravityScale = 4.5f;
-                body.linearVelocity = new Vector2(body.linearVelocity.x * 0.3f, 1.2f);
+                body.linearVelocity = new Vector2(body.linearVelocity.x * 0.25f, 1.4f);
                 body.angularVelocity = UnityEngine.Random.Range(-220f, 220f);
             }
+        }
+
+        public void GrantParryInvulnerability(float duration)
+        {
+            invulnerableUntil = Mathf.Max(invulnerableUntil, Time.time + duration);
+            StartCoroutine(ParryShieldBlinkRoutine(duration));
+        }
+
+        private IEnumerator ParryShieldBlinkRoutine(float duration)
+        {
+            var end = Time.time + duration;
+            while (Time.time < end && !IsDead)
+            {
+                if (spriteRenderer != null)
+                {
+                    spriteRenderer.color = (Mathf.Sin(Time.time * 30f) > 0f) 
+                        ? new Color(0.3f, 1f, 0.9f, 1f) 
+                        : Color.white;
+                }
+                yield return null;
+            }
+
+            if (spriteRenderer != null && !IsDead)
+            {
+                ShipSkinCatalog.Apply(spriteRenderer);
+            }
+        }
+
+        private IEnumerator DamageBlinkRoutine()
+        {
+            var end = Time.time + invulnerableSeconds;
+            while (Time.time < end && !IsDead)
+            {
+                if (spriteRenderer != null)
+                    spriteRenderer.enabled = !spriteRenderer.enabled;
+                yield return new WaitForSeconds(0.08f);
+            }
+
+            if (spriteRenderer != null)
+                spriteRenderer.enabled = true;
         }
 
         private void Update()
         {
             if (!IsDead || body == null)
                 return;
-
-            if (showingAd)
-            {
-                if (adUntil <= 0f)
-                    adUntil = Time.unscaledTime + 1.6f;
-                if (Time.unscaledTime < adUntil)
-                    return;
-
-                adUntil = 0f;
-                showingAd = false;
-                Revive();
-                return;
-            }
 
             if (crashed || transform.position.y > crashY)
                 return;
@@ -91,51 +141,29 @@ namespace KANYE.Gameplay
             body.gravityScale = 0f;
             body.bodyType = RigidbodyType2D.Kinematic;
 
-            var sprite = GetComponent<SpriteRenderer>();
-            if (sprite != null)
-                sprite.color = new Color(0.25f, 0.25f, 0.25f, 1f);
+            if (spriteRenderer != null)
+                spriteRenderer.color = new Color(0.25f, 0.25f, 0.25f, 1f);
+
+            // Open modern uGUI Defeat Modal
+            DefeatModal.Show(!reviveUsed, OnReviveRequested);
         }
 
-        private void OnGUI()
+        private void OnReviveRequested()
         {
-            var style = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 22,
-                fontStyle = FontStyle.Bold
-            };
-            style.normal.textColor = IsDead ? Color.red : Color.white;
-            var rank = SaveManager.Instance == null
-                ? "Пилот"
-                : PilotRank.Title(SaveManager.Instance.Data.totalKills);
-            var text = crashed ? "Корабль разбит" : IsDead ? "Падение" : $"HP {Current}/{maxHealth}  {rank}";
-            GUI.Label(new Rect(24f, 24f, 420f, 40f), text, style);
-
-            if (showingAd)
-            {
-                GUI.Box(new Rect(Screen.width * 0.5f - 180f, Screen.height * 0.5f - 40f, 360f, 80f), "Реклама...");
-                return;
-            }
-
-            if (!crashed)
-                return;
-
-            var box = new Rect(Screen.width * 0.5f - 230f, Screen.height * 0.5f - 90f, 460f, 190f);
-            GUI.Box(box, "Поражение");
-            if (GUI.Button(new Rect(box.x + 30f, box.y + 120f, 180f, 40f), "В меню"))
-                SceneLoader.ReturnToMainMenu();
-            if (!reviveUsed && GUI.Button(new Rect(box.x + 230f, box.y + 120f, 200f, 40f), "Реклама: возродиться"))
-                showingAd = true;
+            Revive();
         }
 
-        private void Revive()
+        public void Revive()
         {
             reviveUsed = true;
             AchievementManager.Instance?.UnlockAchievement("second_chance");
-            IsDead = false;
+
+            IsDefeated = false;
             crashed = false;
-            Current = maxHealth;
-            Changed?.Invoke(Current);
-            GetComponent<ShipHealth>()?.Mirror(Current, false);
+            Lives = maxLives;
+
+            NotifyChanged();
+            Changed?.Invoke(Lives);
 
             if (body != null)
             {
@@ -145,18 +173,26 @@ namespace KANYE.Gameplay
                 body.angularVelocity = 0f;
             }
 
-            transform.position = new Vector3(transform.position.x, -1.2f, transform.position.z);
+            transform.position = new Vector3(-4f, 0f, 0f);
             transform.rotation = Quaternion.identity;
 
             var controller = GetComponent<PlayerController>();
             if (controller != null)
                 controller.enabled = true;
+
             var shooter = GetComponent<ShipShooter>();
             if (shooter != null)
                 shooter.enabled = true;
 
-            var sprite = GetComponent<SpriteRenderer>();
-            ShipSkinCatalog.Apply(sprite);
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.enabled = true;
+                ShipSkinCatalog.Apply(spriteRenderer);
+            }
+
+            GrantParryInvulnerability(1.5f);
+            DefeatModal.Hide();
+            Time.timeScale = 1f;
         }
     }
 }

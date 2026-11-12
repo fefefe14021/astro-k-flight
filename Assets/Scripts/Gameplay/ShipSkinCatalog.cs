@@ -23,7 +23,7 @@ namespace KANYE.Gameplay
     {
         public static readonly ShipSkin[] All =
         {
-            new ShipSkin("default", "Базовый корпус", 0, new Color(0.2f, 0.85f, 1f, 1f)),
+            new ShipSkin("default", "Базовый корпус", 0, Color.white),
             new ShipSkin("ember", "Угольный след", 30, new Color(1f, 0.45f, 0.2f, 1f)),
             new ShipSkin("violet", "Сигнальный", 50, new Color(0.62f, 0.35f, 1f, 1f))
         };

@@ -28,10 +28,33 @@ namespace KANYE.UI
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
 
-            CreateLabel(canvas.transform, "Достижения", new Vector2(0.5f, 1f), new Vector2(0f, -50f), new Vector2(800f, 60f), 40, Color.white);
+            // Background
+            var bgObj = new GameObject("Bg", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            bgObj.transform.SetParent(canvasObject.transform, false);
+            var bgRect = bgObj.GetComponent<RectTransform>();
+            bgRect.anchorMin = Vector2.zero;
+            bgRect.anchorMax = Vector2.one;
+            bgRect.offsetMin = Vector2.zero;
+            bgRect.offsetMax = Vector2.zero;
+            var bgImg = bgObj.GetComponent<Image>();
+            bgImg.sprite = PixelUiAtlas.Background;
+            bgImg.color = new Color(0.4f, 0.45f, 0.55f, 1f);
 
-            var viewport = CreatePanel(canvas.transform, "List", new Vector2(0.5f, 0.5f), new Vector2(0f, -20f), new Vector2(980f, 760f));
-            viewport.GetComponent<Image>().color = new Color(0.06f, 0.07f, 0.1f, 0.92f);
+            var cardObj = new GameObject("Card", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            cardObj.transform.SetParent(canvasObject.transform, false);
+            var cardRect = cardObj.GetComponent<RectTransform>();
+            cardRect.anchorMin = new Vector2(0.5f, 0.5f);
+            cardRect.anchorMax = new Vector2(0.5f, 0.5f);
+            cardRect.pivot = new Vector2(0.5f, 0.5f);
+            cardRect.sizeDelta = new Vector2(880f, 760f);
+            var cardImg = cardObj.GetComponent<Image>();
+            cardImg.sprite = PixelUiAtlas.Panel;
+            cardImg.type = Image.Type.Sliced;
+
+            CreateLabel(cardObj.transform, "БОРТОВЫЕ ДОСТИЖЕНИЯ", new Vector2(0.5f, 1f), new Vector2(0f, -42f), new Vector2(800f, 44f), 32, new Color(1f, 0.85f, 0.4f));
+
+            var viewport = CreatePanel(cardObj.transform, "List", new Vector2(0.5f, 0.5f), new Vector2(0f, -15f), new Vector2(800f, 540f));
+            viewport.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.25f);
             viewport.gameObject.AddComponent<RectMask2D>();
             var scroll = viewport.gameObject.AddComponent<ScrollRect>();
             scroll.horizontal = false;
@@ -49,8 +72,8 @@ namespace KANYE.UI
             content.anchoredPosition = Vector2.zero;
             content.sizeDelta = new Vector2(0f, 0f);
             var layout = contentObject.GetComponent<VerticalLayoutGroup>();
-            layout.padding = new RectOffset(24, 24, 16, 16);
-            layout.spacing = 12f;
+            layout.padding = new RectOffset(6, 6, 6, 6);
+            layout.spacing = 8f;
             layout.childAlignment = TextAnchor.UpperCenter;
             layout.childControlWidth = true;
             layout.childControlHeight = true;
@@ -74,7 +97,7 @@ namespace KANYE.UI
                     CreateRow(content, definitions[i]);
             }
 
-            var back = CreateButton(canvas.transform, "Back", "В меню", new Vector2(0.5f, 0f), new Vector2(0f, 48f), new Vector2(280f, 64f));
+            var back = CreateButton(cardObj.transform, "Back", "В ГЛАВНОЕ МЕНЮ", new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(280f, 54f));
             back.onClick.AddListener(SceneLoader.ReturnToMainMenu);
         }
 
@@ -84,32 +107,46 @@ namespace KANYE.UI
             var unlocked = manager != null && manager.IsUnlocked(data.id);
             var progress = manager != null ? manager.GetProgress(data.id) : 0;
             var target = Mathf.Max(1, data.targetAmount);
-            var status = unlocked ? "получено" : progress + "/" + target;
+            var status = unlocked ? "ОТКРЫТО" : progress + " / " + target;
             CreateRow(parent, data.displayName, data.description, status, unlocked);
         }
 
         private static void CreateRow(RectTransform parent, string title, string description, string status, bool unlocked)
         {
-            var row = CreatePanel(parent, title, new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 88f));
-            row.GetComponent<Image>().color = unlocked
-                ? new Color(0.12f, 0.28f, 0.18f, 0.95f)
-                : new Color(0.12f, 0.13f, 0.16f, 0.95f);
-            var element = row.gameObject.AddComponent<LayoutElement>();
-            element.preferredHeight = 88f;
+            var row = CreatePanel(parent, title, new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 80f));
+            var rowImg = row.GetComponent<Image>();
+            rowImg.sprite = PixelUiAtlas.SubPanel;
+            rowImg.type = Image.Type.Sliced;
+            rowImg.color = Color.white;
 
-            var tint = unlocked ? new Color(0.75f, 1f, 0.8f, 1f) : new Color(0.75f, 0.78f, 0.84f, 1f);
-            CreateLabel(row, title, new Vector2(0f, 1f), new Vector2(16f, -8f), new Vector2(620f, 36f), 24, tint).alignment = TextAnchor.UpperLeft;
-            CreateLabel(row, description, new Vector2(0f, 0f), new Vector2(16f, 8f), new Vector2(620f, 36f), 18, Color.white).alignment = TextAnchor.LowerLeft;
-            var statusLabel = CreateLabel(row, status, new Vector2(1f, 0.5f), new Vector2(-16f, 0f), new Vector2(180f, 40f), 22, tint);
-            statusLabel.alignment = TextAnchor.MiddleRight;
-            statusLabel.rectTransform.pivot = new Vector2(1f, 0.5f);
+            var element = row.gameObject.AddComponent<LayoutElement>();
+            element.minHeight = 80f;
+            element.preferredHeight = 80f;
+
+            var accent = new GameObject("Accent", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            accent.transform.SetParent(row, false);
+            var accentRect = accent.GetComponent<RectTransform>();
+            accentRect.anchorMin = new Vector2(0f, 0f);
+            accentRect.anchorMax = new Vector2(0f, 1f);
+            accentRect.pivot = new Vector2(0f, 0.5f);
+            accentRect.sizeDelta = new Vector2(4f, 0f);
+            var accentImg = accent.GetComponent<Image>();
+            accentImg.sprite = PixelUiAtlas.White;
+            accentImg.color = unlocked ? new Color(0.3f, 1f, 0.6f, 1f) : new Color(0.25f, 0.4f, 0.6f, 0.6f);
+
+            var badge = unlocked ? "★ " : "○ ";
+            var header = CreateLabel(row, badge + title + "  —  [" + status + "]", new Vector2(0f, 1f), new Vector2(24f, -18f), new Vector2(720f, 26f), 19, unlocked ? new Color(0.7f, 1f, 0.75f) : Color.white);
+            header.alignment = TextAnchor.MiddleLeft;
+
+            var desc = CreateLabel(row, description, new Vector2(0f, 1f), new Vector2(24f, -48f), new Vector2(720f, 24f), 15, new Color(0.75f, 0.85f, 0.95f));
+            desc.alignment = TextAnchor.MiddleLeft;
         }
 
         private static RectTransform CreatePanel(Transform parent, string name, Vector2 anchor, Vector2 position, Vector2 size)
         {
-            var panel = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            panel.transform.SetParent(parent, false);
-            var rect = panel.GetComponent<RectTransform>();
+            var panelObject = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            panelObject.transform.SetParent(parent, false);
+            var rect = panelObject.GetComponent<RectTransform>();
             rect.anchorMin = anchor;
             rect.anchorMax = anchor;
             rect.pivot = new Vector2(0.5f, 0.5f);
@@ -125,21 +162,20 @@ namespace KANYE.UI
             var rect = textObject.GetComponent<RectTransform>();
             rect.anchorMin = anchor;
             rect.anchorMax = anchor;
-            rect.pivot = anchor;
+            rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
             var text = textObject.GetComponent<Text>();
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.fontSize = fontSize;
-            text.alignment = TextAnchor.MiddleCenter;
+            text.fontStyle = FontStyle.Bold;
             text.color = color;
-            text.horizontalOverflow = HorizontalWrapMode.Wrap;
-            text.verticalOverflow = VerticalWrapMode.Truncate;
             text.text = value;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
             return text;
         }
 
-        private static Button CreateButton(Transform parent, string name, string label, Vector2 anchor, Vector2 position, Vector2 size)
+        private static Button CreateButton(Transform parent, string name, string text, Vector2 anchor, Vector2 position, Vector2 size)
         {
             var buttonObject = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             buttonObject.transform.SetParent(parent, false);
@@ -149,13 +185,26 @@ namespace KANYE.UI
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
-            buttonObject.GetComponent<Image>().color = new Color(0.12f, 0.14f, 0.2f, 0.92f);
 
-            var text = CreateLabel(buttonObject.transform, label, new Vector2(0.5f, 0.5f), Vector2.zero, size, 28, Color.white);
-            text.rectTransform.anchorMin = Vector2.zero;
-            text.rectTransform.anchorMax = Vector2.one;
-            text.rectTransform.offsetMin = Vector2.zero;
-            text.rectTransform.offsetMax = Vector2.zero;
+            var img = buttonObject.GetComponent<Image>();
+            img.sprite = PixelUiAtlas.ButtonSecondary;
+            img.type = Image.Type.Sliced;
+            img.color = Color.white;
+
+            var textObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            textObject.transform.SetParent(buttonObject.transform, false);
+            var textRect = textObject.GetComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+            var label = textObject.GetComponent<Text>();
+            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.fontSize = 19;
+            label.fontStyle = FontStyle.Bold;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = Color.white;
+            label.text = text;
             return buttonObject.GetComponent<Button>();
         }
     }

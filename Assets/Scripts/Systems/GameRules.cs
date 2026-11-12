@@ -7,6 +7,41 @@ namespace KANYE.Systems
     {
         private static GameRulesConfig config;
 
+        public static int ParriesThisRun { get; private set; }
+        public static int SupersUsedThisRun { get; private set; }
+        public static float MissionStartTime { get; private set; }
+
+        public static void ResetMissionStats()
+        {
+            ParriesThisRun = 0;
+            SupersUsedThisRun = 0;
+            MissionStartTime = Time.time;
+        }
+
+        public static void NotifyParry()
+        {
+            ParriesThisRun++;
+            SaveManager.Instance?.AddCoins(8);
+        }
+
+        public static void NotifySuperUsed()
+        {
+            SupersUsedThisRun++;
+        }
+
+        public static string CalculateGrade(int currentHp, int maxHp, int parries, float clearTime)
+        {
+            if (currentHp >= maxHp && parries >= 2)
+                return "S";
+            if (currentHp >= maxHp)
+                return "A+";
+            if (currentHp >= 2)
+                return "A";
+            if (currentHp >= 1)
+                return "B";
+            return "C";
+        }
+
         public static GameRulesConfig Config
         {
             get
@@ -66,6 +101,10 @@ namespace KANYE.Systems
                 achievements.UnlockAchievement("stage_ocean");
             else if (missionIndex == 2)
                 achievements.UnlockAchievement("stage_ice_planet");
+            else if (missionIndex == 3)
+                achievements.UnlockAchievement("stage_deep_space");
+            else if (missionIndex == 4)
+                achievements.UnlockAchievement("stage_home_base");
 
             if (untouched)
                 achievements.UnlockAchievement("clean_run");

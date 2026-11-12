@@ -31,19 +31,42 @@ namespace KANYE.UI
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
 
-            CreateLabel(canvas.transform, "Магазин корпусов", new Vector2(0f, 250f), 40);
-            coinsLabel = CreateLabel(canvas.transform, CoinsText(), new Vector2(0f, 190f), 24);
+            // Background
+            var bgObj = new GameObject("Bg", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            bgObj.transform.SetParent(canvasObject.transform, false);
+            var bgRect = bgObj.GetComponent<RectTransform>();
+            bgRect.anchorMin = Vector2.zero;
+            bgRect.anchorMax = Vector2.one;
+            bgRect.offsetMin = Vector2.zero;
+            bgRect.offsetMax = Vector2.zero;
+            var bgImg = bgObj.GetComponent<Image>();
+            bgImg.sprite = PixelUiAtlas.Background;
+            bgImg.color = new Color(0.4f, 0.45f, 0.55f, 1f);
+
+            var cardObj = new GameObject("Card", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            cardObj.transform.SetParent(canvasObject.transform, false);
+            var cardRect = cardObj.GetComponent<RectTransform>();
+            cardRect.anchorMin = new Vector2(0.5f, 0.5f);
+            cardRect.anchorMax = new Vector2(0.5f, 0.5f);
+            cardRect.pivot = new Vector2(0.5f, 0.5f);
+            cardRect.sizeDelta = new Vector2(760f, 680f);
+            var cardImg = cardObj.GetComponent<Image>();
+            cardImg.sprite = PixelUiAtlas.Panel;
+            cardImg.type = Image.Type.Sliced;
+
+            CreateLabel(cardObj.transform, "МАГАЗИН КОРПУСОВ", new Vector2(0f, 270f), 34, new Color(1f, 0.85f, 0.4f));
+            coinsLabel = CreateLabel(cardObj.transform, CoinsText(), new Vector2(0f, 220f), 22, Color.white);
 
             for (var i = 0; i < ShipSkinCatalog.All.Length; i++)
             {
                 var skin = ShipSkinCatalog.All[i];
-                var button = CreateButton(canvas.transform, skin.Id, new Vector2(0f, 80f - i * 90f));
+                var button = CreateButton(cardObj.transform, skin.Id, new Vector2(0f, 120f - i * 85f));
                 buttonLabels[i] = button.GetComponentInChildren<Text>();
                 button.onClick.AddListener(() => BuyOrEquip(skin));
             }
 
-            var back = CreateButton(canvas.transform, "back", new Vector2(0f, -220f));
-            back.GetComponentInChildren<Text>().text = "В меню";
+            var back = CreateButton(cardObj.transform, "back", new Vector2(0f, -240f));
+            back.GetComponentInChildren<Text>().text = "В ГЛАВНОЕ МЕНЮ";
             back.onClick.AddListener(SceneLoader.ReturnToMainMenu);
             Refresh();
 
@@ -89,21 +112,21 @@ namespace KANYE.UI
                 var owned = save != null && save.Data.unlockedSkinIds.Contains(skin.Id);
                 var equipped = save != null && save.Data.equippedSkinId == skin.Id;
                 if (equipped)
-                    buttonLabels[i].text = skin.Title + " — надет";
+                    buttonLabels[i].text = skin.Title + " — НАДЕТ";
                 else if (owned || skin.Price == 0)
-                    buttonLabels[i].text = skin.Title + " — надеть";
+                    buttonLabels[i].text = skin.Title + " — ВЫБРАТЬ";
                 else
-                    buttonLabels[i].text = skin.Title + " — купить за " + skin.Price;
+                    buttonLabels[i].text = skin.Title + " — КУПИТЬ (" + skin.Price + ")";
             }
         }
 
         private static string CoinsText()
         {
             var coins = SaveManager.Instance != null ? SaveManager.Instance.Data.coins : 0;
-            return "Монеты: " + coins;
+            return "🪙 " + coins + " МОНЕТ";
         }
 
-        private static Text CreateLabel(Transform parent, string value, Vector2 position, int fontSize)
+        private static Text CreateLabel(Transform parent, string value, Vector2 position, int fontSize, Color color)
         {
             var textObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             textObject.transform.SetParent(parent, false);
@@ -112,12 +135,13 @@ namespace KANYE.UI
             rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = position;
-            rect.sizeDelta = new Vector2(800f, 60f);
+            rect.sizeDelta = new Vector2(700f, 50f);
             var text = textObject.GetComponent<Text>();
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.fontSize = fontSize;
+            text.fontStyle = FontStyle.Bold;
             text.alignment = TextAnchor.MiddleCenter;
-            text.color = Color.white;
+            text.color = color;
             text.text = value;
             return text;
         }
@@ -131,8 +155,12 @@ namespace KANYE.UI
             rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = position;
-            rect.sizeDelta = new Vector2(460f, 70f);
-            buttonObject.GetComponent<Image>().color = new Color(0.12f, 0.14f, 0.2f, 0.92f);
+            rect.sizeDelta = new Vector2(480f, 62f);
+
+            var img = buttonObject.GetComponent<Image>();
+            img.sprite = PixelUiAtlas.ButtonSecondary;
+            img.type = Image.Type.Sliced;
+            img.color = Color.white;
 
             var textObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             textObject.transform.SetParent(buttonObject.transform, false);
@@ -143,7 +171,8 @@ namespace KANYE.UI
             textRect.offsetMax = Vector2.zero;
             var text = textObject.GetComponent<Text>();
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.fontSize = 24;
+            text.fontSize = 20;
+            text.fontStyle = FontStyle.Bold;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = Color.white;
             return buttonObject.GetComponent<Button>();

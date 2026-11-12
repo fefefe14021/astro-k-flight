@@ -1,4 +1,8 @@
+// Assets/Scripts/Gameplay/GameplayBootstrap.cs
+// Namespace: KANYE.Gameplay
+
 using KANYE.Systems;
+using KANYE.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -6,7 +10,7 @@ namespace KANYE.Gameplay
 {
     public static class GameplayBootstrap
     {
-        private static readonly Vector3 AsteroidPosition = new Vector3(4f, 0f, 0f);
+        private static readonly Vector3 AsteroidPosition = new Vector3(5f, 0f, 0f);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Hook()
@@ -21,30 +25,63 @@ namespace KANYE.Gameplay
             if (!Application.isPlaying || scene.name != "Gameplay")
                 return;
 
+            // Always restore timeScale
+            Time.timeScale = 1f;
+
+            // 1. Ensure HypeState
             if (Object.FindAnyObjectByType<HypeState>() == null)
                 new GameObject("HypeState").AddComponent<HypeState>();
 
+            // 2. Ensure MissionController
             if (Object.FindAnyObjectByType<MissionController>() == null)
                 new GameObject("Mission").AddComponent<MissionController>();
 
-
+            // 3. Ensure SpaceBackdrop
             if (Object.FindAnyObjectByType<SpaceBackdrop>() == null)
                 new GameObject("SpaceBackdrop").AddComponent<SpaceBackdrop>();
 
-            var player = GameObject.Find("Player");
-            if (player != null && player.GetComponent<ShipHealth>() == null)
-                player.AddComponent<ShipHealth>();
+            // 4. Ensure CameraShake
+            if (Camera.main != null && Camera.main.GetComponent<CameraShake>() == null)
+                Camera.main.gameObject.AddComponent<CameraShake>();
 
+            // 5. Ensure Player components
+            var player = GameObject.Find("Player");
+            if (player != null)
+            {
+                if (player.GetComponent<PlayerHealth>() == null)
+                    player.AddComponent<PlayerHealth>();
+
+                if (player.GetComponent<ShipThrusterVisual>() == null)
+                    player.AddComponent<ShipThrusterVisual>();
+            }
+
+            // 6. Ensure EnemySpawner
             if (Object.FindAnyObjectByType<EnemySpawner>() == null)
                 new GameObject("EnemySpawner").AddComponent<EnemySpawner>();
 
-            if (Object.FindAnyObjectByType<Asteroid>() != null)
-                return;
+            // 7. Tutorial hints if active
+            var tutorialHints = Object.FindAnyObjectByType<TutorialHints>();
+            if (tutorialHints == null && TutorialHints.IsTutorialActive)
+            {
+                var hintsObject = new GameObject("TutorialHints");
+                tutorialHints = hintsObject.AddComponent<TutorialHints>();
+            }
 
-            var asteroid = new GameObject("Asteroid");
-            asteroid.transform.position = AsteroidPosition;
-            asteroid.AddComponent<SpriteRenderer>();
-            asteroid.AddComponent<Asteroid>();
+            var shipInput = player?.GetComponent<ShipInput>();
+            if (shipInput != null && tutorialHints != null)
+            {
+                shipInput.OnFirstShot += tutorialHints.OnFirstShot;
+                shipInput.OnFirstMove += tutorialHints.OnFirstMove;
+            }
+
+            // 8. Ensure initial asteroid if none exist
+            if (Object.FindAnyObjectByType<Asteroid>() == null && TutorialHints.IsTutorialActive)
+            {
+                var asteroid = new GameObject("Asteroid");
+                asteroid.transform.position = AsteroidPosition;
+                asteroid.AddComponent<SpriteRenderer>();
+                asteroid.AddComponent<Asteroid>();
+            }
         }
 
         public static void EnsureEditorAsteroid()

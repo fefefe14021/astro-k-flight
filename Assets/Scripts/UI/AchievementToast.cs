@@ -1,15 +1,18 @@
 using KANYE.Systems;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace KANYE.UI
 {
     public class AchievementToast : MonoBehaviour
     {
-        private string message;
-        private float hideAt;
+        CanvasGroup group;
+        Text title;
+        Text body;
+        float hideAt;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void Create()
+        static void Create()
         {
             if (FindAnyObjectByType<AchievementToast>() != null)
                 return;
@@ -19,44 +22,112 @@ namespace KANYE.UI
             toast.AddComponent<AchievementToast>();
         }
 
-        private bool hooked;
-
-        private void Update()
+        void Awake()
         {
-            if (hooked || AchievementManager.Instance == null)
-                return;
+            var canvasObject = new GameObject("ToastCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            canvasObject.transform.SetParent(transform, false);
+            var canvas = canvasObject.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 400;
+            var scaler = canvasObject.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 0.5f;
 
-            AchievementManager.Instance.Unlocked += Show;
-            hooked = true;
+            var card = new GameObject("Card", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(CanvasGroup));
+            card.transform.SetParent(canvasObject.transform, false);
+            var rect = card.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-28f, -28f);
+            rect.sizeDelta = new Vector2(420f, 110f);
+            var cardImage = card.GetComponent<Image>();
+            cardImage.sprite = White();
+            cardImage.color = new Color(0.06f, 0.08f, 0.12f, 0.96f);
+            group = card.GetComponent<CanvasGroup>();
+            group.alpha = 0f;
+            group.blocksRaycasts = false;
+
+            var accent = new GameObject("Accent", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            accent.transform.SetParent(card.transform, false);
+            var accentRect = accent.GetComponent<RectTransform>();
+            accentRect.anchorMin = new Vector2(0f, 0f);
+            accentRect.anchorMax = new Vector2(0f, 1f);
+            accentRect.pivot = new Vector2(0f, 0.5f);
+            accentRect.sizeDelta = new Vector2(6f, 0f);
+            var accentImage = accent.GetComponent<Image>();
+            accentImage.sprite = White();
+            accentImage.color = new Color(1f, 0.72f, 0.2f, 1f);
+
+            title = Label(card.transform, "Title", "Ачивка", 22, new Vector2(16f, -12f), new Color(1f, 0.86f, 0.45f));
+            body = Label(card.transform, "Body", "", 18, new Vector2(16f, -48f), Color.white);
         }
 
-        private void OnDestroy()
+        bool hooked;
+
+        void Update()
+        {
+            if (!hooked && AchievementManager.Instance != null)
+            {
+                AchievementManager.Instance.Unlocked += Show;
+                hooked = true;
+            }
+
+            if (group == null)
+                return;
+
+            var visible = Time.unscaledTime < hideAt;
+            group.alpha = visible ? 1f : 0f;
+        }
+
+        void OnDestroy()
         {
             if (hooked && AchievementManager.Instance != null)
                 AchievementManager.Instance.Unlocked -= Show;
         }
 
-        private void Show(AchievementData data)
+        void Show(AchievementData data)
         {
-            message = data.displayName + "\n" + data.description;
-            hideAt = Time.unscaledTime + 3.2f;
+            if (title != null)
+                title.text = "Открыто";
+            if (body != null)
+                body.text = data.displayName + "\n" + data.description;
+            hideAt = Time.unscaledTime + 3.4f;
         }
 
-        private void OnGUI()
+        static Text Label(Transform parent, string name, string value, int fontSize, Vector2 position, Color color)
         {
-            if (string.IsNullOrEmpty(message) || Time.unscaledTime > hideAt)
-                return;
+            var textObject = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            textObject.transform.SetParent(parent, false);
+            var rect = textObject.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = position;
+            rect.sizeDelta = new Vector2(-32f, 36f);
+            var text = textObject.GetComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontSize = fontSize;
+            text.alignment = TextAnchor.UpperLeft;
+            text.color = color;
+            text.text = value;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            return text;
+        }
 
-            var box = new Rect(Screen.width - 360f, 24f, 330f, 90f);
-            GUI.Box(box, "Ачивка");
-            var style = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 16,
-                wordWrap = true,
-                alignment = TextAnchor.UpperLeft
-            };
-            style.normal.textColor = Color.white;
-            GUI.Label(new Rect(box.x + 12f, box.y + 28f, box.width - 24f, 54f), message, style);
+        static Sprite white;
+
+        static Sprite White()
+        {
+            if (white != null)
+                return white;
+
+            var texture = new Texture2D(1, 1);
+            texture.SetPixel(0, 0, Color.white);
+            texture.Apply();
+            white = Sprite.Create(texture, new Rect(0f, 0f, 1f, 1f), new Vector2(0.5f, 0.5f), 1f);
+            return white;
         }
     }
 }

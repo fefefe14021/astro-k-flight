@@ -12,6 +12,7 @@ namespace KANYE.EditorTools
         {
             EditorSceneManager.playModeStartScene = null;
             EditorApplication.delayCall += EnsureAsteroid;
+            EditorApplication.delayCall += EnsureShipVisual;
         }
 
         private static void EnsureAsteroid()
@@ -29,6 +30,30 @@ namespace KANYE.EditorTools
             GameplayBootstrap.EnsureEditorAsteroid();
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
+        }
+
+        private static void EnsureShipVisual()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                return;
+
+            // Force reimport ship sprite to clear any invalid cache
+            AssetDatabase.ImportAsset("Assets/Resources/Sprites/ship.png", ImportAssetOptions.ForceUpdate);
+
+            var scene = EditorSceneManager.GetActiveScene();
+            if (!scene.IsValid() || scene.name != "Gameplay")
+                return;
+
+            var player = GameObject.Find("Player");
+            if (player == null)
+                return;
+
+            var visual = player.GetComponent<PlaceholderShipVisual>();
+            if (visual != null)
+            {
+                visual.EnsureShipSetup();
+                EditorSceneManager.MarkSceneDirty(scene);
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using KANYE.UI;
 using UnityEngine;
 
 namespace KANYE.Gameplay
@@ -14,8 +15,14 @@ namespace KANYE.Gameplay
 
         private void Update()
         {
+            if (TutorialHints.IsTutorialActive)
+                return;
+
             var health = FindAnyObjectByType<ShipHealth>();
             if (health != null && health.IsDefeated)
+                return;
+
+            if (BossController.ActiveBoss != null && !BossController.ActiveBoss.IsDead)
                 return;
 
             timer -= Time.deltaTime;
@@ -23,12 +30,11 @@ namespace KANYE.Gameplay
                 return;
 
             timer = interval;
-            if (FindObjectsByType<Enemy>(FindObjectsSortMode.None).Length >= maxAlive)
+            if (FindObjectsByType<Enemy>().Length >= maxAlive)
                 return;
 
-            var enemy = new GameObject("Enemy");
+            var enemy = new GameObject("Enemy", typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(Rigidbody2D));
             enemy.transform.position = new Vector3(spawnX, Random.Range(minY, maxY), 0f);
-            enemy.AddComponent<SpriteRenderer>();
             enemy.AddComponent<Enemy>();
         }
     }

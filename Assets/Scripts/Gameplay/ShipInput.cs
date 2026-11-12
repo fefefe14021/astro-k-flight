@@ -1,3 +1,4 @@
+
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -13,6 +14,13 @@ namespace KANYE.Gameplay
 
         public event Action FirePressed;
         public event Action FireReleased;
+
+        // Новые события для обучения
+        public event Action OnFirstShot;
+        public event Action OnFirstMove;
+
+        private bool _firstShotFired = false;
+        private bool _firstMoveDetected = false;
 
         private InputAction moveAction;
         private InputAction fireAction;
@@ -51,6 +59,22 @@ namespace KANYE.Gameplay
         {
             Move = moveAction.ReadValue<Vector2>();
             FireHeld = fireAction.IsPressed();
+
+            // Проверяем первый выстрел (только один раз)
+            if (!_firstShotFired && FireHeld)
+            {
+                _firstShotFired = true;
+                OnFirstShot?.Invoke();
+                OnFirstShot = null; // Отписываемся, чтобы не вызывать повторно
+            }
+
+            // Проверяем первое движение (только один раз)
+            if (!_firstMoveDetected && Move != Vector2.zero)
+            {
+                _firstMoveDetected = true;
+                OnFirstMove?.Invoke();
+                OnFirstMove = null; // Отписываемся, чтобы не вызывать повторно
+            }
         }
 
         private void OnFireStarted(InputAction.CallbackContext context)
