@@ -56,15 +56,16 @@ namespace KANYE.Gameplay
             if (player != null && player.IsDead)
                 return;
 
-            // Spawning phase before boss
+            // Spawning phase before boss or before mission completion
             if (!bossSpawned)
             {
                 spawnTimer += Time.deltaTime;
-                if (spawnedAsteroids < mission.ExtraAsteroids && spawnTimer >= mission.SpawnInterval)
+                if (spawnTimer >= mission.SpawnInterval)
                 {
                     spawnTimer = 0f;
-                    spawnedAsteroids++;
                     SpawnAsteroid();
+                    if (Random.value < 0.35f)
+                        SpawnAsteroid(Random.Range(-1.2f, 1.2f));
                 }
 
                 // Falling missiles
@@ -83,7 +84,7 @@ namespace KANYE.Gameplay
                 if (GameRules.IsParryUnlocked)
                 {
                     parryTimer += Time.deltaTime;
-                    if (parryTimer >= 4.5f)
+                    if (parryTimer >= 2.8f)
                     {
                         parryTimer = 0f;
                         SpawnParryOrb();
@@ -186,15 +187,18 @@ namespace KANYE.Gameplay
                 });
         }
 
-        private void SpawnAsteroid()
+        private void SpawnAsteroid(float yOffset = 0f)
         {
             var large = Random.value < mission.LargeChance;
             var asteroidObject = new GameObject("Asteroid", typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(Rigidbody2D));
-            var y = large ? Random.Range(-2.4f, 2.4f) : Random.Range(-3.6f, 3.6f);
+            var y = (large ? Random.Range(-2.4f, 2.4f) : Random.Range(-3.6f, 3.6f)) + yOffset;
+            y = Mathf.Clamp(y, -3.8f, 3.8f);
             asteroidObject.transform.position = new Vector3(10.5f + Random.Range(0f, 1.5f), y, 0f);
+            asteroidObject.transform.localScale = large ? Vector3.one * 1.55f : Vector3.one * 0.95f;
+
             var asteroid = asteroidObject.AddComponent<Asteroid>();
-            var speed = large ? mission.AsteroidSpeed * 0.75f : mission.AsteroidSpeed * Random.Range(0.95f, 1.25f);
-            asteroid.Configure(speed, large ? mission.Damage + 1 : mission.Damage, large ? 0.95f : 0.52f);
+            var speed = large ? mission.AsteroidSpeed * 0.8f : mission.AsteroidSpeed * Random.Range(0.95f, 1.25f);
+            asteroid.Configure(speed, large ? mission.Damage + 1 : mission.Damage, large ? 0.95f : 0.52f, large ? 2 : 1);
         }
 
         private void SpawnMissile()

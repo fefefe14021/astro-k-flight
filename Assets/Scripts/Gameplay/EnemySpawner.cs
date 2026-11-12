@@ -5,13 +5,11 @@ namespace KANYE.Gameplay
 {
     public class EnemySpawner : MonoBehaviour
     {
-        [SerializeField] private float interval = 2.6f;
-        [SerializeField] private int maxAlive = 3;
-        [SerializeField] private float spawnX = 10f;
+        [SerializeField] private float spawnX = 10.5f;
         [SerializeField] private float minY = -3.4f;
         [SerializeField] private float maxY = 3.4f;
 
-        private float timer = 1.2f;
+        private float timer = 0.8f;
 
         private void Update()
         {
@@ -25,16 +23,33 @@ namespace KANYE.Gameplay
             if (BossController.ActiveBoss != null && !BossController.ActiveBoss.IsDead)
                 return;
 
+            var missionIdx = MissionCatalog.Selected;
+            var maxAlive = missionIdx >= 7 ? 6 : (missionIdx >= 3 ? 5 : 4);
+            var interval = missionIdx >= 7 ? 1.0f : (missionIdx >= 3 ? 1.35f : 1.6f);
+
             timer -= Time.deltaTime;
             if (timer > 0f)
                 return;
 
             timer = interval;
-            if (FindObjectsByType<Enemy>().Length >= maxAlive)
+            var currentEnemies = FindObjectsByType<Enemy>().Length;
+            if (currentEnemies >= maxAlive)
                 return;
 
+            SpawnSingleEnemy(Random.Range(minY, maxY));
+
+            // Wingman formation: 35% chance to spawn a second drone in the wave
+            if (currentEnemies + 1 < maxAlive && Random.value < 0.35f)
+            {
+                var wingY = Mathf.Clamp(Random.Range(minY, maxY), minY, maxY);
+                SpawnSingleEnemy(wingY, offsetX: 0.9f);
+            }
+        }
+
+        private void SpawnSingleEnemy(float y, float offsetX = 0f)
+        {
             var enemy = new GameObject("Enemy", typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(Rigidbody2D));
-            enemy.transform.position = new Vector3(spawnX, Random.Range(minY, maxY), 0f);
+            enemy.transform.position = new Vector3(spawnX + offsetX, y, 0f);
             enemy.AddComponent<Enemy>();
         }
     }

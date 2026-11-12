@@ -74,11 +74,12 @@ namespace KANYE.Gameplay
             Destroy(gameObject);
         }
 
-        public void Configure(float speed, int contactDamage, float hitRadius)
+        public void Configure(float speed, int contactDamage, float hitRadius, int albums = 1)
         {
             moveSpeed = speed;
             damage = contactDamage;
             radius = hitRadius;
+            albumsOnHit = albums;
             var hitBox = GetComponent<CircleCollider2D>();
             if (hitBox != null)
                 hitBox.radius = radius;
