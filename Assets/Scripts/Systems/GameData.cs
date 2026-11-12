@@ -12,6 +12,13 @@ namespace KANYE.Systems
     }
 
     [Serializable]
+    public class WeaponUpgradeEntry
+    {
+        public string weaponId;
+        public int level = 1;
+    }
+
+    [Serializable]
     public class GameData
     {
         public int coins;
@@ -21,6 +28,7 @@ namespace KANYE.Systems
         public List<string> unlockedSkinIds = new List<string>();
         public string equippedWeaponId = "twin_blaster";
         public List<string> unlockedWeaponIds = new List<string>();
+        public List<WeaponUpgradeEntry> weaponUpgrades = new List<WeaponUpgradeEntry>();
         public List<AchievementProgressEntry> achievements = new List<AchievementProgressEntry>();
     }
 }

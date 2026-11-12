@@ -1,4 +1,5 @@
 using System;
+using KANYE.Systems;
 using UnityEngine;
 
 namespace KANYE.Gameplay
@@ -14,8 +15,8 @@ namespace KANYE.Gameplay
         public float HypeMax => hypeMax;
 
         public const float EXCost = 25f;
-        public bool CanUseEX => Hype >= EXCost;
-        public bool CanUseSuper => Hype >= hypeMax - 0.01f;
+        public bool CanUseEX => Hype >= EXCost && GameRules.IsEXUnlocked;
+        public bool CanUseSuper => Hype >= hypeMax - 0.01f && GameRules.IsSuperUnlocked;
         public int CardsCount => Mathf.Clamp(Mathf.FloorToInt(Hype / EXCost), 0, 4);
 
         public event Action Changed;

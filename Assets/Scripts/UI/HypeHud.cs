@@ -236,7 +236,15 @@ namespace KANYE.UI
 
             if (parryLabel != null)
             {
-                parryLabel.text = $"⚡ ПАРИ: {Systems.GameRules.ParriesThisRun}";
+                if (Systems.GameRules.IsParryUnlocked)
+                {
+                    parryLabel.gameObject.SetActive(true);
+                    parryLabel.text = $"⚡ ПАРИ: {Systems.GameRules.ParriesThisRun}";
+                }
+                else
+                {
+                    parryLabel.gameObject.SetActive(false);
+                }
             }
         }
 

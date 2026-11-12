@@ -80,24 +80,34 @@ namespace KANYE.Gameplay
                 }
 
                 // Cuphead parryable pink hazard orbs
-                parryTimer += Time.deltaTime;
-                if (parryTimer >= 4.5f)
+                if (GameRules.IsParryUnlocked)
                 {
-                    parryTimer = 0f;
-                    SpawnParryOrb();
+                    parryTimer += Time.deltaTime;
+                    if (parryTimer >= 4.5f)
+                    {
+                        parryTimer = 0f;
+                        SpawnParryOrb();
+                    }
                 }
             }
         }
 
         private void OnHypeChanged()
         {
-            if (bossSpawned || hype == null || mission == null)
+            if (missionCompleted || hype == null || mission == null)
                 return;
 
-            // When required albums collected, summon Sector Boss!
             if (hype.Albums >= mission.AlbumsRequired)
             {
-                SummonBoss();
+                if (mission.HasBoss)
+                {
+                    if (!bossSpawned)
+                        SummonBoss();
+                }
+                else
+                {
+                    CompleteMission();
+                }
             }
         }
 
@@ -105,26 +115,51 @@ namespace KANYE.Gameplay
         {
             bossSpawned = true;
 
-            // Clear remaining asteroids so arena is clear
+            // Clear remaining hazards so arena is clear
             var asteroids = FindObjectsByType<Asteroid>();
             for (var i = 0; i < asteroids.Length; i++)
-            {
                 Destroy(asteroids[i].gameObject);
-            }
+
+            var missiles = FindObjectsByType<Missile>();
+            for (var i = 0; i < missiles.Length; i++)
+                Destroy(missiles[i].gameObject);
+
+            var parries = FindObjectsByType<ParryHazard>();
+            for (var i = 0; i < parries.Length; i++)
+                Destroy(parries[i].gameObject);
 
             // Radio transmission from Navigator Barney warning about incoming Sector Boss!
             // Time is paused during transmission; boss spawns after player dismisses warning.
-            MissionRadioComms.ShowBossAlert(MissionCatalog.Selected, () =>
+            MissionRadioComms.ShowBossAlert(mission.SectorIndex, () =>
             {
-                currentBoss = BossController.SpawnBoss(MissionCatalog.Selected);
-                currentBoss.Defeated += OnBossDefeated;
+                currentBoss = BossController.SpawnBoss(mission.SectorIndex);
+                currentBoss.Defeated += CompleteMission;
             });
         }
 
-        private void OnBossDefeated()
+        private void CompleteMission()
         {
             if (missionCompleted) return;
             missionCompleted = true;
+
+            // Clear remaining hazards
+            var asteroids = FindObjectsByType<Asteroid>();
+            for (var i = 0; i < asteroids.Length; i++)
+                Destroy(asteroids[i].gameObject);
+
+            var missiles = FindObjectsByType<Missile>();
+            for (var i = 0; i < missiles.Length; i++)
+                Destroy(missiles[i].gameObject);
+
+            var parries = FindObjectsByType<ParryHazard>();
+            for (var i = 0; i < parries.Length; i++)
+                Destroy(parries[i].gameObject);
+
+            var enemies = FindObjectsByType<Enemy>();
+            for (var i = 0; i < enemies.Length; i++)
+                Destroy(enemies[i].gameObject);
+
+            AudioManager.PlayVictory();
 
             var player = FindAnyObjectByType<PlayerHealth>();
             var untouched = player == null || !player.TookDamage;

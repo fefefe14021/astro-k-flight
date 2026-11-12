@@ -144,5 +144,102 @@ namespace KANYE.Gameplay
 
             return All[0];
         }
+
+        public static int GetDamage(string weaponId, int level)
+        {
+            level = Mathf.Clamp(level, 1, 3);
+            switch (weaponId)
+            {
+                case "twin_blaster":
+                    return level;
+                case "scatter_shotgun":
+                    return level;
+                case "homing_missiles":
+                    return level >= 3 ? 2 : 1;
+                case "heavy_railgun":
+                    return level == 1 ? 3 : (level == 2 ? 6 : 10);
+                case "saw_disc":
+                    return level == 1 ? 2 : (level == 2 ? 4 : 7);
+                case "plasma_mortar":
+                    return level == 1 ? 4 : (level == 2 ? 8 : 14);
+                default:
+                    return level;
+            }
+        }
+
+        public static float GetFireInterval(string weaponId, int level)
+        {
+            level = Mathf.Clamp(level, 1, 3);
+            switch (weaponId)
+            {
+                case "twin_blaster":
+                    return level == 1 ? 0.14f : (level == 2 ? 0.115f : 0.095f);
+                case "scatter_shotgun":
+                    return level == 1 ? 0.32f : (level == 2 ? 0.28f : 0.24f);
+                case "homing_missiles":
+                    return level == 1 ? 0.22f : (level == 2 ? 0.19f : 0.16f);
+                case "heavy_railgun":
+                    return level == 1 ? 0.38f : (level == 2 ? 0.33f : 0.28f);
+                case "saw_disc":
+                    return level == 1 ? 0.28f : (level == 2 ? 0.24f : 0.20f);
+                case "plasma_mortar":
+                    return level == 1 ? 0.48f : (level == 2 ? 0.42f : 0.36f);
+                default:
+                    return 0.14f;
+            }
+        }
+
+        public static int GetProjectileCount(string weaponId, int level)
+        {
+            level = Mathf.Clamp(level, 1, 3);
+            switch (weaponId)
+            {
+                case "twin_blaster":
+                    return 2;
+                case "scatter_shotgun":
+                    return level == 1 ? 5 : (level == 2 ? 6 : 7);
+                case "homing_missiles":
+                    return level == 1 ? 2 : (level == 2 ? 3 : 4);
+                case "heavy_railgun":
+                    return 1;
+                case "saw_disc":
+                    return level >= 3 ? 2 : 1;
+                case "plasma_mortar":
+                    return 1;
+                default:
+                    return 1;
+            }
+        }
+
+        public static string GetUpgradeSummary(string weaponId, int currentLevel)
+        {
+            var nextLvl = currentLevel + 1;
+            if (nextLvl > 3) return "★ МАКСИМАЛЬНЫЙ УРОВЕНЬ ★";
+
+            var curDmg = GetDamage(weaponId, currentLevel);
+            var nextDmg = GetDamage(weaponId, nextLvl);
+            var curRate = 1f / GetFireInterval(weaponId, currentLevel);
+            var nextRate = 1f / GetFireInterval(weaponId, nextLvl);
+
+            switch (weaponId)
+            {
+                case "scatter_shotgun":
+                    var curP = GetProjectileCount(weaponId, currentLevel);
+                    var nextP = GetProjectileCount(weaponId, nextLvl);
+                    return $"Дробь: {curP}→{nextP} шт | Урон: {curDmg}→{nextDmg} | Темп: {curRate:0.0}→{nextRate:0.0}/с";
+                case "homing_missiles":
+                    var curM = GetProjectileCount(weaponId, currentLevel);
+                    var nextM = GetProjectileCount(weaponId, nextLvl);
+                    return $"Ракеты: {curM}→{nextM} шт | Урон: {curDmg}→{nextDmg} | Темп: {curRate:0.0}→{nextRate:0.0}/с";
+                case "heavy_railgun":
+                    return $"Бронебой: {curDmg}→{nextDmg} Урона | Темп: {curRate:0.0}→{nextRate:0.0}/с";
+                case "saw_disc":
+                    return $"Пилы: Урон {curDmg}→{nextDmg} | Темп: {curRate:0.0}→{nextRate:0.0}/с";
+                case "plasma_mortar":
+                    return $"AoE: Урон {curDmg}→{nextDmg} | Темп: {curRate:0.0}→{nextRate:0.0}/с";
+                default:
+                    return $"Плазмомет: Урон {curDmg}→{nextDmg} | Темп: {curRate:0.0}→{nextRate:0.0}/с";
+            }
+        }
     }
 }

@@ -11,6 +11,13 @@ namespace KANYE.Systems
         public static int SupersUsedThisRun { get; private set; }
         public static float MissionStartTime { get; private set; }
 
+        public static int ActiveMissionProgress =>
+            Mathf.Max(MissionCatalog.Selected, SaveManager.Instance != null ? SaveManager.Instance.CurrentMission : 0);
+
+        public static bool IsParryUnlocked => ActiveMissionProgress >= 1;
+        public static bool IsEXUnlocked => ActiveMissionProgress >= 3;
+        public static bool IsSuperUnlocked => ActiveMissionProgress >= 6;
+
         public static void ResetMissionStats()
         {
             ParriesThisRun = 0;

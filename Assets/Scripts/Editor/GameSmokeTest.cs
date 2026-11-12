@@ -51,8 +51,8 @@ namespace KANYE.EditorTools
 
             Test("3. Mission Catalog & Sectors", () =>
             {
-                if (MissionCatalog.All == null || MissionCatalog.All.Length != 5)
-                    throw new Exception($"Expected 5 sectors, got {MissionCatalog.All?.Length}");
+                if (MissionCatalog.All == null || MissionCatalog.All.Length < 12)
+                    throw new Exception($"Expected 12 missions, got {MissionCatalog.All?.Length}");
 
                 for (var i = 0; i < MissionCatalog.All.Length; i++)
                 {
@@ -224,14 +224,21 @@ namespace KANYE.EditorTools
                 if (LoreCatalog.Entries.Length < 5)
                     throw new Exception($"Expected at least 5 lore entries, found {LoreCatalog.Entries.Length}");
 
-                if (LoreCatalog.Dialogues.Length < 5)
-                    throw new Exception($"Expected 5 sector dialogues, found {LoreCatalog.Dialogues.Length}");
+                if (LoreCatalog.Dialogues.Length < 12)
+                    throw new Exception($"Expected 12 mission dialogues, found {LoreCatalog.Dialogues.Length}");
                 for (var i = 0; i < LoreCatalog.Dialogues.Length; i++)
                 {
                     var d = LoreCatalog.Dialogues[i];
                     if (string.IsNullOrEmpty(d.Speaker) || string.IsNullOrEmpty(d.Header) || d.IntroLines == null || d.IntroLines.Length == 0)
-                        throw new Exception($"Invalid dialogue at sector {i}");
+                        throw new Exception($"Invalid dialogue at mission {i}");
                 }
+
+                // Verify weapon upgrade progression calculations
+                if (WeaponCatalog.GetDamage("twin_blaster", 1) != 1 || WeaponCatalog.GetDamage("twin_blaster", 2) != 2 || WeaponCatalog.GetDamage("twin_blaster", 3) != 3)
+                    throw new Exception("Twin Blaster damage scaling mismatch");
+
+                if (WeaponCatalog.GetProjectileCount("scatter_shotgun", 1) != 5 || WeaponCatalog.GetProjectileCount("scatter_shotgun", 3) != 7)
+                    throw new Exception("Scatter Shotgun projectile scaling mismatch");
 
                 var portrait = Resources.Load<Sprite>("Sprites/barney_portrait");
                 if (portrait == null)

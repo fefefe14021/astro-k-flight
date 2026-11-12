@@ -109,9 +109,16 @@ namespace KANYE.UI
                 return;
             }
 
-            var dialogue = LoreCatalog.GetDialogue(sectorIndex);
+            var dialogue = LoreCatalog.GetDialogue(MissionCatalog.Selected);
+            if (string.IsNullOrEmpty(dialogue?.BossWarning))
+                dialogue = LoreCatalog.GetDialogue(sectorIndex);
+
             AudioManager.PlayBossWarning();
-            Instance.StartTransmission("🚨 ПЕРЕХВАТ: БАРНИ НА СВЯЗИ!", new[] { dialogue.BossWarning }, onDismiss);
+            var warning = !string.IsNullOrEmpty(dialogue?.BossWarning)
+                ? dialogue.BossWarning
+                : "⚠️ Внимание! На радаре обнаружен флагман Синдиката! Приготовься к бою!";
+
+            Instance.StartTransmission("🚨 ПЕРЕХВАТ: БАРНИ НА СВЯЗИ!", new[] { warning }, onDismiss);
         }
 
         public void StartTransmission(string header, string[] lines, Action onComplete)

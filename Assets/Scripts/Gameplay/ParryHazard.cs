@@ -84,9 +84,15 @@ namespace KANYE.Gameplay
             {
                 if (health.IsDead) return;
 
-                // Player can parry if holding fire, recently fired, or parry buff
-                // Or simply contact triggers parry if player actively maneuvers into it!
-                ExecuteParry(health);
+                if (GameRules.IsParryUnlocked)
+                {
+                    ExecuteParry(health);
+                }
+                else
+                {
+                    health.TakeDamage(1);
+                    Destroy(gameObject);
+                }
                 return;
             }
 

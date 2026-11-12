@@ -4,6 +4,7 @@
 // Features scrollable item list, responsive text wrapping, live thruster preview, and crystal-clear UI.
 
 using System.Collections.Generic;
+using KANYE.Audio;
 using KANYE.Gameplay;
 using KANYE.Services;
 using KANYE.Systems;
@@ -40,6 +41,8 @@ namespace KANYE.UI
         private Text previewStats;
         private Button actionButton;
         private Text actionButtonText;
+        private Button upgradeButton;
+        private Text upgradeButtonText;
         private Button tabWeaponsBtn;
         private Button tabSkinsBtn;
 
@@ -226,6 +229,22 @@ namespace KANYE.UI
             previewStats = CreateText(previewPanel.transform, "PrevStats", "УРОН: 1 | ТЕМП: 7.1 выстр/сек", 16, new Vector2(0f, -26f), new Vector2(480f, 26f), new Color(0.9f, 1f, 0.8f), FontStyle.Bold);
             previewDescription = CreateText(previewPanel.transform, "PrevDesc", "Описание технологии...", 14, new Vector2(0f, -88f), new Vector2(480f, 96f), new Color(0.88f, 0.92f, 0.98f), FontStyle.Normal);
 
+            // Upgrade Button (Level 1 -> 2 -> 3)
+            var upgObj = new GameObject("UpgradeButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            upgObj.transform.SetParent(previewPanel.transform, false);
+            var upgRect = upgObj.GetComponent<RectTransform>();
+            upgRect.anchorMin = new Vector2(0.5f, 0f);
+            upgRect.anchorMax = new Vector2(0.5f, 0f);
+            upgRect.pivot = new Vector2(0.5f, 0f);
+            upgRect.anchoredPosition = new Vector2(0f, 68f);
+            upgRect.sizeDelta = new Vector2(380f, 44f);
+            var upgImg = upgObj.GetComponent<Image>();
+            upgImg.sprite = PixelUiAtlas.ButtonPrimary;
+            upgImg.type = Image.Type.Sliced;
+            upgradeButton = upgObj.GetComponent<Button>();
+            upgradeButton.onClick.AddListener(OnUpgradeButtonClicked);
+            upgradeButtonText = CreateText(upgObj.transform, "UpgText", "ПРОКАЧАТЬ ОРУЖИЕ", 16, Vector2.zero, new Vector2(360f, 36f), Color.white, FontStyle.Bold);
+
             // Action Button (Buy / Equip)
             var btnObj = new GameObject("ActionButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             btnObj.transform.SetParent(previewPanel.transform, false);
@@ -233,14 +252,14 @@ namespace KANYE.UI
             btnRect.anchorMin = new Vector2(0.5f, 0f);
             btnRect.anchorMax = new Vector2(0.5f, 0f);
             btnRect.pivot = new Vector2(0.5f, 0f);
-            btnRect.anchoredPosition = new Vector2(0f, 22f);
-            btnRect.sizeDelta = new Vector2(360f, 50f);
+            btnRect.anchoredPosition = new Vector2(0f, 18f);
+            btnRect.sizeDelta = new Vector2(380f, 44f);
             var btnImg = btnObj.GetComponent<Image>();
             btnImg.sprite = PixelUiAtlas.ButtonPrimary;
             btnImg.type = Image.Type.Sliced;
             actionButton = btnObj.GetComponent<Button>();
             actionButton.onClick.AddListener(OnActionButtonClicked);
-            actionButtonText = CreateText(btnObj.transform, "BtnText", "ВЫБРАТЬ", 20, Vector2.zero, new Vector2(340f, 40f), Color.white, FontStyle.Bold);
+            actionButtonText = CreateText(btnObj.transform, "BtnText", "ВЫБРАТЬ", 18, Vector2.zero, new Vector2(360f, 36f), Color.white, FontStyle.Bold);
 
             // Return to Main Menu
             var backBtn = new GameObject("BackBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
@@ -294,8 +313,10 @@ namespace KANYE.UI
                     var isOwned = save != null && save.Data.unlockedWeaponIds.Contains(w.Id);
                     var isEquipped = w.Id == equippedId;
                     var isSelected = index == selectedWeaponIndex;
+                    var lvl = save != null ? save.GetWeaponLevel(w.Id) : 1;
+                    var itemTitle = isOwned ? $"{w.Title} [Ур.{lvl}]" : w.Title;
 
-                    var btn = CreateListItem(listContainer, w.Title, w.Subtitle, w.Price, isOwned, isEquipped, isSelected, () =>
+                    var btn = CreateListItem(listContainer, itemTitle, w.Subtitle, w.Price, isOwned, isEquipped, isSelected, () =>
                     {
                         selectedWeaponIndex = index;
                         Refresh();
@@ -338,6 +359,7 @@ namespace KANYE.UI
             var save = SaveManager.Instance;
             var isOwned = save != null && save.Data.unlockedWeaponIds.Contains(weapon.Id);
             var isEquipped = save != null && save.Data.equippedWeaponId == weapon.Id;
+            var level = save != null ? save.GetWeaponLevel(weapon.Id) : 1;
 
             if (previewThruster != null) previewThruster.gameObject.SetActive(false);
             if (previewGlow != null) previewGlow.gameObject.SetActive(false);
@@ -351,16 +373,60 @@ namespace KANYE.UI
                 previewImage.color = Color.white;
             }
 
-            if (previewTitle != null) previewTitle.text = weapon.Title;
-            if (previewSubtitle != null) previewSubtitle.text = weapon.Subtitle;
-            if (previewDescription != null) previewDescription.text = weapon.Description;
+            var currentDamage = WeaponCatalog.GetDamage(weapon.Id, level);
+            var currentInterval = WeaponCatalog.GetFireInterval(weapon.Id, level);
+            var rps = 1f / currentInterval;
+            var stars = level == 3 ? "★★★" : (level == 2 ? "★★☆" : "★☆☆");
+
+            if (previewTitle != null)
+                previewTitle.text = isOwned ? $"{weapon.Title}  {stars} ({level}/3)" : weapon.Title;
+
+            if (previewSubtitle != null)
+            {
+                if (!isOwned)
+                    previewSubtitle.text = $"{weapon.Subtitle}  |  Базовый уровень (1/3)";
+                else if (level < 3)
+                    previewSubtitle.text = $"{weapon.Subtitle}  |  {WeaponCatalog.GetUpgradeSummary(weapon.Id, level)}";
+                else
+                    previewSubtitle.text = $"{weapon.Subtitle}  |  ★ МАКСИМАЛЬНАЯ МОЩНОСТЬ ★";
+            }
+
+            if (previewDescription != null)
+                previewDescription.text = weapon.Description;
 
             if (previewStats != null)
             {
-                var rps = 1f / weapon.FireInterval;
-                previewStats.text = $"УРОН: {weapon.Damage}  |  ТЕМП: {rps:0.0} выстр/сек";
+                previewStats.text = $"УРОН: {currentDamage}  |  ТЕМП: {rps:0.0} выстр/сек";
             }
 
+            // Upgrade Button state
+            if (upgradeButton != null)
+            {
+                if (isOwned)
+                {
+                    upgradeButton.gameObject.SetActive(true);
+                    if (level < 3)
+                    {
+                        var cost = save != null ? save.GetUpgradeCost(weapon.Id) : 50;
+                        var canAfford = save != null && save.Data.coins >= cost;
+                        upgradeButtonText.text = $"ПРОКАЧАТЬ ДО УР. {level + 1} ({cost} 💰)";
+                        upgradeButton.interactable = canAfford;
+                        upgradeButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.72f, 0.15f) : new Color(0.45f, 0.35f, 0.25f);
+                    }
+                    else
+                    {
+                        upgradeButtonText.text = "★ МАКСИМАЛЬНЫЙ УРОВЕНЬ (3/3) ★";
+                        upgradeButton.interactable = false;
+                        upgradeButton.GetComponent<Image>().color = new Color(0.22f, 0.42f, 0.32f);
+                    }
+                }
+                else
+                {
+                    upgradeButton.gameObject.SetActive(false);
+                }
+            }
+
+            // Action Button (Equip / Buy)
             if (isEquipped)
             {
                 actionButtonText.text = "УЖЕ В БОЮ";
@@ -389,6 +455,9 @@ namespace KANYE.UI
             var save = SaveManager.Instance;
             var isOwned = save != null && save.Data.unlockedSkinIds.Contains(skin.Id);
             var isEquipped = save != null && save.Data.equippedSkinId == skin.Id;
+
+            if (upgradeButton != null)
+                upgradeButton.gameObject.SetActive(false);
 
             if (previewImage != null)
             {
@@ -438,6 +507,19 @@ namespace KANYE.UI
                 actionButtonText.text = $"КУПИТЬ ЗА {skin.Price} 💰";
                 actionButton.interactable = canAfford;
                 actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.6f, 0.15f) : new Color(0.5f, 0.25f, 0.25f);
+            }
+        }
+
+        private void OnUpgradeButtonClicked()
+        {
+            var save = SaveManager.Instance;
+            if (save == null || currentTab != ShopTab.Weapons) return;
+
+            var w = WeaponCatalog.All[selectedWeaponIndex];
+            if (save.UpgradeWeapon(w.Id))
+            {
+                AudioManager.PlayShoot();
+                Refresh();
             }
         }
 

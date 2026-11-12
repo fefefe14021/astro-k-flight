@@ -88,6 +88,9 @@ namespace KANYE.Gameplay
 
         public bool TryFireEX()
         {
+            if (!GameRules.IsEXUnlocked)
+                return false;
+
             if (hypeState == null)
                 hypeState = FindAnyObjectByType<HypeState>();
 
@@ -103,6 +106,9 @@ namespace KANYE.Gameplay
 
         public bool TryFireSuper()
         {
+            if (!GameRules.IsSuperUnlocked)
+                return false;
+
             if (hypeState == null)
                 hypeState = FindAnyObjectByType<HypeState>();
 
@@ -152,6 +158,10 @@ namespace KANYE.Gameplay
         {
             var weaponId = SaveManager.Instance != null ? SaveManager.Instance.Data.equippedWeaponId : "twin_blaster";
             var weapon = WeaponCatalog.Find(weaponId);
+            var level = SaveManager.Instance != null ? SaveManager.Instance.GetWeaponLevel(weaponId) : 1;
+            var damage = WeaponCatalog.GetDamage(weaponId, level);
+            var fireInterval = WeaponCatalog.GetFireInterval(weaponId, level);
+            var projCount = WeaponCatalog.GetProjectileCount(weaponId, level);
 
             // Muzzle points according to the tilted saucer's nose!
             var baseDirection = (Vector2)transform.right;
@@ -161,51 +171,77 @@ namespace KANYE.Gameplay
             {
                 case WeaponType.TwinBlaster:
                     var upOffset = (Vector2)(transform.up * 0.16f);
-                    SpawnProjectile(origin + upOffset, baseDirection, weapon);
-                    SpawnProjectile(origin - upOffset, baseDirection, weapon);
+                    SpawnProjectile(origin + upOffset, baseDirection, weapon, damage, level);
+                    SpawnProjectile(origin - upOffset, baseDirection, weapon, damage, level);
                     AudioManager.PlayShoot();
                     CameraShake.Shake(0.035f, 0.1f);
                     break;
 
                 case WeaponType.ScatterShotgun:
-                    float[] angles = { -15f, -7.5f, 0f, 7.5f, 15f };
+                    float[] angles = projCount == 7 ? new[] { -18f, -12f, -6f, 0f, 6f, 12f, 18f } :
+                                     projCount == 6 ? new[] { -15f, -9f, -3f, 3f, 9f, 15f } :
+                                                      new[] { -15f, -7.5f, 0f, 7.5f, 15f };
                     for (var i = 0; i < angles.Length; i++)
                     {
                         var rot = Quaternion.Euler(0f, 0f, angles[i]);
                         var dir = (Vector2)(rot * (Vector3)baseDirection);
-                        SpawnProjectile(origin, dir, weapon);
+                        SpawnProjectile(origin, dir, weapon, damage, level);
                     }
                     AudioManager.PlayEXShoot();
                     CameraShake.Shake(0.18f, 0.15f);
                     break;
 
                 case WeaponType.HomingMissiles:
-                    SpawnProjectile(origin + (Vector2)(transform.up * 0.18f), (Vector2)(Quaternion.Euler(0f, 0f, 12f) * (Vector3)baseDirection), weapon);
-                    SpawnProjectile(origin - (Vector2)(transform.up * 0.18f), (Vector2)(Quaternion.Euler(0f, 0f, -12f) * (Vector3)baseDirection), weapon);
+                    if (projCount >= 4)
+                    {
+                        SpawnProjectile(origin + (Vector2)(transform.up * 0.22f), (Vector2)(Quaternion.Euler(0f, 0f, 16f) * (Vector3)baseDirection), weapon, damage, level);
+                        SpawnProjectile(origin + (Vector2)(transform.up * 0.08f), (Vector2)(Quaternion.Euler(0f, 0f, 6f) * (Vector3)baseDirection), weapon, damage, level);
+                        SpawnProjectile(origin - (Vector2)(transform.up * 0.08f), (Vector2)(Quaternion.Euler(0f, 0f, -6f) * (Vector3)baseDirection), weapon, damage, level);
+                        SpawnProjectile(origin - (Vector2)(transform.up * 0.22f), (Vector2)(Quaternion.Euler(0f, 0f, -16f) * (Vector3)baseDirection), weapon, damage, level);
+                    }
+                    else if (projCount == 3)
+                    {
+                        SpawnProjectile(origin + (Vector2)(transform.up * 0.18f), (Vector2)(Quaternion.Euler(0f, 0f, 14f) * (Vector3)baseDirection), weapon, damage, level);
+                        SpawnProjectile(origin, baseDirection, weapon, damage, level);
+                        SpawnProjectile(origin - (Vector2)(transform.up * 0.18f), (Vector2)(Quaternion.Euler(0f, 0f, -14f) * (Vector3)baseDirection), weapon, damage, level);
+                    }
+                    else
+                    {
+                        SpawnProjectile(origin + (Vector2)(transform.up * 0.18f), (Vector2)(Quaternion.Euler(0f, 0f, 12f) * (Vector3)baseDirection), weapon, damage, level);
+                        SpawnProjectile(origin - (Vector2)(transform.up * 0.18f), (Vector2)(Quaternion.Euler(0f, 0f, -12f) * (Vector3)baseDirection), weapon, damage, level);
+                    }
                     AudioManager.PlayShoot();
                     CameraShake.Shake(0.05f, 0.12f);
                     break;
 
                 case WeaponType.HeavyRailgun:
-                    SpawnProjectile(origin, baseDirection, weapon);
+                    SpawnProjectile(origin, baseDirection, weapon, damage, level);
                     AudioManager.PlaySuperBeam();
                     CameraShake.Shake(0.22f, 0.2f);
                     break;
 
                 case WeaponType.SawDisc:
-                    SpawnProjectile(origin, baseDirection, weapon);
+                    if (projCount >= 2)
+                    {
+                        SpawnProjectile(origin + (Vector2)(transform.up * 0.12f), (Vector2)(Quaternion.Euler(0f, 0f, 5f) * (Vector3)baseDirection), weapon, damage, level);
+                        SpawnProjectile(origin - (Vector2)(transform.up * 0.12f), (Vector2)(Quaternion.Euler(0f, 0f, -5f) * (Vector3)baseDirection), weapon, damage, level);
+                    }
+                    else
+                    {
+                        SpawnProjectile(origin, baseDirection, weapon, damage, level);
+                    }
                     AudioManager.PlayShoot();
                     CameraShake.Shake(0.08f, 0.14f);
                     break;
 
                 case WeaponType.PlasmaMortar:
-                    SpawnProjectile(origin, baseDirection, weapon);
+                    SpawnProjectile(origin, baseDirection, weapon, damage, level);
                     AudioManager.PlayEXShoot();
                     CameraShake.Shake(0.2f, 0.18f);
                     break;
 
                 default:
-                    SpawnProjectile(origin, baseDirection, weapon);
+                    SpawnProjectile(origin, baseDirection, weapon, damage, level);
                     AudioManager.PlayShoot();
                     CameraShake.Shake(0.035f, 0.1f);
                     break;
@@ -216,15 +252,15 @@ namespace KANYE.Gameplay
                              weapon.Type == WeaponType.ScatterShotgun ? 1.8f : 1.25f;
             EffectsManager.PlayMuzzleFlash(origin, weapon.ThemeColor, flashScale);
             GetComponent<ShipThrusterVisual>()?.TriggerRecoil();
-            cooldown = weapon.FireInterval;
+            cooldown = fireInterval;
         }
 
-        private static void SpawnProjectile(Vector2 pos, Vector2 dir, WeaponDefinition weapon)
+        private static void SpawnProjectile(Vector2 pos, Vector2 dir, WeaponDefinition weapon, int damage, int level)
         {
             var projObj = new GameObject("Projectile", typeof(SpriteRenderer), typeof(Rigidbody2D), typeof(CircleCollider2D));
             projObj.transform.position = pos;
             var p = projObj.AddComponent<Projectile>();
-            p.Configure(weapon, dir);
+            p.Configure(weapon, dir, damage, level);
         }
     }
 }

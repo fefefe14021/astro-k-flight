@@ -68,6 +68,9 @@ namespace KANYE.UI
                 ? MissionCatalog.All[missionIndex]
                 : null;
 
+            if (titleText != null)
+                titleText.text = (mission != null && mission.HasBoss) ? "БОСС ПОВЕРЖЕН!" : "МИССИЯ ВЫПОЛНЕНА!";
+
             if (sectorText != null)
                 sectorText.text = mission != null ? mission.Title : "Сектор завершен";
 

@@ -41,11 +41,11 @@ namespace KANYE.Gameplay
             UpdateVisualAngle();
         }
 
-        public void Configure(WeaponDefinition def, Vector2 launchDirection)
+        public void Configure(WeaponDefinition def, Vector2 launchDirection, int customDamage = -1, int level = 1)
         {
             if (def == null) return;
 
-            damage = def.Damage;
+            damage = customDamage > 0 ? customDamage : def.Damage;
             color = def.ThemeColor;
             customSpriteName = def.ProjectileSprite;
             WeaponType = def.Type;
@@ -53,44 +53,45 @@ namespace KANYE.Gameplay
             switch (def.Type)
             {
                 case WeaponType.ScatterShotgun:
-                    speed = 15.5f;
+                    speed = 15.5f + level * 1.0f;
                     lifetime = 0.7f;
                     hitRadius = 0.22f;
                     break;
                 case WeaponType.HomingMissiles:
-                    speed = 12f;
+                    speed = 12f + level * 1.5f;
                     lifetime = 2.8f;
                     hitRadius = 0.26f;
                     IsHoming = true;
                     FindHomingTarget();
                     break;
                 case WeaponType.HeavyRailgun:
-                    speed = 28f;
+                    speed = 28f + level * 2.0f;
                     lifetime = 1.2f;
-                    hitRadius = 0.38f;
+                    hitRadius = 0.38f + level * 0.05f;
                     IsPiercing = true;
-                    piercesRemaining = 4;
+                    piercesRemaining = 4 + level * 2;
                     break;
                 case WeaponType.SawDisc:
-                    speed = 10f;
+                    speed = 10f + level * 0.8f;
                     lifetime = 3.5f;
                     hitRadius = 0.34f;
                     IsBouncing = true;
-                    bouncesRemaining = 3;
+                    bouncesRemaining = 3 + level;
                     break;
                 case WeaponType.PlasmaMortar:
-                    speed = 9f;
+                    speed = 9f + level * 0.6f;
                     lifetime = 2.2f;
-                    hitRadius = 0.44f;
+                    hitRadius = 0.44f + level * 0.08f;
                     IsExplosive = true;
                     break;
                 default:
-                    speed = 14.5f;
+                    speed = 14.5f + level * 1.0f;
                     lifetime = 2.0f;
                     hitRadius = 0.22f;
                     break;
             }
 
+            transform.localScale = Vector3.one * (1f + (level - 1) * 0.16f);
             Launch(launchDirection);
             EnsureVisible();
         }

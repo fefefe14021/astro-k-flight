@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using KANYE.Gameplay;
 using UnityEngine;
 
 namespace KANYE.Systems
@@ -52,6 +53,8 @@ namespace KANYE.Systems
                 Data.unlockedSkinIds = new List<string>();
             if (Data.unlockedWeaponIds == null)
                 Data.unlockedWeaponIds = new List<string>();
+            if (Data.weaponUpgrades == null)
+                Data.weaponUpgrades = new List<WeaponUpgradeEntry>();
             if (Data.achievements == null)
                 Data.achievements = new List<AchievementProgressEntry>();
 
@@ -132,6 +135,65 @@ namespace KANYE.Systems
             return true;
         }
 
+        public int GetWeaponLevel(string weaponId)
+        {
+            if (Data == null || Data.weaponUpgrades == null || string.IsNullOrEmpty(weaponId))
+                return 1;
+
+            for (var i = 0; i < Data.weaponUpgrades.Count; i++)
+            {
+                if (Data.weaponUpgrades[i].weaponId == weaponId)
+                    return Mathf.Clamp(Data.weaponUpgrades[i].level, 1, 3);
+            }
+
+            return 1;
+        }
+
+        public int GetUpgradeCost(string weaponId)
+        {
+            var lvl = GetWeaponLevel(weaponId);
+            if (lvl >= 3) return -1;
+
+            var def = WeaponCatalog.Find(weaponId);
+            var basePrice = def != null ? def.Price : 40;
+            if (lvl == 1)
+                return Mathf.RoundToInt(basePrice * 0.75f) + 35;
+            else
+                return Mathf.RoundToInt(basePrice * 1.35f) + 65;
+        }
+
+        public bool UpgradeWeapon(string weaponId)
+        {
+            var cost = GetUpgradeCost(weaponId);
+            if (cost < 0) return false;
+
+            if (!TrySpendCoins(cost))
+                return false;
+
+            if (Data.weaponUpgrades == null)
+                Data.weaponUpgrades = new List<WeaponUpgradeEntry>();
+
+            WeaponUpgradeEntry entry = null;
+            for (var i = 0; i < Data.weaponUpgrades.Count; i++)
+            {
+                if (Data.weaponUpgrades[i].weaponId == weaponId)
+                {
+                    entry = Data.weaponUpgrades[i];
+                    break;
+                }
+            }
+
+            if (entry == null)
+            {
+                entry = new WeaponUpgradeEntry { weaponId = weaponId, level = 1 };
+                Data.weaponUpgrades.Add(entry);
+            }
+
+            entry.level = Mathf.Clamp(entry.level + 1, 1, 3);
+            Save();
+            return true;
+        }
+
         public int CurrentMission => Data == null ? 0 : Mathf.Max(0, Data.currentMission);
 
         public void RememberMission(int index)
@@ -190,6 +252,7 @@ namespace KANYE.Systems
                 unlockedSkinIds = new List<string> { DefaultSkinId },
                 equippedWeaponId = DefaultWeaponId,
                 unlockedWeaponIds = new List<string> { DefaultWeaponId },
+                weaponUpgrades = new List<WeaponUpgradeEntry>(),
                 achievements = new List<AchievementProgressEntry>()
             };
         }
