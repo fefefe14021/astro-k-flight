@@ -3,9 +3,7 @@
 // GameObject: LoadingScreen in Bootstrap scene
 
 using System.Collections;
-using KANYE.Gameplay;
 using KANYE.Services;
-using KANYE.Systems;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -117,19 +115,7 @@ namespace KANYE.UI
                 yield return null;
             }
 
-            // Decide destination:
-            // "обучение должно начинаться при первом запуске сразу после сброса прогресса"
-            if (!TutorialHints.IsTutorialCompleted)
-            {
-                Debug.Log("[Bootstrap] Первый запуск обнаружен. Переход в режим Обучения...");
-                MissionCatalog.Select(0);
-                SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
-            }
-            else
-            {
-                Debug.Log("[Bootstrap] Загрузка завершена. Переход в Главное Меню...");
-                SceneLoader.LoadSceneByName(SceneLoader.MainMenuScene);
-            }
+            SceneLoader.LoadSceneByName(SceneLoader.MainMenuScene);
         }
 
         private void BuildUI()

@@ -3,7 +3,10 @@
 // Cuphead & Broforce style arcade HUD with segmented Hype cards, Boss Health Bar, and Lives hearts.
 
 using System.Collections;
+using KANYE.Audio;
 using KANYE.Gameplay;
+using KANYE.Services;
+using KANYE.Systems;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -41,6 +44,8 @@ namespace KANYE.UI
         private CanvasGroup bannerCanvasGroup;
 
         private float targetHypeFill;
+        private GameObject pauseRoot;
+        private bool pausedByPlayer;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AutoHook()
@@ -104,6 +109,9 @@ namespace KANYE.UI
 
         private void Update()
         {
+            if (Input.GetKeyDown(KeyCode.Escape))
+                TryTogglePause();
+
             // 1. Smooth Hype Meter Fill
             if (hypeFill != null)
             {
@@ -389,6 +397,105 @@ namespace KANYE.UI
             bannerSubText = CreateText("BannerSub", bannerObj.transform, "Сокруши вражеский флот!", 20, new Vector2(0f, -24f), new Color(0.85f, 0.92f, 1f));
 
             bannerObj.SetActive(false);
+
+            if (GameRules.CurrentMode == GameMode.Campaign)
+                BuildMissionPause(canvasObj.transform);
+        }
+
+        private void TryTogglePause()
+        {
+            if (GameRules.CurrentMode != GameMode.Campaign)
+                return;
+
+            if (!pausedByPlayer && !CanPauseMission())
+                return;
+
+            SetPaused(!pausedByPlayer);
+        }
+
+        private static bool CanPauseMission()
+        {
+            if (MissionRadioComms.IsCommsActive || TutorialHints.IsTutorialActive || MissionController.IsMissionFinished)
+                return false;
+
+            var player = FindAnyObjectByType<PlayerHealth>();
+            return player == null || !player.IsDead;
+        }
+
+        private void SetPaused(bool paused)
+        {
+            if (paused && !CanPauseMission())
+                return;
+
+            pausedByPlayer = paused;
+            if (pauseRoot != null)
+                pauseRoot.SetActive(paused);
+
+            if (paused)
+                GamePause.Lock();
+            else if (!MissionController.IsMissionFinished)
+                GamePause.Release();
+        }
+
+        private void BuildMissionPause(Transform parent)
+        {
+            var buttonObj = new GameObject("PauseButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            buttonObj.transform.SetParent(parent, false);
+            var buttonRect = buttonObj.GetComponent<RectTransform>();
+            buttonRect.anchorMin = new Vector2(1f, 1f);
+            buttonRect.anchorMax = new Vector2(1f, 1f);
+            buttonRect.pivot = new Vector2(1f, 1f);
+            buttonRect.anchoredPosition = new Vector2(-24f, -24f);
+            buttonRect.sizeDelta = new Vector2(150f, 52f);
+            var buttonImage = buttonObj.GetComponent<Image>();
+            buttonImage.sprite = PixelUiAtlas.ButtonSecondary;
+            buttonImage.type = Image.Type.Sliced;
+            var buttonLabel = CreateText("Label", buttonObj.transform, "ПАУЗА", 18, Vector2.zero, Color.white);
+            buttonLabel.fontStyle = FontStyle.Bold;
+            buttonObj.GetComponent<Button>().onClick.AddListener(TryTogglePause);
+
+            pauseRoot = new GameObject("PauseRoot", typeof(RectTransform));
+            pauseRoot.transform.SetParent(parent, false);
+            Stretch(pauseRoot.GetComponent<RectTransform>());
+
+            var dim = CreateImage("Dim", pauseRoot.transform, PixelUiAtlas.White, new Color(0.02f, 0.04f, 0.08f, 0.78f));
+            Stretch(dim.rectTransform);
+
+            var panel = CreateImage("PausePanel", pauseRoot.transform, PixelUiAtlas.Panel, Color.white);
+            panel.type = Image.Type.Sliced;
+            panel.rectTransform.sizeDelta = new Vector2(460f, 280f);
+
+            var title = CreateText("Title", panel.transform, "ПАУЗА", 32, new Vector2(0f, 90f), new Color(1f, 0.85f, 0.35f));
+            title.fontStyle = FontStyle.Bold;
+
+            CreatePauseChoice(panel.transform, "Resume", "ПРОДОЛЖИТЬ", new Vector2(0f, 10f), PixelUiAtlas.ButtonPrimary, () =>
+            {
+                AudioManager.PlayClick();
+                SetPaused(false);
+            });
+            CreatePauseChoice(panel.transform, "Menu", "В МЕНЮ", new Vector2(0f, -60f), PixelUiAtlas.ButtonDanger, () =>
+            {
+                AudioManager.PlayClick();
+                GamePause.Release();
+                SceneLoader.ReturnToMainMenu();
+            });
+
+            pauseRoot.SetActive(false);
+        }
+
+        private static void CreatePauseChoice(Transform parent, string name, string text, Vector2 position, Sprite sprite, UnityEngine.Events.UnityAction onClick)
+        {
+            var choice = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            choice.transform.SetParent(parent, false);
+            var rect = choice.GetComponent<RectTransform>();
+            rect.anchoredPosition = position;
+            rect.sizeDelta = new Vector2(300f, 52f);
+            var image = choice.GetComponent<Image>();
+            image.sprite = sprite;
+            image.type = Image.Type.Sliced;
+            var label = CreateText("Label", choice.transform, text, 18, Vector2.zero, Color.white);
+            label.fontStyle = FontStyle.Bold;
+            choice.GetComponent<Button>().onClick.AddListener(onClick);
         }
 
         private static GameObject CreatePromptButton(Transform parent, string name, string text, Vector2 pos, Color highlight, System.Action onClick)

@@ -26,6 +26,7 @@ namespace KANYE.Gameplay
         private SpriteRenderer spriteRenderer;
         private bool crashed;
         private bool reviveUsed;
+        private bool defeatShown;
 
         protected override void Awake()
         {
@@ -166,7 +167,11 @@ namespace KANYE.Gameplay
             if (spriteRenderer != null)
                 spriteRenderer.color = new Color(0.25f, 0.25f, 0.25f, 1f);
 
-            // Open modern uGUI Defeat Modal
+            if (defeatShown)
+                return;
+
+            defeatShown = true;
+            GamePause.Lock();
             DefeatModal.Show(!reviveUsed, OnReviveRequested);
         }
 
@@ -182,6 +187,7 @@ namespace KANYE.Gameplay
 
             IsDefeated = false;
             crashed = false;
+            defeatShown = false;
             Lives = maxLives;
 
             NotifyChanged();
@@ -214,7 +220,7 @@ namespace KANYE.Gameplay
 
             GrantParryInvulnerability(1.5f);
             DefeatModal.Hide();
-            Time.timeScale = 1f;
+            GamePause.Release();
         }
     }
 }

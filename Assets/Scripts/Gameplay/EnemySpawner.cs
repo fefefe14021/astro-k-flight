@@ -13,7 +13,7 @@ namespace KANYE.Gameplay
 
         private void Update()
         {
-            if (TutorialHints.IsTutorialActive || MissionRadioComms.IsCommsActive || Time.timeScale <= 0f)
+            if (TutorialHints.IsTutorialActive || MissionRadioComms.IsCommsActive || MissionController.IsMissionFinished || Time.timeScale <= 0f)
                 return;
 
             var health = FindAnyObjectByType<ShipHealth>();
@@ -25,7 +25,7 @@ namespace KANYE.Gameplay
 
             var missionIdx = MissionCatalog.Selected;
             var maxAlive = missionIdx >= 7 ? 6 : (missionIdx >= 3 ? 5 : 4);
-            var interval = missionIdx >= 7 ? 1.0f : (missionIdx >= 3 ? 1.35f : 1.6f);
+            var interval = missionIdx >= 7 ? 1.25f : (missionIdx >= 3 ? 1.7f : 2.25f);
 
             timer -= Time.deltaTime;
             if (timer > 0f)

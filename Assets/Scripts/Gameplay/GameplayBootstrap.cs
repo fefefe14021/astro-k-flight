@@ -25,8 +25,7 @@ namespace KANYE.Gameplay
             if (!Application.isPlaying || scene.name != "Gameplay")
                 return;
 
-            // Always restore timeScale
-            Time.timeScale = 1f;
+            GamePause.Release();
 
             // 1. Ensure HypeState
             if (Object.FindAnyObjectByType<HypeState>() == null)

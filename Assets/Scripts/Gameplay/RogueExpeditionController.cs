@@ -2,8 +2,10 @@
 // Namespace: KANYE.Gameplay
 // Infinite Arcade Rogue-lite Expedition Mode for Yandex Games with Anti-Overfarm Protection.
 
+using System.Collections;
 using System.Collections.Generic;
 using KANYE.Audio;
+using KANYE.Services;
 using KANYE.Systems;
 using KANYE.UI;
 using UnityEngine;
@@ -56,9 +58,11 @@ namespace KANYE.Gameplay
         private BossController activeBoss;
 
         private GameObject perkModalObj;
+        private GameObject pauseRoot;
         private Text waveHudText;
         private Text bannerText;
         private float bannerTimer;
+        private bool pausedByPlayer;
 
         public static void ResetRunModifiers()
         {
@@ -112,8 +116,18 @@ namespace KANYE.Gameplay
             UpdateHud();
         }
 
+        private void ExitToMenu()
+        {
+            AudioManager.PlayClick();
+            GamePause.Release();
+            SceneLoader.ReturnToMainMenu();
+        }
+
         private void Update()
         {
+            if (Input.GetKeyDown(KeyCode.Escape))
+                TryTogglePause();
+
             if (isWaveTransitioning || Time.timeScale <= 0f)
                 return;
 
@@ -187,6 +201,7 @@ namespace KANYE.Gameplay
             // Audio & Screen Juice
             AudioManager.PlayVictory();
             EffectsManager.PlayExplosion(Vector3.zero, new Color(0.2f, 0.9f, 1f), isMechanical: false);
+            GamePause.Lock();
 
             if (CurrentWave % 5 == 0)
             {
@@ -198,13 +213,46 @@ namespace KANYE.Gameplay
                 ShowBanner($"ВОЛНА {CurrentWave} ПРОЙДЕНА!", $"+{waveReward} монет! Выберите перк...");
             }
 
-            Invoke(nameof(OpenPerkSelection), 1.2f);
+            StartCoroutine(OpenPerkAfterDelay());
+        }
+
+        private IEnumerator OpenPerkAfterDelay()
+        {
+            yield return new WaitForSecondsRealtime(1.2f);
+            OpenPerkSelection();
         }
 
         private void OpenPerkSelection()
         {
-            Time.timeScale = 0f;
+            pausedByPlayer = false;
+            if (pauseRoot != null)
+                pauseRoot.SetActive(false);
+            GamePause.Lock();
             PresentPerkModal();
+        }
+
+        private void TryTogglePause()
+        {
+            if (perkModalObj != null && perkModalObj.activeSelf)
+                return;
+
+            var player = FindAnyObjectByType<PlayerHealth>();
+            if (player != null && player.IsDead)
+                return;
+
+            SetPaused(!pausedByPlayer);
+        }
+
+        private void SetPaused(bool paused)
+        {
+            pausedByPlayer = paused;
+            if (pauseRoot != null)
+                pauseRoot.SetActive(paused);
+
+            if (paused)
+                GamePause.Lock();
+            else if (perkModalObj == null || !perkModalObj.activeSelf)
+                GamePause.Release();
         }
 
         private void SpawnRogueAsteroid(float yOffset = 0f)
@@ -293,6 +341,8 @@ namespace KANYE.Gameplay
             bannerText.gameObject.SetActive(false);
 
             BuildPerkModalRoot(canvasObj.transform);
+            BuildPauseOverlay(canvasObj.transform);
+            BuildPauseButton(canvasObj.transform);
         }
 
         private void ShowBanner(string main, string sub = null)
@@ -353,7 +403,85 @@ namespace KANYE.Gameplay
             sText.rectTransform.anchoredPosition = new Vector2(0f, 168f);
             sText.rectTransform.sizeDelta = new Vector2(800f, 32f);
 
+            var leaveObj = new GameObject("LeaveButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            leaveObj.transform.SetParent(panelObj.transform, false);
+            var leaveRect = leaveObj.GetComponent<RectTransform>();
+            leaveRect.anchoredPosition = new Vector2(0f, -230f);
+            leaveRect.sizeDelta = new Vector2(280f, 46f);
+            var leaveImage = leaveObj.GetComponent<Image>();
+            leaveImage.sprite = PixelUiAtlas.ButtonDanger;
+            leaveImage.type = Image.Type.Sliced;
+            CreateLabel(leaveObj.transform, "Label", "В МЕНЮ", 18, Vector2.zero, new Vector2(260f, 40f), Color.white, FontStyle.Bold);
+            leaveObj.GetComponent<Button>().onClick.AddListener(ExitToMenu);
+
             perkModalObj.SetActive(false);
+        }
+
+        private void BuildPauseButton(Transform parent)
+        {
+            var buttonObj = new GameObject("PauseButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            buttonObj.transform.SetParent(parent, false);
+            var rect = buttonObj.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-18f, -14f);
+            rect.sizeDelta = new Vector2(150f, 44f);
+            var image = buttonObj.GetComponent<Image>();
+            image.sprite = PixelUiAtlas.ButtonSecondary;
+            image.type = Image.Type.Sliced;
+            CreateLabel(buttonObj.transform, "Label", "ПАУЗА", 18, Vector2.zero, new Vector2(140f, 36f), Color.white, FontStyle.Bold);
+            buttonObj.GetComponent<Button>().onClick.AddListener(TryTogglePause);
+        }
+
+        private void BuildPauseOverlay(Transform parent)
+        {
+            pauseRoot = new GameObject("PauseRoot", typeof(RectTransform));
+            pauseRoot.transform.SetParent(parent, false);
+            Stretch(pauseRoot.GetComponent<RectTransform>());
+
+            var dim = new GameObject("Dim", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            dim.transform.SetParent(pauseRoot.transform, false);
+            Stretch(dim.GetComponent<RectTransform>());
+            dim.GetComponent<Image>().color = new Color(0.02f, 0.04f, 0.08f, 0.78f);
+
+            var panel = new GameObject("PausePanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            panel.transform.SetParent(pauseRoot.transform, false);
+            var panelRect = panel.GetComponent<RectTransform>();
+            panelRect.sizeDelta = new Vector2(460f, 280f);
+            var panelImage = panel.GetComponent<Image>();
+            panelImage.sprite = PixelUiAtlas.Panel;
+            panelImage.type = Image.Type.Sliced;
+
+            CreateLabel(panel.transform, "Title", "ПАУЗА", 32, new Vector2(0f, 90f), new Vector2(400f, 48f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
+
+            var resumeObj = new GameObject("Resume", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            resumeObj.transform.SetParent(panel.transform, false);
+            var resumeRect = resumeObj.GetComponent<RectTransform>();
+            resumeRect.anchoredPosition = new Vector2(0f, 10f);
+            resumeRect.sizeDelta = new Vector2(300f, 52f);
+            var resumeImage = resumeObj.GetComponent<Image>();
+            resumeImage.sprite = PixelUiAtlas.ButtonPrimary;
+            resumeImage.type = Image.Type.Sliced;
+            CreateLabel(resumeObj.transform, "Label", "ПРОДОЛЖИТЬ", 18, Vector2.zero, new Vector2(280f, 40f), Color.white, FontStyle.Bold);
+            resumeObj.GetComponent<Button>().onClick.AddListener(() =>
+            {
+                AudioManager.PlayClick();
+                SetPaused(false);
+            });
+
+            var menuObj = new GameObject("Menu", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            menuObj.transform.SetParent(panel.transform, false);
+            var menuRect = menuObj.GetComponent<RectTransform>();
+            menuRect.anchoredPosition = new Vector2(0f, -60f);
+            menuRect.sizeDelta = new Vector2(300f, 52f);
+            var menuImage = menuObj.GetComponent<Image>();
+            menuImage.sprite = PixelUiAtlas.ButtonDanger;
+            menuImage.type = Image.Type.Sliced;
+            CreateLabel(menuObj.transform, "Label", "В МЕНЮ", 18, Vector2.zero, new Vector2(280f, 40f), Color.white, FontStyle.Bold);
+            menuObj.GetComponent<Button>().onClick.AddListener(ExitToMenu);
+
+            pauseRoot.SetActive(false);
         }
 
         private void PresentPerkModal()
@@ -447,7 +575,7 @@ namespace KANYE.Gameplay
             if (perkModalObj != null)
                 perkModalObj.SetActive(false);
 
-            Time.timeScale = 1f;
+            GamePause.Release();
             StartWave(CurrentWave + 1);
         }
 

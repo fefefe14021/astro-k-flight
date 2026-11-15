@@ -69,7 +69,8 @@ namespace KANYE.Gameplay
             var prevScale = Time.timeScale > 0.01f ? Time.timeScale : 1f;
             Time.timeScale = 0f;
             yield return new WaitForSecondsRealtime(duration);
-            Time.timeScale = prevScale;
+            if (!GamePause.Locked)
+                Time.timeScale = prevScale;
         }
 
         private void Update()

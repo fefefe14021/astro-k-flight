@@ -198,7 +198,7 @@ namespace KANYE.UI
             thrusterFlameTransform = flameRect;
 
             // Skin Name Label
-            shipSkinTitleText = CreateText(shipContainer.transform, "SkinTitle", "КОРПУС: БАЗОВЫЙ", new Vector2(0.5f, 0.5f), new Vector2(0f, -100f), new Vector2(360f, 30f), 18, new Color(0.75f, 0.88f, 1f), FontStyle.Bold);
+            shipSkinTitleText = CreateText(shipContainer.transform, "SkinTitle", "КОРПУС: БАЗОВЫЙ", new Vector2(0.5f, 0.5f), new Vector2(0f, -108f), new Vector2(420f, 52f), 16, new Color(0.75f, 0.88f, 1f), FontStyle.Bold);
 
             // Current Mission Sector Card (Sliced pixel panel - NO distorted borders)
             var sectorCard = CreateImage("SectorCard", parent, PixelUiAtlas.Panel, Color.white);
@@ -362,32 +362,34 @@ namespace KANYE.UI
         private void BuildLoreModal(Transform parent)
         {
             loreModal = CreateModalContainer(parent, "LoreModal", out var card);
-            CreateText(card.transform, "Title", "БОРТОВОЙ ЖУРНАЛ // ЛОР HYPEVERSE", new Vector2(0.5f, 1f), new Vector2(0f, -38f), new Vector2(760f, 38f), 30, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
-            CreateText(card.transform, "Sub", "Хроники Капитана Зигги, досье боссов Синдиката и тайны реликвий Hype Core", new Vector2(0.5f, 1f), new Vector2(0f, -76f), new Vector2(760f, 26f), 16, new Color(0.7f, 0.85f, 0.95f), FontStyle.Normal);
+            var loreTitle = CreateText(card.transform, "Title", "БОРТОВОЙ ЖУРНАЛ", new Vector2(0.5f, 1f), new Vector2(0f, -28f), new Vector2(780f, 34f), 28, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
+            loreTitle.horizontalOverflow = HorizontalWrapMode.Overflow;
+            loreTitle.verticalOverflow = VerticalWrapMode.Truncate;
+            var loreSub = CreateText(card.transform, "Sub", "Хроники Капитана Зигги, досье боссов Синдиката и тайны реликвий Hype Core", new Vector2(0.5f, 1f), new Vector2(0f, -68f), new Vector2(780f, 36f), 16, new Color(0.7f, 0.85f, 0.95f), FontStyle.Normal);
+            loreSub.verticalOverflow = VerticalWrapMode.Truncate;
 
-            var scroll = CreateScroll(card.transform, new Vector2(0f, -95f), new Vector2(800f, 500f));
+            var scroll = CreateScroll(card.transform, new Vector2(0f, -112f), new Vector2(800f, 470f));
             var entries = LoreCatalog.Entries;
 
             for (var i = 0; i < entries.Length; i++)
             {
                 var entry = entries[i];
+                var lines = Mathf.Max(2, Mathf.CeilToInt(entry.Content.Length / 72f));
+                var bodyHeight = lines * 26f;
                 var itemObj = CreateImage("LoreItem" + i, scroll, PixelUiAtlas.SubPanel, Color.white);
                 itemObj.type = Image.Type.Sliced;
                 var le = itemObj.gameObject.AddComponent<LayoutElement>();
-                le.minHeight = 168f;
-                le.preferredHeight = 168f;
+                le.minHeight = 92f + bodyHeight;
+                le.preferredHeight = 92f + bodyHeight;
 
-                // Category tag
-                var tag = CreateText(itemObj.transform, "Tag", $"[{entry.Category}]", new Vector2(0f, 1f), new Vector2(24f, -16f), new Vector2(300f, 22f), 14, new Color(0.4f, 0.85f, 1f), FontStyle.Bold);
+                var tag = PlaceLoreLine(itemObj.transform, "Tag", $"[{entry.Category}]", 12f, 22f, 15, new Color(0.55f, 0.9f, 1f), FontStyle.Bold);
+                var title = PlaceLoreLine(itemObj.transform, "Title", entry.Title, 38f, 28f, 20, new Color(1f, 0.88f, 0.4f), FontStyle.Bold);
+                var content = PlaceLoreLine(itemObj.transform, "Content", entry.Content, 72f, bodyHeight, 17, new Color(0.9f, 0.94f, 0.98f), FontStyle.Normal);
                 tag.alignment = TextAnchor.MiddleLeft;
-
-                // Title
-                var title = CreateText(itemObj.transform, "Title", entry.Title, new Vector2(0f, 1f), new Vector2(24f, -40f), new Vector2(680f, 26f), 18, new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
                 title.alignment = TextAnchor.MiddleLeft;
-
-                // Content
-                var content = CreateText(itemObj.transform, "Content", entry.Content, new Vector2(0f, 1f), new Vector2(24f, -72f), new Vector2(690f, 88f), 14, new Color(0.88f, 0.92f, 0.98f), FontStyle.Normal);
                 content.alignment = TextAnchor.UpperLeft;
+                content.lineSpacing = 1.12f;
+                content.verticalOverflow = VerticalWrapMode.Overflow;
             }
 
             var watchCutsceneBtn = CreateSlicedButton(card.transform, "BtnWatchPrologue", "🎬  СМОТРЕТЬ ПРОЛОГ (КАТСЦЕНА)", PixelUiAtlas.ButtonPrimary, new Vector2(-160f, -330f), new Vector2(380f, 54f), 17, Color.white);
@@ -517,7 +519,11 @@ namespace KANYE.UI
             if (sectorDescText != null)
                 sectorDescText.text = mission.Summary;
             if (shipSkinTitleText != null)
-                shipSkinTitleText.text = $"КОРПУС: {equippedSkin.Title.ToUpper()}";
+            {
+                var weapon = WeaponCatalog.Find(save != null ? save.Data.equippedWeaponId : SaveManager.DefaultWeaponId);
+                var weaponTitle = weapon != null ? weapon.Title : "Базовое оружие";
+                shipSkinTitleText.text = $"КОРПУС: {equippedSkin.Title.ToUpper()}\nОРУЖИЕ: {weaponTitle.ToUpper()}";
+            }
 
             if (shipDisplayImage != null)
             {
@@ -668,8 +674,23 @@ namespace KANYE.UI
             label.alignment = TextAnchor.MiddleCenter;
             label.color = color;
             label.text = text;
+            label.lineSpacing = 1.08f;
             label.horizontalOverflow = HorizontalWrapMode.Wrap;
-            label.verticalOverflow = VerticalWrapMode.Overflow;
+            label.verticalOverflow = VerticalWrapMode.Truncate;
+            if (label.font != null && label.font.material != null && label.font.material.mainTexture != null)
+                label.font.material.mainTexture.filterMode = FilterMode.Bilinear;
+            return label;
+        }
+
+        private static Text PlaceLoreLine(Transform parent, string name, string value, float top, float height, int fontSize, Color color, FontStyle style)
+        {
+            var label = CreateText(parent, name, value, new Vector2(0f, 1f), Vector2.zero, new Vector2(760f, height), fontSize, color, style);
+            var rect = label.rectTransform;
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, -top);
+            rect.sizeDelta = new Vector2(-44f, height);
             return label;
         }
 

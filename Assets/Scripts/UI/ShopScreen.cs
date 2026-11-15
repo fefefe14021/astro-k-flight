@@ -28,6 +28,8 @@ namespace KANYE.UI
         private int selectedSkinIndex = 0;
 
         private Text coinsLabel;
+        private Text hintLabel;
+        private bool selectionReady;
         private Transform listContainer;
         private readonly List<GameObject> activeListButtons = new List<GameObject>();
 
@@ -106,7 +108,8 @@ namespace KANYE.UI
 
             // Header Title
             CreateText(mainPanel.transform, "HeaderTitle", "АНГАР И АРСЕНАЛ КАПИТАНА ЗИГГИ", 30, new Vector2(0f, 335f), new Vector2(800f, 40f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
-            coinsLabel = CreateText(mainPanel.transform, "CoinsLabel", CoinsText(), 22, new Vector2(0f, 292f), new Vector2(600f, 32f), new Color(1f, 0.95f, 0.7f), FontStyle.Bold);
+            coinsLabel = CreateText(mainPanel.transform, "CoinsLabel", CoinsText(), 22, new Vector2(0f, 298f), new Vector2(900f, 28f), new Color(1f, 0.95f, 0.7f), FontStyle.Bold);
+            hintLabel = CreateText(mainPanel.transform, "HintLabel", "Выбери корпус или оружие справа от списка.", 16, new Vector2(0f, 272f), new Vector2(980f, 24f), new Color(0.75f, 0.9f, 1f), FontStyle.Normal);
 
             // Tab Buttons
             tabWeaponsBtn = CreateTabButton(mainPanel.transform, "TabWeapons", "🚀 ОРУЖЕЙНЫЙ АРСЕНАЛ", new Vector2(-220f, 240f), () => SetTab(ShopTab.Weapons));
@@ -300,6 +303,13 @@ namespace KANYE.UI
             activeListButtons.Clear();
 
             var save = SaveManager.Instance;
+            if (!selectionReady && save != null)
+            {
+                selectionReady = true;
+                selectedWeaponIndex = IndexOfId(WeaponCatalog.All, save.Data.equippedWeaponId, w => w.Id);
+                selectedSkinIndex = IndexOfId(ShipSkinCatalog.All, save.Data.equippedSkinId, s => s.Id);
+            }
+
             if (currentTab == ShopTab.Weapons)
             {
                 var weapons = WeaponCatalog.All;
@@ -413,8 +423,10 @@ namespace KANYE.UI
                     {
                         var cost = save != null ? save.GetUpgradeCost(weapon.Id) : 50;
                         var canAfford = save != null && save.Data.coins >= cost;
-                        upgradeButtonText.text = $"ПРОКАЧАТЬ ДО УР. {level + 1} ({cost} 💰)";
-                        upgradeButton.interactable = canAfford;
+                        upgradeButtonText.text = canAfford
+                            ? $"ПРОКАЧАТЬ ДО УР. {level + 1} ({cost} 💰)"
+                            : $"ДО УР. {level + 1} НЕ ХВАТАЕТ {Mathf.Max(0, cost - (save != null ? save.Data.coins : 0))} 💰";
+                        upgradeButton.interactable = true;
                         upgradeButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.72f, 0.15f) : new Color(0.45f, 0.35f, 0.25f);
                     }
                     else
@@ -436,12 +448,14 @@ namespace KANYE.UI
                 actionButtonText.text = "УЖЕ В БОЮ";
                 actionButton.interactable = false;
                 actionButton.GetComponent<Image>().color = new Color(0.25f, 0.35f, 0.45f);
+                ShowHint("Это оружие уже стоит на тарелке.");
             }
             else if (isOwned)
             {
                 actionButtonText.text = "ЭКИПИРОВАТЬ";
                 actionButton.interactable = true;
                 actionButton.GetComponent<Image>().color = new Color(0.2f, 0.85f, 0.35f);
+                ShowHint("Можно надеть перед вылетом. Урон зависит от уровня.");
             }
             else
             {
@@ -450,16 +464,21 @@ namespace KANYE.UI
                 {
                     var reqMission = weapon.RequiredMissionIndex + 1;
                     var reqSector = (weapon.RequiredMissionIndex / 3) + 1;
-                    actionButtonText.text = $"🔒 СЕКТОР {reqSector} (МИССИЯ {reqMission})";
-                    actionButton.interactable = false;
+                    actionButtonText.text = $"🔒 МИССИЯ {reqMission}";
+                    actionButton.interactable = true;
                     actionButton.GetComponent<Image>().color = new Color(0.35f, 0.25f, 0.25f);
+                    ShowHint($"Откроется в секторе {reqSector}, когда дойдёшь до миссии {reqMission}.");
                 }
                 else
                 {
-                    var canAfford = save != null && save.Data.coins >= weapon.Price;
-                    actionButtonText.text = $"КУПИТЬ ЗА {weapon.Price} 💰";
-                    actionButton.interactable = canAfford;
-                    actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.6f, 0.15f) : new Color(0.5f, 0.25f, 0.25f);
+                    var coins = save != null ? save.Data.coins : 0;
+                    var canAfford = coins >= weapon.Price;
+                    actionButtonText.text = canAfford ? $"КУПИТЬ ЗА {weapon.Price} 💰" : $"НЕ ХВАТАЕТ {weapon.Price - coins} 💰";
+                    actionButton.interactable = true;
+                    actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.6f, 0.15f) : new Color(0.55f, 0.28f, 0.28f);
+                    ShowHint(canAfford
+                        ? "Покупка сразу поставит оружие в бой."
+                        : $"На счету {coins}. До этой пушки ещё {weapon.Price - coins} монет.");
                 }
             }
         }
@@ -510,12 +529,14 @@ namespace KANYE.UI
                 actionButtonText.text = "УЖЕ В БОЮ";
                 actionButton.interactable = false;
                 actionButton.GetComponent<Image>().color = new Color(0.25f, 0.35f, 0.45f);
+                ShowHint("Этот корпус уже надет. Цвет двигателя виден в рамке сверху.");
             }
             else if (isOwned)
             {
                 actionButtonText.text = "ЭКИПИРОВАТЬ";
                 actionButton.interactable = true;
                 actionButton.GetComponent<Image>().color = new Color(0.2f, 0.85f, 0.35f);
+                ShowHint("Корпус не меняет урон, только вид тарелки и пламя.");
             }
             else
             {
@@ -523,16 +544,22 @@ namespace KANYE.UI
                 if (!isAccessible)
                 {
                     var reqSector = (skin.RequiredMissionIndex / 3) + 1;
-                    actionButtonText.text = $"🔒 ТРЕБУЕТСЯ СЕКТОР {reqSector}";
-                    actionButton.interactable = false;
+                    var reqMission = skin.RequiredMissionIndex + 1;
+                    actionButtonText.text = $"🔒 МИССИЯ {reqMission}";
+                    actionButton.interactable = true;
                     actionButton.GetComponent<Image>().color = new Color(0.35f, 0.25f, 0.25f);
+                    ShowHint($"Корпус откроется с миссии {reqMission}, сектор {reqSector}.");
                 }
                 else
                 {
-                    var canAfford = save != null && save.Data.coins >= skin.Price;
-                    actionButtonText.text = $"КУПИТЬ ЗА {skin.Price} 💰";
-                    actionButton.interactable = canAfford;
-                    actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.6f, 0.15f) : new Color(0.5f, 0.25f, 0.25f);
+                    var coins = save != null ? save.Data.coins : 0;
+                    var canAfford = coins >= skin.Price;
+                    actionButtonText.text = canAfford ? $"КУПИТЬ ЗА {skin.Price} 💰" : $"НЕ ХВАТАЕТ {skin.Price - coins} 💰";
+                    actionButton.interactable = true;
+                    actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.6f, 0.15f) : new Color(0.55f, 0.28f, 0.28f);
+                    ShowHint(canAfford
+                        ? "После покупки корпус сразу надевается."
+                        : $"На счету {coins}. До корпуса ещё {skin.Price - coins} монет.");
                 }
             }
         }
@@ -546,8 +573,16 @@ namespace KANYE.UI
             if (save.UpgradeWeapon(w.Id))
             {
                 AudioManager.PlayShoot();
+                ShowHint($"Оружие улучшено до уровня {save.GetWeaponLevel(w.Id)}.");
                 Refresh();
+                return;
             }
+
+            var cost = save.GetUpgradeCost(w.Id);
+            ShowHint(cost < 0
+                ? "Дальше улучшать некуда."
+                : $"На прокачку нужно {cost} монет, не хватает {Mathf.Max(0, cost - save.Data.coins)}.");
+            AudioManager.PlayHit();
         }
 
         private void OnActionButtonClicked()
@@ -563,6 +598,7 @@ namespace KANYE.UI
                 {
                     if (!save.IsWeaponAccessible(w.Id))
                     {
+                        ShowHint($"Сначала дойди до миссии {w.RequiredMissionIndex + 1}.");
                         AudioManager.PlayHit();
                         return;
                     }
@@ -571,12 +607,20 @@ namespace KANYE.UI
                     {
                         save.UnlockWeapon(w.Id);
                         save.EquipWeapon(w.Id);
+                        ShowHint($"{w.Title} куплено и надето. Осталось {save.Data.coins} монет.");
                         AudioManager.PlayPowerup();
+                    }
+                    else
+                    {
+                        ShowHint($"Не хватает {w.Price - save.Data.coins} монет.");
+                        AudioManager.PlayHit();
+                        return;
                     }
                 }
                 else
                 {
                     save.EquipWeapon(w.Id);
+                    ShowHint($"{w.Title} теперь в бою.");
                     AudioManager.PlayClick();
                 }
             }
@@ -588,6 +632,7 @@ namespace KANYE.UI
                 {
                     if (!save.IsSkinAccessible(s.Id))
                     {
+                        ShowHint($"Корпус откроется с миссии {s.RequiredMissionIndex + 1}.");
                         AudioManager.PlayHit();
                         return;
                     }
@@ -596,12 +641,20 @@ namespace KANYE.UI
                     {
                         save.UnlockSkin(s.Id);
                         save.EquipSkin(s.Id);
+                        ShowHint($"{s.Title} куплен и надет. Осталось {save.Data.coins} монет.");
                         AudioManager.PlayPowerup();
+                    }
+                    else
+                    {
+                        ShowHint($"Не хватает {s.Price - save.Data.coins} монет.");
+                        AudioManager.PlayHit();
+                        return;
                     }
                 }
                 else
                 {
                     save.EquipSkin(s.Id);
+                    ShowHint($"{s.Title} теперь на тарелке.");
                     AudioManager.PlayClick();
                 }
             }
@@ -724,10 +777,57 @@ namespace KANYE.UI
             return label;
         }
 
+        private static void ShowHint(string message)
+        {
+            if (FindAnyObjectByType<ShopScreen>() is ShopScreen shop && shop.hintLabel != null)
+                shop.hintLabel.text = message;
+        }
+
+        private static int IndexOfId<T>(T[] items, string id, System.Func<T, string> readId)
+        {
+            if (items == null || items.Length == 0)
+                return 0;
+
+            for (var i = 0; i < items.Length; i++)
+            {
+                if (readId(items[i]) == id)
+                    return i;
+            }
+
+            return 0;
+        }
+
         private static string CoinsText()
         {
-            var c = SaveManager.Instance != null ? SaveManager.Instance.Data.coins : 0;
-            return $"БАЛАНС: {c} 💰 МОНЕТ";
+            var save = SaveManager.Instance;
+            var coins = save != null ? save.Data.coins : 0;
+            return $"БАЛАНС: {coins} 💰    {NextDeal(save, coins)}";
+        }
+
+        private static string NextDeal(SaveManager save, int coins)
+        {
+            if (save == null)
+                return "Сначала зайди в игру, чтобы кошелёк сохранился.";
+
+            ShipSkin cheapest = null;
+            for (var i = 0; i < ShipSkinCatalog.All.Length; i++)
+            {
+                var skin = ShipSkinCatalog.All[i];
+                if (save.Data.unlockedSkinIds.Contains(skin.Id) || skin.Price <= 0)
+                    continue;
+                if (!save.IsSkinAccessible(skin.Id))
+                    continue;
+                if (cheapest == null || skin.Price < cheapest.Price)
+                    cheapest = skin;
+            }
+
+            if (cheapest == null)
+                return "Доступные корпуса уже в ангаре.";
+
+            if (coins >= cheapest.Price)
+                return $"Можно купить «{cheapest.Title}» за {cheapest.Price}.";
+
+            return $"До «{cheapest.Title}» ещё {cheapest.Price - coins} монет.";
         }
     }
 }

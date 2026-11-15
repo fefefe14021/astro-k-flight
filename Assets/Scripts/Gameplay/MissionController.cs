@@ -23,8 +23,11 @@ namespace KANYE.Gameplay
         private bool bossSpawned;
         private bool missionCompleted;
 
+        public static bool IsMissionFinished { get; private set; }
+
         private void Awake()
         {
+            IsMissionFinished = false;
             if (GameRules.CurrentMode == GameMode.RogueExpedition)
             {
                 gameObject.AddComponent<RogueExpeditionController>();
@@ -71,7 +74,7 @@ namespace KANYE.Gameplay
                 {
                     spawnTimer = 0f;
                     SpawnAsteroid();
-                    if (Random.value < 0.35f)
+                    if (Random.value < 0.12f)
                         SpawnAsteroid(Random.Range(-1.2f, 1.2f));
                 }
 
@@ -149,6 +152,22 @@ namespace KANYE.Gameplay
         {
             if (missionCompleted) return;
             missionCompleted = true;
+            IsMissionFinished = true;
+            GamePause.Lock();
+
+            var ship = FindAnyObjectByType<PlayerHealth>();
+            if (ship != null)
+            {
+                var controller = ship.GetComponent<PlayerController>();
+                if (controller != null)
+                    controller.enabled = false;
+                var shooter = ship.GetComponent<ShipShooter>();
+                if (shooter != null)
+                    shooter.enabled = false;
+                var body = ship.GetComponent<Rigidbody2D>();
+                if (body != null)
+                    body.linearVelocity = Vector2.zero;
+            }
 
             // Clear remaining hazards
             var asteroids = FindObjectsByType<Asteroid>();
@@ -166,6 +185,10 @@ namespace KANYE.Gameplay
             var enemies = FindObjectsByType<Enemy>();
             for (var i = 0; i < enemies.Length; i++)
                 Destroy(enemies[i].gameObject);
+
+            var shots = FindObjectsByType<EnemyProjectile>();
+            for (var i = 0; i < shots.Length; i++)
+                Destroy(shots[i].gameObject);
 
             AudioManager.PlayVictory();
 

@@ -1,3 +1,4 @@
+using KANYE.Gameplay;
 using KANYE.Systems;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -65,6 +66,7 @@ namespace KANYE.Services
 
         public static void LoadSceneByName(string sceneName)
         {
+            GamePause.Release();
             Debug.Log($"Загружаем сцену: {sceneName}");
             SceneManager.LoadScene(sceneName);
         }
