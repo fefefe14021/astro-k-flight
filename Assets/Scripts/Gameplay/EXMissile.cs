@@ -98,12 +98,12 @@ namespace KANYE.Gameplay
                 var h = hits[i];
                 if (h.TryGetComponent<Asteroid>(out var asteroid))
                 {
-                    GameRules.NotifyAsteroidDestroyed(1);
+                    GameRules.NotifyAsteroidDestroyed(1, grantHype: false);
                     Destroy(asteroid.gameObject);
                 }
                 else if (h.TryGetComponent<Enemy>(out var enemy))
                 {
-                    GameRules.NotifyAsteroidDestroyed(1);
+                    GameRules.NotifyAsteroidDestroyed(1, grantHype: false);
                     Destroy(enemy.gameObject);
                 }
                 else if (h.TryGetComponent<Missile>(out var missile))

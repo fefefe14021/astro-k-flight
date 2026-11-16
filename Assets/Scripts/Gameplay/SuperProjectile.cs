@@ -68,7 +68,7 @@ namespace KANYE.Gameplay
                 EffectsManager.PlayImpact(asteroid.transform.position, Vector2.right, Color.yellow);
                 EffectsManager.PlayExplosion(asteroid.transform.position, Color.yellow, isMechanical: false);
                 CameraShake.Shake(0.35f, 0.25f);
-                GameRules.NotifyAsteroidDestroyed(1);
+                GameRules.NotifyAsteroidDestroyed(1, grantHype: false);
                 Destroy(asteroid.gameObject);
                 return;
             }
@@ -79,7 +79,7 @@ namespace KANYE.Gameplay
                 EffectsManager.PlayImpact(enemy.transform.position, Vector2.right, Color.red);
                 EffectsManager.PlayExplosion(enemy.transform.position, new Color(1f, 0.35f, 0.15f), isMechanical: true);
                 CameraShake.Shake(0.35f, 0.25f);
-                GameRules.NotifyAsteroidDestroyed(1);
+                GameRules.NotifyAsteroidDestroyed(1, grantHype: false);
                 Destroy(enemy.gameObject);
                 return;
             }

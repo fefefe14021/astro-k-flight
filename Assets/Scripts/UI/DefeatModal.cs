@@ -115,7 +115,7 @@ namespace KANYE.UI
             statusText = CreateLabel(panel.transform, "Subtitle", "Сектор не пройден. Связь с ядром потеряна.", 20, new Vector2(0f, 85f), new Color(0.8f, 0.88f, 0.95f, 1f));
 
             // Buttons
-            reviveButton = CreateButton(panel.transform, "ReviveButton", "⚡ ВОЗРОДИТЬСЯ (ВТОРОЙ ШАНС)", new Vector2(0f, 10f), new Vector2(460f, 58f), PixelUiAtlas.ButtonPrimary);
+            reviveButton = CreateButton(panel.transform, "ReviveButton", "⚡ ВОЗРОДИТЬСЯ ЗА РЕКЛАМУ", new Vector2(0f, 10f), new Vector2(460f, 58f), PixelUiAtlas.ButtonPrimary);
             reviveButton.onClick.AddListener(() =>
             {
                 AudioManager.PlayClick();

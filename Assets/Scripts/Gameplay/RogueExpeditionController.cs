@@ -111,7 +111,7 @@ namespace KANYE.Gameplay
             if (hype != null)
                 hype.BeginMission(albumsRequiredForWave);
 
-            ShowBanner($"⚡ ВОЛНА {CurrentWave} ⚡", $"Квота винила: {albumsRequiredForWave} Альбомов");
+            ShowBanner($"⚡ ВОЛНА {CurrentWave} ⚡", $"Маршрут волны: {albumsRequiredForWave} км");
             AudioManager.PlayPowerup();
             UpdateHud();
         }
@@ -183,7 +183,8 @@ namespace KANYE.Gameplay
 
             // Check if wave albums collected
             var currentHype = FindAnyObjectByType<HypeState>();
-            if (currentHype != null && currentHype.Albums >= albumsRequiredForWave)
+            currentHype?.AdvanceRoute(1.05f * Time.deltaTime);
+            if (currentHype != null && currentHype.Route + 0.05f >= currentHype.RouteRequired)
             {
                 CompleteWave();
             }
@@ -587,7 +588,7 @@ namespace KANYE.Gameplay
                 new RoguePerk("rate", "Форсаж Плазмы", "СКОРОСТЬ СТРЕЛЬБЫ", "+20% к темпу стрельбы.", "⚡", new Color(0.3f, 0.9f, 1f), p => FireRateMultiplier *= 1.2f),
                 new RoguePerk("armor", "Нано-Броня", "ЗАЩИТА", "+1 макс. прочность и полное исцеление тарелки.", "🛡️", new Color(0.3f, 1f, 0.5f), p => p?.IncreaseMaxLives(1)),
                 new RoguePerk("speed", "Ионный Форсаж", "МАНЕВРЕННОСТЬ", "+25% к скорости перемещения тарелки.", "🚀", new Color(1f, 0.85f, 0.3f), p => MoveSpeedMultiplier *= 1.25f),
-                new RoguePerk("hype", "Hype-Резонатор", "СПЕЦ-АТАКИ", "+40% к скорости накопления карт Hype.", "🌀", new Color(0.9f, 0.4f, 1f), p => HypeMultiplier *= 1.4f),
+                new RoguePerk("hype", "Резонатор ярости", "СПЕЦ-АТАКИ", "+40% к скорости накопления шкалы Ярости.", "🌀", new Color(0.9f, 0.4f, 1f), p => HypeMultiplier *= 1.4f),
                 new RoguePerk("magnet", "Грави-Магнит", "РЕСУРСЫ", "Притягивает наниты и сферы с удвоенного расстояния.", "🧲", new Color(0.4f, 0.8f, 1f), p => MagnetRangeBonus += 3.5f)
             };
         }

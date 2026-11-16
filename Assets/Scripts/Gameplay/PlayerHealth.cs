@@ -5,6 +5,7 @@
 using System;
 using System.Collections;
 using KANYE.Audio;
+using KANYE.Services;
 using KANYE.Systems;
 using KANYE.UI;
 using UnityEngine;
@@ -177,7 +178,14 @@ namespace KANYE.Gameplay
 
         private void OnReviveRequested()
         {
-            Revive();
+            var sdk = YandexGamesService.Instance;
+            if (sdk == null)
+            {
+                Revive();
+                return;
+            }
+
+            sdk.ShowRewarded(Revive);
         }
 
         public void Revive()

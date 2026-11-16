@@ -66,6 +66,8 @@ namespace KANYE.Gameplay
             if (player != null && player.IsDead)
                 return;
 
+            hype?.AdvanceRoute(1.05f * Time.deltaTime);
+
             // Spawning phase before boss or before mission completion
             if (!bossSpawned)
             {
@@ -108,7 +110,7 @@ namespace KANYE.Gameplay
             if (missionCompleted || hype == null || mission == null)
                 return;
 
-            if (hype.Albums >= mission.AlbumsRequired)
+            if (hype.Route + 0.05f >= hype.RouteRequired)
             {
                 if (mission.HasBoss)
                 {

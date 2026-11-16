@@ -5,11 +5,11 @@
 
 using System.Collections;
 using KANYE.Gameplay;
+using KANYE.Systems;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 #if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
 #endif
 
 namespace KANYE.UI
@@ -21,20 +21,39 @@ namespace KANYE.UI
         public static TutorialHints Instance { get; private set; }
 
         public static bool IsTutorialCompleted => PlayerPrefs.GetInt(TutorialKey, 0) == 1;
+        public static bool PracticeAllowsEX => !IsTutorialActive || (Instance != null && Instance.step == Lesson.Ex);
+        public static bool PracticeAllowsSuper => !IsTutorialActive || (Instance != null && Instance.step == Lesson.Super);
+
+        public static void SetCoveredByPause(bool covered)
+        {
+            if (Instance == null || Instance.lessonCanvas == null)
+                return;
+            Instance.lessonCanvas.sortingOrder = covered ? 100 : 300;
+        }
 
         private CanvasGroup canvasGroup;
+        private Canvas lessonCanvas;
         private Text titleText;
         private Text moveText;
         private Text fireText;
         private Text statusText;
         private Button skipButton;
 
+        private enum Lesson
+        {
+            Move,
+            Shoot,
+            Ex,
+            Super,
+            Done
+        }
+
         private bool moved;
         private bool shot;
-        private bool targetDestroyed;
-        private int collisionCount;
-        private int missCount;
+        private Lesson step = Lesson.Move;
+        private HypeState hype;
         private Asteroid activeTrainingAsteroid;
+        private float nextTargetAt;
 
         public static void ResetTutorial()
         {
@@ -114,8 +133,15 @@ namespace KANYE.UI
             if (canvasGroup != null)
                 canvasGroup.alpha = 1f;
 
-            // Only now spawn the training target dummy!
-            SpawnTrainingAsteroidInstance();
+            hype = FindAnyObjectByType<HypeState>();
+            if (hype != null)
+            {
+                hype.EXFired += HandleEx;
+                hype.SuperFired += HandleSuper;
+            }
+
+            GameRules.TutorialArsenal = true;
+            ShowMoveStep();
         }
 
         private void OnDestroy()
@@ -128,69 +154,142 @@ namespace KANYE.UI
                 input.OnFirstShot -= HandleShot;
             }
 
+            if (hype != null)
+            {
+                hype.EXFired -= HandleEx;
+                hype.SuperFired -= HandleSuper;
+            }
+
+            GameRules.TutorialArsenal = false;
+
             if (Instance == this)
                 Instance = null;
         }
 
         private void Update()
         {
-            if (!IsTutorialActive || targetDestroyed)
+            if (!IsTutorialActive || step == Lesson.Done || step == Lesson.Move)
                 return;
 
-            var skipPressed = false;
-#if ENABLE_INPUT_SYSTEM
-            if (Keyboard.current != null)
-            {
-                if (Keyboard.current.tabKey.wasPressedThisFrame || Keyboard.current.escapeKey.wasPressedThisFrame)
-                    skipPressed = true;
-            }
-#else
-            if (Input.GetKeyDown(KeyCode.Tab) || Input.GetKeyDown(KeyCode.Escape))
-                skipPressed = true;
-#endif
-            if (skipPressed)
-            {
-                CompleteTutorial();
-            }
+            if (step == Lesson.Ex)
+                EnsureHype(HypeState.EXCost);
+            else if (step == Lesson.Super)
+                EnsureHype(100f);
+
+            if (activeTrainingAsteroid == null && Time.unscaledTime >= nextTargetAt)
+                SpawnTrainingAsteroidInstance();
         }
 
         public void OnFirstMove() => HandleMove();
         public void OnFirstShot() => HandleShot();
 
+        private void ShowMoveStep()
+        {
+            step = Lesson.Move;
+            if (titleText != null)
+                titleText.text = "ШАГ 1 ИЗ 4  ·  МАНЁВР";
+            if (moveText != null)
+                moveText.text = "Сдвинь тарелку клавишами WASD или стрелками.";
+            if (fireText != null)
+                fireText.text = "";
+            if (statusText != null)
+            {
+                statusText.text = "Пока корабль не сдвинется, учебная цель не появится.";
+                statusText.color = new Color(0.75f, 0.88f, 1f);
+            }
+        }
+
+        private void ShowShootStep()
+        {
+            step = Lesson.Shoot;
+            if (titleText != null)
+                titleText.text = "ШАГ 2 ИЗ 4  ·  ОГОНЬ";
+            if (moveText != null)
+            {
+                moveText.text = "✓ Манёвр засчитан";
+                moveText.color = new Color(0.45f, 1f, 0.55f);
+            }
+            if (fireText != null)
+                fireText.text = "Зажми ПРОБЕЛ и сбей астероид справа.";
+            if (statusText != null)
+            {
+                statusText.text = "Сбитые цели копят шкалу Ярости. Задание миссии — пройденный путь, не альбомы.";
+                statusText.color = new Color(1f, 0.88f, 0.45f);
+            }
+            SpawnTrainingAsteroidInstance();
+        }
+
         private void HandleMove()
         {
             if (moved) return;
             moved = true;
-            if (moveText != null)
-            {
-                moveText.text = "✓ Маневрирование освоено";
-                moveText.color = new Color(0.4f, 1f, 0.5f);
-            }
-            CheckControlsPhase();
+            ShowShootStep();
         }
 
         private void HandleShot()
         {
-            if (shot) return;
             shot = true;
-            if (fireText != null)
-            {
-                fireText.text = "✓ Огонь освоен";
-                fireText.color = new Color(0.4f, 1f, 0.5f);
-            }
-            CheckControlsPhase();
         }
 
-        private void CheckControlsPhase()
+        private void HandleEx()
         {
-            if (moved && shot && !targetDestroyed)
+            if (step != Lesson.Ex)
+                return;
+            ShowSuperStep();
+        }
+
+        private void HandleSuper()
+        {
+            if (step != Lesson.Super)
+                return;
+            step = Lesson.Done;
+            StartCoroutine(FinishTutorialRoutine());
+        }
+
+        private void ShowExStep()
+        {
+            step = Lesson.Ex;
+            GameRules.TutorialArsenal = true;
+            EnsureHype(HypeState.EXCost);
+            if (titleText != null)
+                titleText.text = "ШАГ 3 ИЗ 4  ·  РАКЕТА";
+            if (moveText != null)
+                moveText.text = "✓ Манёвр    ✓ Выстрел";
+            if (fireText != null)
+                fireText.text = "Нажми Q — EX-ракета.";
+            if (statusText != null)
             {
-                if (statusText != null)
-                {
-                    statusText.text = "Сбей учебный астероид прямо по курсу!";
-                    statusText.color = new Color(1f, 0.85f, 0.3f);
-                }
+                statusText.text = "Карта Ярости уже есть. Если ракета уйдёт мимо, карта вернётся.";
+                statusText.color = new Color(0.45f, 0.9f, 1f);
             }
+            SpawnTrainingAsteroidInstance();
+        }
+
+        private void ShowSuperStep()
+        {
+            step = Lesson.Super;
+            EnsureHype(100f);
+            if (titleText != null)
+                titleText.text = "ШАГ 4 ИЗ 4  ·  МЕГА-ЛУЧ";
+            if (moveText != null)
+                moveText.text = "✓ Манёвр    ✓ Выстрел    ✓ Ракета Q";
+            if (fireText != null)
+                fireText.text = "Нажми E — мега-луч.";
+            if (statusText != null)
+            {
+                statusText.text = "Шкала Ярости полная. Если луч уйдёт мимо, шкала вернётся.";
+                statusText.color = new Color(1f, 0.88f, 0.45f);
+            }
+            SpawnTrainingAsteroidInstance();
+        }
+
+        private void EnsureHype(float target)
+        {
+            if (hype == null)
+                hype = FindAnyObjectByType<HypeState>();
+            if (hype == null || hype.Hype >= target)
+                return;
+            hype.AddHype(target - hype.Hype);
         }
 
         public static void NotifyAsteroidDestroyed()
@@ -219,20 +318,11 @@ namespace KANYE.UI
 
         private void HandleTargetCollision()
         {
-            if (targetDestroyed || !IsTutorialActive) return;
-
-            collisionCount++;
-            if (collisionCount >= 2)
-            {
-                // After 2 impacts, auto-complete tutorial so player is NEVER blocked
-                Debug.Log("[Tutorial] Авто-завершение обучения после серии столкновений.");
-                CompleteTutorial();
-                return;
-            }
+            if (!IsTutorialActive || step == Lesson.Done || step == Lesson.Move) return;
 
             if (statusText != null)
             {
-                statusText.text = "Внимание: столкновение! Стреляй на [ПРОБЕЛ] или [ЛКМ]!";
+                statusText.text = "Это учебная цель без урона. Отойди и сбей её пробелом.";
                 statusText.color = new Color(1f, 0.45f, 0.45f);
             }
 
@@ -241,19 +331,11 @@ namespace KANYE.UI
 
         private void HandleTargetMissed()
         {
-            if (targetDestroyed || !IsTutorialActive) return;
-
-            missCount++;
-            if (missCount >= 2)
-            {
-                Debug.Log("[Tutorial] Авто-завершение обучения после пролета цели.");
-                CompleteTutorial();
-                return;
-            }
+            if (!IsTutorialActive || step == Lesson.Done || step == Lesson.Move) return;
 
             if (statusText != null)
             {
-                statusText.text = "Астероид ушел! Целься и стреляй на [ПРОБЕЛ] или [ЛКМ]!";
+                statusText.text = "Астероид ушёл мимо. Поднимись на его высоту и снова стреляй.";
                 statusText.color = new Color(1f, 0.75f, 0.3f);
             }
 
@@ -262,32 +344,36 @@ namespace KANYE.UI
 
         private IEnumerator RespawnTrainingAsteroidRoutine(float delay)
         {
-            yield return new WaitForSeconds(delay);
-            if (!targetDestroyed && IsTutorialActive)
-            {
+            yield return new WaitForSecondsRealtime(delay);
+            if (IsTutorialActive && step != Lesson.Done && step != Lesson.Move)
                 SpawnTrainingAsteroidInstance();
-            }
         }
 
         private void OnTargetHit()
         {
-            if (targetDestroyed) return;
-            targetDestroyed = true;
+            if (step == Lesson.Shoot)
+            {
+                ShowExStep();
+                return;
+            }
 
-            StartCoroutine(FinishTutorialRoutine());
+            if (step == Lesson.Ex || step == Lesson.Super)
+                StartCoroutine(RespawnTrainingAsteroidRoutine(0.6f));
         }
 
         private IEnumerator FinishTutorialRoutine()
         {
             if (titleText != null)
-                titleText.text = "ОТЛИЧНО! ЦЕЛЬ УНИЧТОЖЕНА";
+                titleText.text = "УРОК ЗАКРЫТ";
+            if (moveText != null)
+                moveText.text = "✓ Манёвр    ✓ Выстрел    ✓ Q    ✓ E";
+            if (fireText != null)
+                fireText.text = "Обе кнопки проверены.";
             if (statusText != null)
             {
-                statusText.text = "+1 Album. Hype заряжается!\nВнимание: приближается основной рой!";
+                statusText.text = "Дальше идёт обычная волна первой миссии.";
                 statusText.color = new Color(0.3f, 1f, 0.7f);
             }
-            if (moveText != null) moveText.gameObject.SetActive(false);
-            if (fireText != null) fireText.gameObject.SetActive(false);
             if (skipButton != null) skipButton.gameObject.SetActive(false);
 
             yield return new WaitForSeconds(1.8f);
@@ -310,6 +396,7 @@ namespace KANYE.UI
             PlayerPrefs.SetInt(TutorialKey, 1);
             PlayerPrefs.Save();
             IsTutorialActive = false;
+            GameRules.TutorialArsenal = false;
 
             // Clean up any remaining training asteroids
             var asteroids = FindObjectsByType<Asteroid>();
@@ -327,20 +414,17 @@ namespace KANYE.UI
 
         private void SpawnTrainingAsteroidInstance()
         {
-            if (targetDestroyed || !IsTutorialActive) return;
+            if (!IsTutorialActive || step == Lesson.Done || step == Lesson.Move) return;
 
-            // Clear any stale existing asteroid
-            var existing = FindObjectsByType<Asteroid>();
-            for (var i = 0; i < existing.Length; i++)
-            {
-                Destroy(existing[i].gameObject);
-            }
+            if (activeTrainingAsteroid != null)
+                Destroy(activeTrainingAsteroid.gameObject);
 
             var asteroidObj = new GameObject("TutorialAsteroid", typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(Rigidbody2D));
             asteroidObj.transform.position = new Vector3(8.5f, 0f, 0f);
             activeTrainingAsteroid = asteroidObj.AddComponent<Asteroid>();
             // Gentle speed (0.85f), 0 contact damage so beginner never loses HP on target dummy!
             activeTrainingAsteroid.Configure(0.85f, 0, 0.65f);
+            nextTargetAt = Time.unscaledTime + 0.45f;
         }
 
         private void BuildUI()
@@ -348,9 +432,9 @@ namespace KANYE.UI
             var canvasObj = new GameObject("TutorialCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             canvasObj.transform.SetParent(transform, false);
 
-            var canvas = canvasObj.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 300;
+            lessonCanvas = canvasObj.GetComponent<Canvas>();
+            lessonCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            lessonCanvas.sortingOrder = 300;
 
             var scaler = canvasObj.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -365,8 +449,8 @@ namespace KANYE.UI
             panelRect.anchorMin = new Vector2(0.5f, 1f);
             panelRect.anchorMax = new Vector2(0.5f, 1f);
             panelRect.pivot = new Vector2(0.5f, 1f);
-            panelRect.anchoredPosition = new Vector2(0f, -50f);
-            panelRect.sizeDelta = new Vector2(760f, 160f);
+            panelRect.anchoredPosition = new Vector2(0f, -118f);
+            panelRect.sizeDelta = new Vector2(860f, 196f);
 
             var bg = panelObj.GetComponent<Image>();
             bg.sprite = PixelUiAtlas.Panel;
@@ -383,10 +467,12 @@ namespace KANYE.UI
             accent.GetComponent<Image>().sprite = PixelUiAtlas.White;
             accent.GetComponent<Image>().color = new Color(1f, 0.75f, 0.2f, 1f);
 
-            titleText = CreateLabel(panelObj.transform, "Title", "БОРТОВОЕ ОБУЧЕНИЕ ПИЛОТА", 22, new Vector2(0f, -14f), new Color(1f, 0.85f, 0.4f));
-            moveText = CreateLabel(panelObj.transform, "Move", "WASD / Стрелки / Стик — Маневрирование", 19, new Vector2(0f, -44f), Color.white);
-            fireText = CreateLabel(panelObj.transform, "Fire", "ПРОБЕЛ / Кнопка — Огонь по курсу", 19, new Vector2(0f, -70f), Color.white);
-            statusText = CreateLabel(panelObj.transform, "Status", "Опробуй управление и сбей первый астероид", 19, new Vector2(0f, -108f), new Color(0.75f, 0.88f, 1f));
+            titleText = CreateLabel(panelObj.transform, "Title", "ШАГ 1 ИЗ 4  ·  МАНЁВР", 22, new Vector2(16f, -16f), 34f, new Color(1f, 0.85f, 0.4f));
+            titleText.alignment = TextAnchor.MiddleLeft;
+            titleText.rectTransform.offsetMax = new Vector2(-200f, titleText.rectTransform.offsetMax.y);
+            moveText = CreateLabel(panelObj.transform, "Move", "Сдвинь тарелку клавишами WASD или стрелками.", 20, new Vector2(0f, -62f), 32f, Color.white);
+            fireText = CreateLabel(panelObj.transform, "Fire", "", 20, new Vector2(0f, -102f), 32f, Color.white);
+            statusText = CreateLabel(panelObj.transform, "Status", "Пока корабль не сдвинется, учебная цель не появится.", 16, new Vector2(0f, -142f), 32f, new Color(0.75f, 0.88f, 1f));
 
             // Skip Tutorial button
             var skipObj = new GameObject("SkipButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
@@ -395,8 +481,8 @@ namespace KANYE.UI
             skipRect.anchorMin = new Vector2(1f, 1f);
             skipRect.anchorMax = new Vector2(1f, 1f);
             skipRect.pivot = new Vector2(1f, 1f);
-            skipRect.anchoredPosition = new Vector2(-12f, -12f);
-            skipRect.sizeDelta = new Vector2(160f, 32f);
+            skipRect.anchoredPosition = new Vector2(-14f, -16f);
+            skipRect.sizeDelta = new Vector2(176f, 32f);
 
             var skipImg = skipObj.GetComponent<Image>();
             skipImg.sprite = PixelUiAtlas.ButtonSecondary;
@@ -404,16 +490,16 @@ namespace KANYE.UI
             skipImg.color = new Color(0.2f, 0.3f, 0.45f, 0.9f);
 
             skipButton = skipObj.GetComponent<Button>();
-            skipButton.onClick.AddListener(CompleteTutorial);
+            skipObj.SetActive(false);
 
-            var skipLabel = CreateLabel(skipObj.transform, "SkipText", "Пропустить [TAB]", 14, Vector2.zero, Color.white);
+            var skipLabel = CreateLabel(skipObj.transform, "SkipText", "Пропустить [TAB]", 14, Vector2.zero, 24f, Color.white);
             skipLabel.rectTransform.anchorMin = Vector2.zero;
             skipLabel.rectTransform.anchorMax = Vector2.one;
             skipLabel.rectTransform.sizeDelta = Vector2.zero;
             skipLabel.alignment = TextAnchor.MiddleCenter;
         }
 
-        private static Text CreateLabel(Transform parent, string name, string text, int fontSize, Vector2 pos, Color color)
+        private static Text CreateLabel(Transform parent, string name, string text, int fontSize, Vector2 pos, float height, Color color)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             go.transform.SetParent(parent, false);
@@ -422,7 +508,7 @@ namespace KANYE.UI
             rect.anchorMax = new Vector2(1f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
             rect.anchoredPosition = pos;
-            rect.sizeDelta = new Vector2(-20f, 30f);
+            rect.sizeDelta = new Vector2(-32f, height);
 
             var label = go.GetComponent<Text>();
             label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
@@ -431,7 +517,7 @@ namespace KANYE.UI
             label.color = color;
             label.text = text;
             label.horizontalOverflow = HorizontalWrapMode.Wrap;
-            label.verticalOverflow = VerticalWrapMode.Overflow;
+            label.verticalOverflow = VerticalWrapMode.Truncate;
             return label;
         }
     }

@@ -1,6 +1,17 @@
-# astro-k-flight
+# Astro K
 
-2D Unity-проект (Asteroid Shooter).
+2D-аркада на Unity 6: игрок ведёт летающую тарелку, уклоняется и стреляет, собирает альбомы и проходит 12 миссий. Есть отдельный режим аркадной экспедиции. Платформа — Яндекс Игры (WebGL).
+
+**Жанр:** Arcade  
+**Репозиторий:** https://github.com/fefefe14021/astro-k-flight  
+**Ветка:** feature/systems-and-docs
+
+## Команда 6 (ПА-01, ПА-02)
+
+- Звездин Дмитрий Дмитриевич — Game Designer / Producer
+- Портнов Степан Николаевич — Gameplay Developer
+- Жужугов Дмитрий Ярославович — UI/UX Developer
+- Миронов Егор Павлович — Technical Developer
 
 ## Открытие в Unity Hub
 

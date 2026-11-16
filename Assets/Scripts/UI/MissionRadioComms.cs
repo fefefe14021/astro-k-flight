@@ -409,12 +409,16 @@ namespace KANYE.UI
             portraitImage.sprite = Resources.Load<Sprite>("Sprites/barney_portrait");
 
             // Header Channel Tag
-            channelTagText = CreateLabel(consoleRoot.transform, "ChannelTag", "📡 СВЯЗЬ: ШТУРМАН БАРНИ", 18, new Vector2(190f, 65f), new Vector2(550f, 30f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
+            channelTagText = CreateLabel(consoleRoot.transform, "ChannelTag", "📡 СВЯЗЬ: ШТУРМАН БАРНИ", 18, new Vector2(180f, 64f), new Vector2(490f, 28f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
             channelTagText.alignment = TextAnchor.MiddleLeft;
+            channelTagText.horizontalOverflow = HorizontalWrapMode.Overflow;
+            channelTagText.verticalOverflow = VerticalWrapMode.Truncate;
 
-            // Live On-Air Indicator
-            onAirText = CreateLabel(consoleRoot.transform, "OnAir", "● В ЭФИРЕ", 15, new Vector2(740f, 65f), new Vector2(140f, 30f), new Color(0.2f, 1f, 0.4f), FontStyle.Bold);
-            onAirText.alignment = TextAnchor.MiddleRight;
+            // Live On-Air Indicator. Stops before the skip button, which sits at the right edge.
+            onAirText = CreateLabel(consoleRoot.transform, "OnAir", "● В ЭФИРЕ", 15, new Vector2(684f, 64f), new Vector2(130f, 28f), new Color(0.2f, 1f, 0.4f), FontStyle.Bold);
+            onAirText.alignment = TextAnchor.MiddleLeft;
+            onAirText.horizontalOverflow = HorizontalWrapMode.Overflow;
+            onAirText.verticalOverflow = VerticalWrapMode.Truncate;
 
             // Dialogue Message Text (Generous size, auto wrap, overflow)
             messageText = CreateLabel(consoleRoot.transform, "Message", "...", 17, new Vector2(190f, -8f), new Vector2(810f, 96f), new Color(0.92f, 0.96f, 1f), FontStyle.Normal);
@@ -448,8 +452,8 @@ namespace KANYE.UI
             skipRect.anchorMin = new Vector2(1f, 1f);
             skipRect.anchorMax = new Vector2(1f, 1f);
             skipRect.pivot = new Vector2(1f, 1f);
-            skipRect.anchoredPosition = new Vector2(-22f, -14f);
-            skipRect.sizeDelta = new Vector2(170f, 30f);
+            skipRect.anchoredPosition = new Vector2(-16f, -12f);
+            skipRect.sizeDelta = new Vector2(196f, 28f);
 
             var skipImg = skipObj.GetComponent<Image>();
             skipImg.sprite = PixelUiAtlas.ButtonSecondary;
@@ -459,11 +463,14 @@ namespace KANYE.UI
             var skipBtn = skipObj.GetComponent<Button>();
             skipBtn.onClick.AddListener(SkipAll);
 
-            var skipLabel = CreateLabel(skipObj.transform, "SkipText", "ПРОПУСТИТЬ [ESC]", 13, Vector2.zero, new Vector2(160f, 26f), new Color(0.85f, 0.92f, 1f), FontStyle.Bold);
+            var skipLabel = CreateLabel(skipObj.transform, "SkipText", "ПРОПУСТИТЬ [ESC]", 13, Vector2.zero, new Vector2(180f, 24f), new Color(0.85f, 0.92f, 1f), FontStyle.Bold);
             skipLabel.rectTransform.anchorMin = Vector2.zero;
             skipLabel.rectTransform.anchorMax = Vector2.one;
-            skipLabel.rectTransform.sizeDelta = Vector2.zero;
+            skipLabel.rectTransform.offsetMin = new Vector2(6f, 2f);
+            skipLabel.rectTransform.offsetMax = new Vector2(-6f, -2f);
             skipLabel.alignment = TextAnchor.MiddleCenter;
+            skipLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+            skipLabel.verticalOverflow = VerticalWrapMode.Truncate;
         }
 
         private static Text CreateLabel(Transform parent, string name, string text, int fontSize, Vector2 pos, Vector2 size, Color color, FontStyle style)

@@ -88,9 +88,6 @@ namespace KANYE.Gameplay
 
         public bool TryFireEX()
         {
-            if (!GameRules.IsEXUnlocked)
-                return false;
-
             if (hypeState == null)
                 hypeState = FindAnyObjectByType<HypeState>();
 
@@ -106,9 +103,6 @@ namespace KANYE.Gameplay
 
         public bool TryFireSuper()
         {
-            if (!GameRules.IsSuperUnlocked)
-                return false;
-
             if (hypeState == null)
                 hypeState = FindAnyObjectByType<HypeState>();
 

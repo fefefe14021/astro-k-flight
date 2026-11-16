@@ -21,6 +21,10 @@ namespace KANYE.UI
         // Dynamic Text Labels
         private Text rankText;
         private Text coinsText;
+        private Text playerNameText;
+        private Button authButton;
+        private GameObject firstLaunchModal;
+        private Text firstLaunchNameText;
         private Text sectorTitleText;
         private Text sectorDescText;
         private Text shipSkinTitleText;
@@ -53,6 +57,8 @@ namespace KANYE.UI
                 SaveManager.Instance.Changed += RefreshData;
             if (AchievementManager.Instance != null)
                 AchievementManager.Instance.Changed += RefreshData;
+            if (YandexGamesService.Instance != null)
+                YandexGamesService.Instance.Changed += RefreshData;
 
             RefreshData();
         }
@@ -63,6 +69,8 @@ namespace KANYE.UI
                 SaveManager.Instance.Changed -= RefreshData;
             if (AchievementManager.Instance != null)
                 AchievementManager.Instance.Changed -= RefreshData;
+            if (YandexGamesService.Instance != null)
+                YandexGamesService.Instance.Changed -= RefreshData;
         }
 
         private void Update()
@@ -118,6 +126,7 @@ namespace KANYE.UI
             BuildAchievementsModal(canvas.transform);
             BuildSettingsModal(canvas.transform);
             BuildLoreModal(canvas.transform);
+            BuildFirstLaunch(canvas.transform);
 
             CloseAllModals();
         }
@@ -146,6 +155,18 @@ namespace KANYE.UI
             // Right: Credits / Currency badge
             coinsText = CreateText(header.transform, "CoinsBadge", "🪙 0 МОНЕТ", new Vector2(1f, 0.5f), new Vector2(-40f, 0f), new Vector2(300f, 36f), 20, Color.white, FontStyle.Bold);
             coinsText.alignment = TextAnchor.MiddleRight;
+
+            playerNameText = CreateText(header.transform, "PlayerName", "ПИЛОТ: ГОСТЬ", new Vector2(0.5f, 0.5f), new Vector2(52f, 0f), new Vector2(360f, 32f), 18, new Color(0.65f, 0.95f, 1f), FontStyle.Bold);
+            var nameRect = playerNameText.rectTransform;
+            nameRect.pivot = new Vector2(1f, 0.5f);
+            nameRect.anchoredPosition = new Vector2(52f, 0f);
+            playerNameText.alignment = TextAnchor.MiddleRight;
+
+            authButton = CreateSlicedButton(header.transform, "BtnAuth", "ВОЙТИ", PixelUiAtlas.ButtonSecondary, new Vector2(148f, 0f), new Vector2(150f, 36f), 16, Color.white);
+            var authRect = authButton.GetComponent<RectTransform>();
+            authRect.anchorMin = new Vector2(0.5f, 0.5f);
+            authRect.anchorMax = new Vector2(0.5f, 0.5f);
+            authButton.onClick.AddListener(() => YandexGamesService.Instance?.RequestAuthorization());
         }
 
         private void BuildHangarShowcase(Transform parent)
@@ -211,7 +232,7 @@ namespace KANYE.UI
             secRect.sizeDelta = new Vector2(560f, 145f);
 
             sectorTitleText = CreateText(sectorCard.transform, "Title", "СЕКТОР 01: НЕОНОВЫЙ КОРИДОР", new Vector2(0.5f, 1f), new Vector2(0f, -24f), new Vector2(520f, 30f), 20, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
-            sectorDescText = CreateText(sectorCard.transform, "Desc", "Astro K выходит из доков Neon City. Собери квоту Album для перехода в гиперпространство.", new Vector2(0.5f, 1f), new Vector2(0f, -68f), new Vector2(500f, 60f), 16, new Color(0.8f, 0.9f, 1f), FontStyle.Normal);
+            sectorDescText = CreateText(sectorCard.transform, "Desc", "Astro K выходит из доков Neon City. Пройди маршрут сектора, чтобы уйти в гиперпространство.", new Vector2(0.5f, 1f), new Vector2(0f, -68f), new Vector2(500f, 60f), 16, new Color(0.8f, 0.9f, 1f), FontStyle.Normal);
         }
 
         private void BuildCommandConsole(Transform parent)
@@ -337,8 +358,8 @@ namespace KANYE.UI
             CreateText(ctrlBox.transform, "L1", "WASD / Стрелки / Сенсорный стик — Маневрирование корабля", new Vector2(0.5f, 1f), new Vector2(0f, -44f), new Vector2(720f, 24f), 16, Color.white, FontStyle.Normal);
             CreateText(ctrlBox.transform, "L2", "ПРОБЕЛ / Огонь — Основной скорострельный залп", new Vector2(0.5f, 1f), new Vector2(0f, -70f), new Vector2(720f, 24f), 16, Color.white, FontStyle.Normal);
             CreateText(ctrlBox.transform, "L3", "КЛАВИША [Q] — EX-ракета (тратит 1 карту энергии)", new Vector2(0.5f, 1f), new Vector2(0f, -96f), new Vector2(720f, 24f), 16, new Color(0.4f, 0.85f, 1f), FontStyle.Normal);
-            CreateText(ctrlBox.transform, "L4", "КЛАВИША [E] — Мега-Лазер (полный супер-залп при 100 Hype)", new Vector2(0.5f, 1f), new Vector2(0f, -122f), new Vector2(720f, 24f), 16, new Color(1f, 0.85f, 0.4f), FontStyle.Normal);
-            CreateText(ctrlBox.transform, "L5", "⚡ ПАРИРОВАНИЕ: Сближайся с РОЗОВЫМИ сферами для поглощения и +30 Hype!", new Vector2(0.5f, 1f), new Vector2(0f, -148f), new Vector2(720f, 22f), 15, new Color(1f, 0.45f, 0.85f), FontStyle.Bold);
+            CreateText(ctrlBox.transform, "L4", "КЛАВИША [E] — Мега-Лазер (полный супер-залп при полной шкале Ярости)", new Vector2(0.5f, 1f), new Vector2(0f, -122f), new Vector2(720f, 24f), 16, new Color(1f, 0.85f, 0.4f), FontStyle.Normal);
+            CreateText(ctrlBox.transform, "L5", "⚡ ПАРИРОВАНИЕ: Сближайся с РОЗОВЫМИ сферами для поглощения и +30 Ярости!", new Vector2(0.5f, 1f), new Vector2(0f, -148f), new Vector2(720f, 22f), 15, new Color(1f, 0.45f, 0.85f), FontStyle.Bold);
 
             // Reset Section - KEPT PROMINENTLY IN SETTINGS AS REQUESTED!
             var resetBox = CreateImage("ResetBox", card.transform, PixelUiAtlas.SubPanel, Color.white);
@@ -442,13 +463,75 @@ namespace KANYE.UI
             if (achievementsModal != null) achievementsModal.SetActive(false);
             if (settingsModal != null) settingsModal.SetActive(false);
             if (loreModal != null) loreModal.SetActive(false);
+            if (firstLaunchModal != null) firstLaunchModal.SetActive(false);
         }
 
         #endregion
 
         #region Actions & Data Binding
 
+        private void RefreshPlayerLine()
+        {
+            var sdk = YandexGamesService.Instance;
+            var authorized = sdk != null && sdk.IsAuthorized;
+            var name = authorized ? sdk.PlayerName : "Гость";
+            if (playerNameText != null)
+                playerNameText.text = authorized ? $"ПИЛОТ: {name.ToUpper()}" : "ПИЛОТ: ГОСТЬ";
+            if (authButton != null)
+                authButton.gameObject.SetActive(!authorized);
+            if (firstLaunchNameText != null)
+            {
+                firstLaunchNameText.text = authorized
+                    ? $"На связи {name}. Это имя пришло после авторизации."
+                    : "Пока ты гость. Кнопка «Войти» в шапке запрашивает имя у Яндекс Игр.";
+            }
+        }
+
+        private void BuildFirstLaunch(Transform parent)
+        {
+            firstLaunchModal = new GameObject("FirstLaunch", typeof(RectTransform));
+            firstLaunchModal.transform.SetParent(parent, false);
+            Stretch(firstLaunchModal.GetComponent<RectTransform>());
+
+            var dim = CreateImage("Dim", firstLaunchModal.transform, PixelUiAtlas.White, new Color(0.02f, 0.04f, 0.08f, 0.82f));
+            Stretch(dim.rectTransform);
+
+            var card = CreateImage("Card", firstLaunchModal.transform, PixelUiAtlas.Panel, Color.white);
+            card.type = Image.Type.Sliced;
+            var cardRect = card.rectTransform;
+            cardRect.anchorMin = new Vector2(0.5f, 0.5f);
+            cardRect.anchorMax = new Vector2(0.5f, 0.5f);
+            cardRect.pivot = new Vector2(0.5f, 0.5f);
+            cardRect.sizeDelta = new Vector2(760f, 420f);
+
+            CreateText(card.transform, "Title", "ПЕРВЫЙ ВЫЛЕТ", new Vector2(0.5f, 1f), new Vector2(0f, -36f), new Vector2(680f, 40f), 32, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
+            firstLaunchNameText = CreateText(card.transform, "Pilot", "Пока ты гость.", new Vector2(0.5f, 1f), new Vector2(0f, -84f), new Vector2(680f, 28f), 18, new Color(0.65f, 0.95f, 1f), FontStyle.Normal);
+            var body = CreateText(card.transform, "Body",
+                "Сессия начинается с меню. Окно урока закроется только после манёвра, выстрела, ракеты на Q и мега-луча на E.\nДальше задание миссии — пройденный путь, а шкала Ярости копится от сбитых целей.",
+                new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(660f, 110f), 20, Color.white, FontStyle.Normal);
+            body.alignment = TextAnchor.UpperCenter;
+
+            var go = CreateSlicedButton(card.transform, "BtnFirstFlight", "В ПЕРВЫЙ ВЫЛЕТ", PixelUiAtlas.ButtonPrimary, new Vector2(0f, -40f), new Vector2(420f, 58f), 22, new Color(1f, 0.98f, 0.85f));
+            go.onClick.AddListener(StartCampaign);
+            var stay = CreateSlicedButton(card.transform, "BtnStay", "ОСТАТЬСЯ В МЕНЮ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -110f), new Vector2(420f, 48f), 18, Color.white);
+            stay.onClick.AddListener(() => firstLaunchModal.SetActive(false));
+
+            firstLaunchModal.SetActive(false);
+        }
+
         private void OnPlayClicked()
+        {
+            if (firstLaunchModal != null && !TutorialHints.IsTutorialCompleted)
+            {
+                AudioManager.PlayClick();
+                firstLaunchModal.SetActive(true);
+                return;
+            }
+
+            StartCampaign();
+        }
+
+        private void StartCampaign()
         {
             AudioManager.PlayClick();
             GameRules.CurrentMode = GameMode.Campaign;
@@ -524,6 +607,8 @@ namespace KANYE.UI
                 var weaponTitle = weapon != null ? weapon.Title : "Базовое оружие";
                 shipSkinTitleText.text = $"КОРПУС: {equippedSkin.Title.ToUpper()}\nОРУЖИЕ: {weaponTitle.ToUpper()}";
             }
+
+            RefreshPlayerLine();
 
             if (shipDisplayImage != null)
             {

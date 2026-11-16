@@ -22,16 +22,16 @@ namespace KANYE.UI
         private static readonly string[] BootLogs =
         {
             "Инициализация бортового квантового ядра...",
-            "Проверка целостности обшивки и щитов...",
+            "Подключение SDK Яндекс Игр...",
             "Синхронизация навигационных карт секторов Neon City...",
-            "Калибровка плазменных ускорителей и Hype-модуля...",
+            "Калибровка плазменных ускорителей и модуля Ярости...",
             "Загрузка конфигураций оружейных систем...",
             "Связь с орбитальным маяком установлена. Готовность 100%!"
         };
 
         private static readonly string[] Tips =
         {
-            "Совет: Заполняй шкалу Hype сбитыми целями и активируй мощный Супервыстрел клавишей [E].",
+            "Совет: Заполняй шкалу Ярости сбитыми целями и активируй мощный Супервыстрел клавишей [E].",
             "Совет: Вражеские дроны телеграфируют атаку вспышкой за доли секунды — уклоняйся от лазеров!",
             "Совет: Падающие ракеты можно перехватывать встречным огнем орудий.",
             "Совет: В Ангаре доступны новые корпуса корабля — собирай монеты в каждом секторе!"
@@ -103,6 +103,8 @@ namespace KANYE.UI
                 statusText.text = BootLogs[BootLogs.Length - 1];
 
             yield return new WaitForSecondsRealtime(0.4f);
+            yield return WaitForSdk();
+            YandexGamesService.Instance?.MarkGameReady();
 
             // Smooth fade out
             var fadeTime = 0.45f;
@@ -116,6 +118,25 @@ namespace KANYE.UI
             }
 
             SceneLoader.LoadSceneByName(SceneLoader.MainMenuScene);
+        }
+
+        private IEnumerator WaitForSdk()
+        {
+            var sdk = YandexGamesService.Instance;
+            if (sdk == null)
+                yield break;
+
+            var wait = 0f;
+            while (!sdk.IsReady && wait < 6f)
+            {
+                wait += Time.unscaledDeltaTime;
+                if (statusText != null)
+                    statusText.text = sdk.Status;
+                yield return null;
+            }
+
+            if (statusText != null)
+                statusText.text = sdk.IsAuthorized ? $"На связи: {sdk.PlayerName}" : sdk.Status;
         }
 
         private void BuildUI()

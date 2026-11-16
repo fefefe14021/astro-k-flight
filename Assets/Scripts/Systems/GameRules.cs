@@ -22,6 +22,8 @@ namespace KANYE.Systems
         public static int ActiveMissionProgress =>
             Mathf.Max(MissionCatalog.Selected, SaveManager.Instance != null ? SaveManager.Instance.CurrentMission : 0);
 
+        public static bool TutorialArsenal { get; set; }
+
         public static bool IsParryUnlocked => CurrentMode == GameMode.RogueExpedition || ActiveMissionProgress >= 1;
         public static bool IsEXUnlocked => CurrentMode == GameMode.RogueExpedition || ActiveMissionProgress >= 3;
         public static bool IsSuperUnlocked => CurrentMode == GameMode.RogueExpedition || ActiveMissionProgress >= 6;
@@ -69,12 +71,12 @@ namespace KANYE.Systems
             }
         }
 
-        public static void NotifyAsteroidDestroyed(int albums)
+        public static void NotifyAsteroidDestroyed(int albums, bool grantHype = true)
         {
             var hype = Object.FindAnyObjectByType<HypeState>();
             var wasFull = hype != null && hype.Hype >= hype.HypeMax;
             if (hype != null && albums > 0)
-                hype.AddAlbum(albums);
+                hype.AddAlbum(albums, grantHype);
 
             var coinDrop = albums >= 2 ? 2 : 1;
             SaveManager.Instance?.AddCoins(coinDrop);

@@ -17,7 +17,7 @@ namespace KANYE.UI
     {
         public static HypeHud Instance { get; private set; }
 
-        [SerializeField] private float fillSpeed = 0.4f;
+        [SerializeField] private float fillSpeed = 2.2f;
 
         private HypeState hypeState;
         private ShipHealth shipHealth;
@@ -25,6 +25,9 @@ namespace KANYE.UI
         private Image hypeFill;
         private Image[] cardPips = new Image[4];
         private Text albumLabel;
+        private Text rageLabel;
+        private GameObject rageMeter;
+        private RectTransform centerPanelRect;
         private Text livesLabel;
         private Text parryLabel;
 
@@ -112,6 +115,16 @@ namespace KANYE.UI
             if (Input.GetKeyDown(KeyCode.Escape))
                 TryTogglePause();
 
+            if (hypeState == null)
+            {
+                hypeState = FindAnyObjectByType<HypeState>();
+                if (hypeState != null)
+                {
+                    hypeState.Changed += Refresh;
+                    Refresh();
+                }
+            }
+
             // 1. Smooth Hype Meter Fill
             if (hypeFill != null)
             {
@@ -133,6 +146,8 @@ namespace KANYE.UI
             // 2. EX & Super Button visibility
             var canEx = hypeState != null && hypeState.CanUseEX;
             var canSuper = hypeState != null && hypeState.CanUseSuper;
+
+            ApplyRageMeter(HypeState.RageCanCharge);
 
             if (exButtonObj != null && exButtonObj.activeSelf != (canEx && !canSuper))
                 exButtonObj.SetActive(canEx && !canSuper);
@@ -209,14 +224,32 @@ namespace KANYE.UI
             bannerObj.SetActive(false);
         }
 
+        private void ApplyRageMeter(bool open)
+        {
+            if (rageLabel != null && rageLabel.gameObject.activeSelf != open)
+                rageLabel.gameObject.SetActive(open);
+            if (rageMeter != null && rageMeter.activeSelf != open)
+                rageMeter.SetActive(open);
+            if (centerPanelRect != null)
+                centerPanelRect.sizeDelta = new Vector2(520f, open ? 76f : 44f);
+            if (albumLabel != null)
+            {
+                albumLabel.alignment = open ? TextAnchor.MiddleRight : TextAnchor.MiddleCenter;
+                albumLabel.rectTransform.anchoredPosition = open ? new Vector2(78f, 16f) : Vector2.zero;
+                albumLabel.rectTransform.sizeDelta = new Vector2(open ? 300f : 480f, 28f);
+            }
+        }
+
         private void Refresh()
         {
             if (hypeState != null)
             {
-                targetHypeFill = hypeState.HypeMax <= 0f ? 0f : hypeState.Hype / hypeState.HypeMax;
-                var req = hypeState.AlbumsRequired > 0 ? hypeState.AlbumsRequired : 6;
+                targetHypeFill = !HypeState.RageCanCharge || hypeState.HypeMax <= 0f
+                    ? 0f
+                    : hypeState.Hype / hypeState.HypeMax;
+                var req = hypeState.RouteRequired > 0f ? hypeState.RouteRequired : 6f;
                 if (albumLabel != null)
-                    albumLabel.text = $"💿 АЛЬБОМЫ: {hypeState.Albums} / {req}";
+                    albumLabel.text = $"ПУТЬ: {Mathf.FloorToInt(hypeState.Route)} / {Mathf.FloorToInt(req)} км";
 
                 // Update EX Card pips
                 var cards = hypeState.CardsCount;
@@ -290,17 +323,26 @@ namespace KANYE.UI
             // 2. Top-Center: Segmented Hype / EX Meter & Album Objectives
             var centerPanel = CreateImage("CenterPanel", canvasObj.transform, PixelUiAtlas.SubPanel, Color.white);
             centerPanel.type = Image.Type.Sliced;
-            centerPanel.rectTransform.anchorMin = new Vector2(0.5f, 1f);
-            centerPanel.rectTransform.anchorMax = new Vector2(0.5f, 1f);
-            centerPanel.rectTransform.pivot = new Vector2(0.5f, 1f);
-            centerPanel.rectTransform.anchoredPosition = new Vector2(0f, -20f);
-            centerPanel.rectTransform.sizeDelta = new Vector2(520f, 76f);
+            centerPanelRect = centerPanel.rectTransform;
+            centerPanelRect.anchorMin = new Vector2(0.5f, 1f);
+            centerPanelRect.anchorMax = new Vector2(0.5f, 1f);
+            centerPanelRect.pivot = new Vector2(0.5f, 1f);
+            centerPanelRect.anchoredPosition = new Vector2(0f, -20f);
+            centerPanelRect.sizeDelta = new Vector2(520f, 76f);
 
-            albumLabel = CreateText("AlbumLabel", centerPanel.transform, "💿 АЛЬБОМЫ: 0 / 6", 20, new Vector2(0f, 16f), new Color(1f, 0.88f, 0.4f, 1f));
+            rageLabel = CreateText("RageLabel", centerPanel.transform, "ЯРОСТЬ", 16, new Vector2(-188f, 16f), new Color(0.45f, 0.92f, 1f, 1f));
+            rageLabel.fontStyle = FontStyle.Bold;
+            rageLabel.alignment = TextAnchor.MiddleLeft;
+            rageLabel.rectTransform.sizeDelta = new Vector2(140f, 28f);
+
+            albumLabel = CreateText("AlbumLabel", centerPanel.transform, "ПУТЬ: 0 / 0 км", 18, new Vector2(78f, 16f), new Color(1f, 0.88f, 0.4f, 1f));
             albumLabel.fontStyle = FontStyle.Bold;
+            albumLabel.alignment = TextAnchor.MiddleRight;
+            albumLabel.rectTransform.sizeDelta = new Vector2(300f, 28f);
 
             // Meter Frame
             var meterFrame = CreateImage("MeterFrame", centerPanel.transform, PixelUiAtlas.White, new Color(0.04f, 0.08f, 0.14f, 0.95f));
+            rageMeter = meterFrame.gameObject;
             meterFrame.rectTransform.anchoredPosition = new Vector2(0f, -16f);
             meterFrame.rectTransform.sizeDelta = new Vector2(460f, 22f);
 
@@ -320,7 +362,7 @@ namespace KANYE.UI
             // 4 Card segment markers (Cuphead card style!)
             for (var i = 0; i < 4; i++)
             {
-                var pip = CreateImage($"CardPip_{i}", meterFrame.transform, PixelUiAtlas.SubPanel, new Color(0.12f, 0.2f, 0.3f, 0.65f));
+                var pip = CreateImage($"CardPip_{i}", meterFrame.transform, PixelUiAtlas.SubPanel, new Color(0.05f, 0.08f, 0.12f, 0.18f));
                 pip.type = Image.Type.Sliced;
                 var pipRect = pip.rectTransform;
                 pipRect.anchorMin = new Vector2((float)i / 4f, 0f);
@@ -329,6 +371,8 @@ namespace KANYE.UI
                 pipRect.offsetMax = new Vector2(-2f, -2f);
                 cardPips[i] = pip;
             }
+
+            hypeFill.transform.SetAsLastSibling();
 
             // 3. Action Prompts / Buttons for EX [Q] and Super [E]
             exButtonObj = CreatePromptButton(canvasObj.transform, "EXButton", "🚀 EX РАКЕТА [Q]", new Vector2(0f, -112f), new Color(0.2f, 0.75f, 1f), () =>
@@ -415,7 +459,7 @@ namespace KANYE.UI
 
         private static bool CanPauseMission()
         {
-            if (MissionRadioComms.IsCommsActive || TutorialHints.IsTutorialActive || MissionController.IsMissionFinished)
+            if (MissionRadioComms.IsCommsActive || MissionController.IsMissionFinished)
                 return false;
 
             var player = FindAnyObjectByType<PlayerHealth>();
@@ -430,6 +474,7 @@ namespace KANYE.UI
             pausedByPlayer = paused;
             if (pauseRoot != null)
                 pauseRoot.SetActive(paused);
+            TutorialHints.SetCoveredByPause(paused);
 
             if (paused)
                 GamePause.Lock();

@@ -246,7 +246,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KANYE.Gameplay.PlaceholderShipVisual
   color: {r: 0.2, g: 0.85, b: 1, a: 1}
-  sizeWorldUnits: {x: 1.2, y: 0.6}
 --- !u!114 &972898106
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -260,6 +259,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KANYE.Gameplay.PlayerController
   moveSpeed: 5
+  acceleration: 28
   minX: -8
   maxX: 8
   minY: -4
@@ -277,21 +277,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KANYE.Gameplay.ShipInput
   actions: {fileID: 0}
---- !u!114 &972898111
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 972898104}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5c1a8b74d2f4e6a9c0b3d7f1a5e8c24, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KANYE.Gameplay.ShipShooter
-  projectilePrefab: {fileID: 510000005, guid: a8c4e2f19b7d4c3e8a6f5d0c1b9e7a42, type: 3}
-  fireDirection: {x: 1, y: 0}
-  muzzleOffset: {x: 0.8, y: 0}
 --- !u!212 &972898108
 SpriteRenderer:
   serializedVersion: 3
@@ -349,7 +334,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
 --- !u!50 &972898109
@@ -394,6 +379,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &972898111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 972898104}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5c1a8b74d2f4e6a9c0b3d7f1a5e8c24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KANYE.Gameplay.ShipShooter
+  projectilePrefab: {fileID: 510000005, guid: a8c4e2f19b7d4c3e8a6f5d0c1b9e7a42, type: 3}
+  fireDirection: {x: 1, y: 0}
+  muzzleOffset: {x: 0.8, y: 0}
 --- !u!1 &1844121978
 GameObject:
   m_ObjectHideFlags: 0

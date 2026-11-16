@@ -31,7 +31,28 @@ namespace KANYE.Services
         {
             Time.timeScale = 1f;
             SaveManager.Instance?.Save();
+            if (ShouldShowMenuAd())
+            {
+                var sdk = YandexGamesService.Instance;
+                if (sdk != null)
+                {
+                    sdk.ShowInterstitial(() => LoadSceneByName(MainMenuScene));
+                    return;
+                }
+            }
+
             LoadSceneByName(MainMenuScene);
+        }
+
+        private static bool ShouldShowMenuAd()
+        {
+            if (SceneManager.GetActiveScene().name != GameplayScene)
+                return false;
+
+            var show = PlayerPrefs.GetInt("KANYE.MenuAdFlip", 0) == 0;
+            PlayerPrefs.SetInt("KANYE.MenuAdFlip", show ? 1 : 0);
+            PlayerPrefs.Save();
+            return show;
         }
 
         public void LoadShop()

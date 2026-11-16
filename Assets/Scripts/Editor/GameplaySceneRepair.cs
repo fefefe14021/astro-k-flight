@@ -10,7 +10,8 @@ namespace KANYE.EditorTools
     {
         static GameplaySceneRepair()
         {
-            EditorSceneManager.playModeStartScene = null;
+            var bootstrap = AssetDatabase.LoadAssetAtPath<SceneAsset>("Assets/Scenes/Bootstrap.unity");
+            EditorSceneManager.playModeStartScene = bootstrap;
             EditorApplication.delayCall += EnsureShipVisual;
         }
 
