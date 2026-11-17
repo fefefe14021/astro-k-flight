@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120" fill="none">
+  <defs>
+    <linearGradient id="shipGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="50%" stop-color="#FFB300"/>
+      <stop offset="100%" stop-color="#FF6F00"/>
+    </linearGradient>
+  </defs>
+  <polygon points="10,60 -25,48 0,60 -25,72" fill="#FFD54F"/>
+  <path d="M20 40 C60 15 150 20 188 60 C150 100 60 105 20 80 C5 70 5 50 20 40 Z" fill="url(#shipGold)" stroke="#FFF8E1" stroke-width="3"/>
+  <ellipse cx="115" cy="54" rx="40" ry="18" fill="#FFF8E1" fill-opacity="0.4" stroke="#FFF" stroke-width="2"/>
+  <polygon points="115,42 120,52 130,54 122,61 125,70 115,64 105,70 108,61 100,54 110,52" fill="#FFFFFF"/>
+</svg>

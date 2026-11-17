@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120" fill="none">
+  <defs>
+    <linearGradient id="shipVoid" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4A148C"/>
+      <stop offset="100%" stop-color="#120024"/>
+    </linearGradient>
+  </defs>
+  <polygon points="10,60 -25,48 0,60 -25,72" fill="#EA80FC"/>
+  <path d="M20 40 L80 18 L190 60 L80 102 L20 80 L50 60 Z" fill="url(#shipVoid)" stroke="#D500F9" stroke-width="3"/>
+  <!-- Void Core -->
+  <polygon points="110,40 135,60 110,80 85,60" fill="#E040FB" fill-opacity="0.4" stroke="#FFF" stroke-width="1.5"/>
+  <circle cx="110" cy="60" r="5" fill="#FFF"/>
+</svg>

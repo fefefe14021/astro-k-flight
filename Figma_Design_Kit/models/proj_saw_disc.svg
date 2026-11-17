@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" width="60" height="60" fill="none">
+  <circle cx="30" cy="30" r="24" fill="#37474F" stroke="#00E5FF" stroke-width="2.5"/>
+  <!-- Teeth -->
+  <polygon points="30,4 34,14 26,14" fill="#00E5FF"/>
+  <polygon points="56,30 46,34 46,26" fill="#00E5FF"/>
+  <polygon points="30,56 26,46 34,46" fill="#00E5FF"/>
+  <polygon points="4,30 14,26 14,34" fill="#00E5FF"/>
+  <circle cx="30" cy="30" r="8" fill="#00E5FF"/>
+</svg>

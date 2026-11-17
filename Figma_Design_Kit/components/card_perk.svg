@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 340" width="240" height="340" fill="none">
+  <defs>
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#121828"/>
+      <stop offset="100%" stop-color="#070A12"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+  <!-- Card Base -->
+  <path d="M12 2 H228 L238 12 V328 L228 338 H12 L2 328 V12 L12 2 Z" fill="url(#cardBg)" stroke="#00E5FF" stroke-width="2" filter="url(#cardShadow)"/>
+  <!-- Top Category Badge Pill -->
+  <rect x="50" y="16" width="140" height="24" rx="4" fill="#00E5FF" fill-opacity="0.15" stroke="#00E5FF" stroke-width="1"/>
+  <text x="120" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="11" fill="#80D8FF" text-anchor="middle" letter-spacing="1">ОРУЖИЕ</text>
+  <!-- Icon Well Circle -->
+  <circle cx="120" cy="98" r="40" fill="#00E5FF" fill-opacity="0.08" stroke="#00E5FF" stroke-width="1.5"/>
+  <!-- Title -->
+  <text x="120" y="172" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFFFFF" text-anchor="middle">Тяжёлый Заряд</text>
+  <!-- Divider -->
+  <line x1="30" y1="190" x2="210" y2="190" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.3"/>
+  <!-- Description -->
+  <text x="120" y="222" font-family="sans-serif" font-size="13" fill="#B0BEC5" text-anchor="middle">+1 к урону выстрелов</text>
+  <text x="120" y="242" font-family="sans-serif" font-size="12" fill="#78909C" text-anchor="middle">всех типов орудий</text>
+  <!-- Choose Button at Bottom -->
+  <rect x="24" y="280" width="192" height="38" rx="6" fill="#00E5FF" fill-opacity="0.2" stroke="#00E5FF" stroke-width="1.5"/>
+  <text x="120" y="304" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="13" fill="#00E5FF" text-anchor="middle">ВЫБРАТЬ</text>
+</svg>

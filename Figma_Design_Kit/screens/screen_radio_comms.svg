@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <radialGradient id="commBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0E1626"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="commBoxBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A1526" stop-opacity="0.96"/>
+      <stop offset="100%" stop-color="#03060C" stop-opacity="0.98"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#commBg)"/>
+
+  <!-- In-game Radio Dialog Box at bottom (1100x200) -->
+  <g transform="translate(410, 820)">
+    <rect width="1100" height="200" rx="10" fill="url(#commBoxBg)" stroke="#00E5FF" stroke-width="2.5"/>
+    <path d="M4 20 V4 H24" stroke="#00E5FF" stroke-width="3"/>
+    <path d="M1096 20 V4 H1076" stroke="#00E5FF" stroke-width="3"/>
+
+    <!-- Avatar Box (Left) -->
+    <rect x="25" y="25" width="150" height="150" rx="8" fill="#040912" stroke="#00E5FF" stroke-width="2"/>
+    <circle cx="100" cy="85" r="35" fill="#1E3A5F" stroke="#80D8FF" stroke-width="2"/>
+    <polygon points="100,60 115,95 85,95" fill="#FFB800"/>
+    <rect x="50" y="140" width="100" height="22" rx="4" fill="#00E5FF" fill-opacity="0.2"/>
+    <text x="100" y="156" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="11" fill="#00E5FF" text-anchor="middle">БАРНИ // ШТАБ</text>
+
+    <!-- Dialog Text -->
+    <text x="210" y="60" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="20" fill="#FFB800">ШТАБ СВЯЗИ «НЕОНОВЫЙ КОРИДОР»</text>
+    <line x1="210" y1="75" x2="1060" y2="75" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.3"/>
+    <text x="210" y="115" font-family="sans-serif" font-size="18" fill="#FFFFFF">«Пилот Astro K! Датчики дальнего сканирования фиксируют перегрузку в секторе 01.</text>
+    <text x="210" y="145" font-family="sans-serif" font-size="18" fill="#B0BEC5">Приготовьтесь к парированию ионных залпов. Выход на гипер-врата открыт!»</text>
+
+    <!-- Tap to continue prompt -->
+    <text x="1060" y="175" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="13" fill="#80D8FF" text-anchor="end">[НАЖМИТЕ ДЛЯ ПРОДОЛЖЕНИЯ  ▶]</text>
+  </g>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 52" width="480" height="52" fill="none">
+  <defs>
+    <linearGradient id="secBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0E1E34"/>
+      <stop offset="100%" stop-color="#060C18"/>
+    </linearGradient>
+    <linearGradient id="secBorder" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00E5FF"/>
+      <stop offset="50%" stop-color="#0091EA"/>
+      <stop offset="100%" stop-color="#00E5FF"/>
+    </linearGradient>
+  </defs>
+  <!-- Outer Box with Cut Corners -->
+  <path d="M10 2 H470 L478 10 V42 L470 50 H10 L2 42 V10 L10 2 Z" fill="url(#secBg)" stroke="url(#secBorder)" stroke-width="1.8"/>
+  <!-- Tech Brackets on left/right -->
+  <path d="M6 14 L12 14 V38 L6 38" stroke="#00E5FF" stroke-width="2" stroke-linecap="square" fill="none"/>
+  <path d="M474 14 L468 14 V38 L474 38" stroke="#00E5FF" stroke-width="2" stroke-linecap="square" fill="none"/>
+  <!-- Sub-glow line at bottom -->
+  <line x1="24" y1="48" x2="456" y2="48" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.3"/>
+  <text x="240" y="33" font-family="'JetBrains Mono', 'Roboto', 'Segoe UI', sans-serif" font-weight="700" font-size="16" fill="#E1F5FE" text-anchor="middle" letter-spacing="1.2">КОСМИЧЕСКИЙ АНГАР</text>
+</svg>

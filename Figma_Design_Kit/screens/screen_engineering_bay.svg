@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <radialGradient id="engBg" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#0B182B"/>
+      <stop offset="100%" stop-color="#02050B"/>
+    </radialGradient>
+    <linearGradient id="engCard" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0D1E36" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#050C18" stop-opacity="0.98"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="url(#engBg)"/>
+
+  <!-- ================= TOP HEADER ================= -->
+  <rect x="0" y="0" width="1920" height="74" fill="#060C17" fill-opacity="0.9"/>
+  <line x1="0" y1="74" x2="1920" y2="74" stroke="#00E5FF" stroke-width="2"/>
+
+  <!-- Back button -->
+  <g transform="translate(40, 16)">
+    <rect width="160" height="42" rx="6" fill="#0E1B2E" stroke="#00E5FF" stroke-width="1.5"/>
+    <text x="80" y="27" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="15" fill="#00E5FF" text-anchor="middle">← В МЕНЮ</text>
+  </g>
+
+  <text x="960" y="46" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="22" fill="#FFFFFF" text-anchor="middle" letter-spacing="3">ИНЖЕНЕРНЫЙ ДОК // МОДЕРНИЗАЦИЯ СУДНА</text>
+
+  <!-- Right Currencies -->
+  <g transform="translate(1480, 16)">
+    <rect width="180" height="42" rx="6" fill="#0E1B2E" stroke="#FFB300" stroke-width="1.5"/>
+    <polygon points="24,12 34,18 34,30 24,36 14,30 14,18" fill="#FFB300"/>
+    <text x="44" y="27" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFD54F">2,450</text>
+  </g>
+  <g transform="translate(1690, 16)">
+    <rect width="180" height="42" rx="6" fill="#180C28" stroke="#D500F9" stroke-width="1.5"/>
+    <polygon points="24,10 28,20 38,24 28,28 24,38 20,28 10,24 20,20" fill="#E040FB"/>
+    <text x="46" y="27" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#EA80FC">18 ЯДЕР</text>
+  </g>
+
+  <!-- ================= LEFT: 3D WIREFRAME SCHEMATIC ================= -->
+  <g transform="translate(80, 120)">
+    <rect width="800" height="880" rx="10" fill="url(#engCard)" stroke="#00E5FF" stroke-width="2"/>
+    <text x="40" y="50" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="20" fill="#00E5FF" letter-spacing="1">ЧЕРТЁЖ КОМПОНЕНТОВ ASTRO K</text>
+    <line x1="40" y1="70" x2="760" y2="70" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.3"/>
+
+    <!-- Wireframe Ship Schematic in Center -->
+    <g transform="translate(400, 480)">
+      <ellipse cx="0" cy="0" rx="300" ry="120" fill="#00E5FF" fill-opacity="0.05" stroke="#00E5FF" stroke-width="1.5" stroke-dasharray="8 6"/>
+      <ellipse cx="0" cy="0" rx="200" ry="80" fill="none" stroke="#80D8FF" stroke-width="1" stroke-dasharray="4 4"/>
+      <!-- Core Point -->
+      <circle cx="0" cy="0" r="14" fill="#00E5FF" stroke="#FFF" stroke-width="2"/>
+      <text x="0" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="12" fill="#80D8FF" text-anchor="middle">ЯДРО СИСТЕМЫ</text>
+
+      <!-- Node 1: Hull Generator (Top Left) -->
+      <line x1="-120" y1="-50" x2="-200" y2="-150" stroke="#00E676" stroke-width="2"/>
+      <circle cx="-200" cy="-150" r="12" fill="#00E676"/>
+      <text x="-200" y="-172" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#00E676" text-anchor="middle">ЩИТ КОРПУСА (+HP)</text>
+
+      <!-- Node 2: Hyper-Rage Resonator (Top Right) -->
+      <line x1="120" y1="-50" x2="200" y2="-150" stroke="#E040FB" stroke-width="2"/>
+      <circle cx="200" cy="-150" r="12" fill="#E040FB"/>
+      <text x="200" y="-172" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#E040FB" text-anchor="middle">РЕЗОНАТОР ЯРОСТИ</text>
+
+      <!-- Node 3: Nanite Magnet (Bottom Left) -->
+      <line x1="-120" y1="50" x2="-200" y2="150" stroke="#40C4FF" stroke-width="2"/>
+      <circle cx="-200" cy="150" r="12" fill="#40C4FF"/>
+      <text x="-200" y="180" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#40C4FF" text-anchor="middle">ГРАВИ-МАГНИТ</text>
+
+      <!-- Node 4: Parry Reflector (Bottom Right) -->
+      <line x1="120" y1="50" x2="200" y2="150" stroke="#FFB800" stroke-width="2"/>
+      <circle cx="200" cy="150" r="12" fill="#FFB800"/>
+      <text x="200" y="180" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#FFB800" text-anchor="middle">РЕФЛЕКТОР ПАРИРОВАНИЯ</text>
+    </g>
+  </g>
+
+  <!-- ================= RIGHT: UPGRADE NODES LIST ================= -->
+  <g transform="translate(920, 120)">
+    <rect width="920" height="880" rx="10" fill="url(#engCard)" stroke="#00E5FF" stroke-width="2"/>
+    <text x="40" y="50" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="20" fill="#00E5FF" letter-spacing="1">МОДУЛИ ПОСТОЯННОЙ ПРОКАЧКИ</text>
+    <line x1="40" y1="70" x2="880" y2="70" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.3"/>
+
+    <!-- Module 1: Hull Generator -->
+    <g transform="translate(30, 95)">
+      <rect width="860" height="150" rx="8" fill="#0A1828" stroke="#00E676" stroke-width="2"/>
+      <rect x="20" y="20" width="70" height="70" rx="6" fill="#060C17" stroke="#00E676" stroke-width="1.5"/>
+      <path d="M55 35 L70 42 V56 C70 65 62 72 55 75 C48 72 40 65 40 56 V42 Z" fill="#00E676" fill-opacity="0.3" stroke="#00E676" stroke-width="2"/>
+      <text x="110" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#FFFFFF">Генератор Силового Поля</text>
+      <text x="110" y="68" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="14" fill="#00E676">Уровень 2 / 5 (+1 Макс. HP, текущая прочность: 4 HP)</text>
+      <text x="110" y="90" font-family="sans-serif" font-size="13" fill="#90A4AE">Повышает прочность корпуса корабля во всех режимах игры.</text>
+      <!-- Upgrade Button -->
+      <rect x="630" y="95" width="210" height="42" rx="6" fill="#00E676" stroke="#B9F6CA" stroke-width="1.5"/>
+      <text x="735" y="122" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#000" text-anchor="middle">АПГРЕЙД: 350 КРЕД</text>
+    </g>
+
+    <!-- Module 2: Hyper-Rage Resonator -->
+    <g transform="translate(30, 265)">
+      <rect width="860" height="150" rx="8" fill="#0A1828" stroke="#1E385B" stroke-width="1.5"/>
+      <rect x="20" y="20" width="70" height="70" rx="6" fill="#060C17" stroke="#E040FB" stroke-width="1.5"/>
+      <circle cx="55" cy="55" r="18" stroke="#E040FB" stroke-width="2" stroke-dasharray="4 4"/>
+      <text x="110" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#FFFFFF">Резонатор Гипер-Ярости</text>
+      <text x="110" y="68" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="14" fill="#E040FB">Уровень 1 / 5 (+15% к темпу накопления Super)</text>
+      <text x="110" y="90" font-family="sans-serif" font-size="13" fill="#90A4AE">Ускоряет генерацию шкалы Ярости от уничтожения врагов и сфер.</text>
+      <rect x="630" y="95" width="210" height="42" rx="6" fill="#E040FB" fill-opacity="0.3" stroke="#EA80FC" stroke-width="1.5"/>
+      <text x="735" y="122" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#EA80FC" text-anchor="middle">АПГРЕЙД: 250 КРЕД</text>
+    </g>
+
+    <!-- Module 3: Grav-Magnet -->
+    <g transform="translate(30, 435)">
+      <rect width="860" height="150" rx="8" fill="#0A1828" stroke="#1E385B" stroke-width="1.5"/>
+      <rect x="20" y="20" width="70" height="70" rx="6" fill="#060C17" stroke="#40C4FF" stroke-width="1.5"/>
+      <path d="M45 42 V54 C45 60 49 64 55 64 C61 64 65 60 65 54 V42" stroke="#40C4FF" stroke-width="2.5"/>
+      <text x="110" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#FFFFFF">Гравитационный Захват</text>
+      <text x="110" y="68" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="14" fill="#40C4FF">Уровень 1 / 4 (+30% к радиусу притягивания)</text>
+      <text x="110" y="90" font-family="sans-serif" font-size="13" fill="#90A4AE">Позволяет собирать наниты и кредиты на дистанции без риска.</text>
+      <rect x="630" y="95" width="210" height="42" rx="6" fill="#40C4FF" fill-opacity="0.3" stroke="#80D8FF" stroke-width="1.5"/>
+      <text x="735" y="122" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#40C4FF" text-anchor="middle">АПГРЕЙД: 180 КРЕД</text>
+    </g>
+
+    <!-- Module 4: Kinetic Reflector (Parry) -->
+    <g transform="translate(30, 605)">
+      <rect width="860" height="150" rx="8" fill="#0A1828" stroke="#1E385B" stroke-width="1.5"/>
+      <rect x="20" y="20" width="70" height="70" rx="6" fill="#060C17" stroke="#FFB800" stroke-width="1.5"/>
+      <circle cx="55" cy="55" r="16" stroke="#FFB800" stroke-width="2"/>
+      <path d="M48 55 L55 48 M55 62 L48 55 M55 55 H68" stroke="#FFE082" stroke-width="2"/>
+      <text x="110" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#FFFFFF">Кинетический Рефлектор Парирования</text>
+      <text x="110" y="68" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="14" fill="#FFB800">Уровень 1 / 3 (+0.08 сек к окну парирования)</text>
+      <text x="110" y="90" font-family="sans-serif" font-size="13" fill="#90A4AE">Облегчает отражение розовых снарядов и заряжает супер-атаку.</text>
+      <rect x="630" y="95" width="210" height="42" rx="6" fill="#FFB800" fill-opacity="0.3" stroke="#FFE082" stroke-width="1.5"/>
+      <text x="735" y="122" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#FFB800" text-anchor="middle">АПГРЕЙД: 200 КРЕД</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 60" width="90" height="60" fill="none">
+  <polygon points="20,15 75,30 20,45 35,30" fill="#0E2442" stroke="#00E5FF" stroke-width="2.5"/>
+  <circle cx="45" cy="30" r="8" fill="#00E5FF" fill-opacity="0.4" stroke="#80D8FF" stroke-width="1.5"/>
+  <!-- Wing emitters -->
+  <rect x="25" y="10" width="16" height="4" rx="2" fill="#00E5FF"/>
+  <rect x="25" y="46" width="16" height="4" rx="2" fill="#00E5FF"/>
+</svg>

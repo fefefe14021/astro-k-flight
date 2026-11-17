@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120" fill="none">
+  <defs>
+    <linearGradient id="shipCyber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A1828"/>
+      <stop offset="100%" stop-color="#050C16"/>
+    </linearGradient>
+  </defs>
+  <polygon points="10,60 -30,46 0,60 -30,74" fill="#E040FB"/>
+  <path d="M20 38 L90 14 L185 60 L90 106 L20 82 L35 60 Z" fill="url(#shipCyber)" stroke="#00E5FF" stroke-width="3"/>
+  <!-- Neon Circuit Traces -->
+  <path d="M40 60 H110 L140 45" stroke="#00E5FF" stroke-width="2"/>
+  <path d="M70 60 L110 75" stroke="#E040FB" stroke-width="2"/>
+  <ellipse cx="115" cy="54" rx="36" ry="16" fill="#00E5FF" fill-opacity="0.3" stroke="#E040FB" stroke-width="2"/>
+  <circle cx="150" cy="60" r="3" fill="#FFE082"/>
+</svg>

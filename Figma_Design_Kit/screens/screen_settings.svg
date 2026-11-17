@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <radialGradient id="setBg" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#0E1A2C" stop-opacity="0.96"/>
+      <stop offset="100%" stop-color="#02050A" stop-opacity="0.98"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#setBg)"/>
+
+  <g transform="translate(540, 180)">
+    <rect width="840" height="720" rx="12" fill="#08101E" stroke="#00E5FF" stroke-width="2"/>
+    <text x="420" y="55" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="26" fill="#00E5FF" text-anchor="middle" letter-spacing="2">НАСТРОЙКИ СИСТЕМЫ</text>
+    <line x1="40" y1="80" x2="800" y2="80" stroke="#00E5FF" stroke-width="1.5" stroke-opacity="0.4"/>
+
+    <!-- Sound Slider -->
+    <g transform="translate(60, 130)">
+      <text x="0" y="24" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFFFFF">ГРОМКОСТЬ ЭФФЕКТОВ (SFX)</text>
+      <rect x="360" y="10" width="360" height="14" rx="4" fill="#040912"/>
+      <rect x="360" y="10" width="280" height="14" rx="4" fill="#00E5FF"/>
+      <circle cx="640" cy="17" r="12" fill="#FFFFFF" stroke="#00E5FF" stroke-width="2"/>
+    </g>
+
+    <!-- Music Slider -->
+    <g transform="translate(60, 210)">
+      <text x="0" y="24" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFFFFF">МУЗЫКА СЕКТОРА</text>
+      <rect x="360" y="10" width="360" height="14" rx="4" fill="#040912"/>
+      <rect x="360" y="10" width="220" height="14" rx="4" fill="#00E5FF"/>
+      <circle cx="580" cy="17" r="12" fill="#FFFFFF" stroke="#00E5FF" stroke-width="2"/>
+    </g>
+
+    <!-- Reset Progress Button (Danger) -->
+    <g transform="translate(60, 520)">
+      <rect width="720" height="50" rx="8" fill="#24080D" stroke="#FF5252" stroke-width="1.5"/>
+      <text x="360" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="15" fill="#FF8A80" text-anchor="middle">СБРОСИТЬ ВЕСЬ ПРОГРЕСС И ОБУЧЕНИЕ</text>
+    </g>
+
+    <!-- Close Button -->
+    <g transform="translate(280, 630)">
+      <rect width="280" height="52" rx="8" fill="#0E1B2E" stroke="#00E5FF" stroke-width="2"/>
+      <text x="140" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#00E5FF" text-anchor="middle">ЗАКРЫТЬ</text>
+    </g>
+  </g>
+</svg>

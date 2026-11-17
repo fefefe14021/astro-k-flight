@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120" fill="none">
+  <defs>
+    <linearGradient id="shipDef" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2C4875"/>
+      <stop offset="100%" stop-color="#122036"/>
+    </linearGradient>
+  </defs>
+  <!-- Flame -->
+  <polygon points="10,60 -20,48 0,60 -20,72" fill="#00E5FF"/>
+  <!-- Main Saucer Hull -->
+  <path d="M20 40 C60 15 150 20 185 60 C150 100 60 105 20 80 C5 70 5 50 20 40 Z" fill="url(#shipDef)" stroke="#00E5FF" stroke-width="3"/>
+  <!-- Cockpit Dome -->
+  <ellipse cx="115" cy="54" rx="42" ry="18" fill="#00E5FF" fill-opacity="0.25" stroke="#80D8FF" stroke-width="2"/>
+  <ellipse cx="125" cy="50" rx="18" ry="6" fill="#FFF" fill-opacity="0.6"/>
+  <!-- Wing Blasters -->
+  <rect x="70" y="24" width="28" height="6" rx="2" fill="#00E5FF"/>
+  <rect x="70" y="90" width="28" height="6" rx="2" fill="#00E5FF"/>
+  <!-- Engine Nozzle -->
+  <rect x="12" y="50" width="12" height="20" rx="3" fill="#1A2D4A" stroke="#00E5FF" stroke-width="1.5"/>
+</svg>

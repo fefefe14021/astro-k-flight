@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 180" width="280" height="180" fill="none">
+  <defs>
+    <linearGradient id="bossDreadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#263238"/>
+      <stop offset="100%" stop-color="#0D1317"/>
+    </linearGradient>
+  </defs>
+  <path d="M20 30 H160 L260 90 L160 150 H20 L50 90 Z" fill="url(#bossDreadGrad)" stroke="#00E5FF" stroke-width="4"/>
+  <line x1="60" y1="45" x2="160" y2="45" stroke="#00E5FF" stroke-width="3"/>
+  <line x1="60" y1="135" x2="160" y2="135" stroke="#00E5FF" stroke-width="3"/>
+  <!-- Energy Reactor Ring -->
+  <circle cx="140" cy="90" r="28" fill="#00E5FF" fill-opacity="0.2" stroke="#80D8FF" stroke-width="3"/>
+  <polygon points="140,75 152,95 128,95" fill="#FFE082"/>
+</svg>

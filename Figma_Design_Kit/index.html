@@ -1,0 +1,2318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Astro K: Flight Home — Figma Design System & Complete Asset Kit</title>
+  <style>
+    :root {
+      --bg: #070B14;
+      --card-bg: #0D1626;
+      --border: #1B2B48;
+      --accent-cyan: #00E5FF;
+      --accent-gold: #FFB800;
+      --accent-magenta: #E040FB;
+      --text-main: #ECEFF1;
+      --text-muted: #90A4AE;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "JetBrains Mono", sans-serif;
+      padding: 40px 24px;
+      line-height: 1.6;
+    }
+    header {
+      max-width: 1400px;
+      margin: 0 auto 40px auto;
+      border-bottom: 2px solid var(--accent-cyan);
+      padding-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #fff;
+    }
+    h1 span { color: var(--accent-cyan); }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-top: 4px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: rgba(0, 229, 255, 0.15);
+      border: 1px solid var(--accent-cyan);
+      border-radius: 6px;
+      color: var(--accent-cyan);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .quick-guide {
+      max-width: 1400px;
+      margin: 0 auto 40px auto;
+      background: rgba(13, 22, 38, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .guide-step {
+      border-left: 3px solid var(--accent-cyan);
+      padding-left: 16px;
+    }
+    .guide-step h3 {
+      font-size: 16px;
+      color: var(--accent-gold);
+      margin-bottom: 6px;
+    }
+    .guide-step p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .section-title {
+      max-width: 1400px;
+      margin: 50px auto 20px auto;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .grid-screens {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+    .screen-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .screen-header {
+      padding: 18px 24px;
+      background: #090E18;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .screen-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .screen-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .screen-preview {
+      width: 100%;
+      background: #04070E;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow: hidden;
+    }
+    .screen-preview svg {
+      width: 100%;
+      height: auto;
+      max-height: 700px;
+      border-radius: 6px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+    }
+    .btn-copy {
+      padding: 8px 16px;
+      background: rgba(0, 229, 255, 0.15);
+      border: 1px solid var(--accent-cyan);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-copy:hover {
+      background: var(--accent-cyan);
+      color: #000;
+      transform: translateY(-2px);
+    }
+    .grid-comps {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 24px;
+    }
+    .comp-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .comp-header {
+      padding: 12px 18px;
+      background: #090E18;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .comp-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .comp-preview {
+      padding: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 140px;
+      background: #050912;
+      flex-grow: 1;
+    }
+    .grid-models {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .model-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .model-preview {
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 140px;
+      background: #040812;
+    }
+    .grid-icons {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 16px;
+    }
+    .icon-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .icon-card:hover {
+      border-color: var(--accent-cyan);
+      transform: translateY(-4px);
+    }
+    .icon-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      word-break: break-all;
+    }
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #00E676;
+      color: #000;
+      padding: 14px 24px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 15px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      z-index: 1000;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>ASTRO K <span>// FIGMA DESIGN SYSTEM</span></h1>
+      <div class="subtitle">Полный векторный набор экранов, компонентов, моделей и иконок для Figma & Unity</div>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <span class="badge">1920 × 1080 FULL HD</span>
+      <span class="badge" style="border-color: var(--accent-gold); color: var(--accent-gold);">VECTOR SVG</span>
+    </div>
+  </header>
+
+  <div class="quick-guide">
+    <div class="guide-step">
+      <h3>1. Откройте Figma</h3>
+      <p>Создайте новый проект или откройте ваш существующий макет игры в веб-версии или приложении Figma.</p>
+    </div>
+    <div class="guide-step">
+      <h3>2. Нажмите «Копировать SVG»</h3>
+      <p>Нажмите кнопку под любым экраном или моделью на этой странице — векторный код скопируется в буфер.</p>
+    </div>
+    <div class="guide-step">
+      <h3>3. Вставьте через Ctrl + V</h3>
+      <p>Вставьте в Figma: макет развернется как нативный векторный фрейм со всеми слоями, текстами и цветами!</p>
+    </div>
+    <div class="guide-step">
+      <h3>4. Или перетащите файлы</h3>
+      <p>Папка макетов на диске: <br><code>Figma_Design_Kit/</code> — перетаскивайте любые <code>.svg</code> прямо в окно Figma.</p>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span>📺</span> ПОЛНЫЕ ЭКРАНЫ И МАКЕТЫ (1920 × 1080)
+  </div>
+
+  <div class="grid-screens">
+
+    <div class="screen-card">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">SCREEN ACHIEVEMENTS</div>
+          <div class="screen-meta">Файл: Figma_Design_Kit/screens/screen_achievements.svg • Разрешение: 1920×1080</div>
+        </div>
+        <button class="btn-copy" onclick="copySvg('screen_achievements.svg')">📋 Скопировать SVG для Figma</button>
+      </div>
+      <div class="screen-preview" id="preview_screen_achievements.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <radialGradient id="achBg" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#0E1A2C" stop-opacity="0.96"/>
+      <stop offset="100%" stop-color="#02050A" stop-opacity="0.98"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#achBg)"/>
+
+  <!-- Center Card (940x780) -->
+  <g transform="translate(490, 150)">
+    <rect width="940" height="780" rx="12" fill="#08101E" stroke="#00E5FF" stroke-width="2"/>
+    <text x="470" y="55" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="26" fill="#00E5FF" text-anchor="middle" letter-spacing="2">БОЕВЫЕ ДОСТИЖЕНИЯ</text>
+    <line x1="40" y1="80" x2="900" y2="80" stroke="#00E5FF" stroke-width="1.5" stroke-opacity="0.4"/>
+
+    <!-- Achievement Item 1 -->
+    <g transform="translate(40, 110)">
+      <rect width="860" height="100" rx="8" fill="#0E1B2E" stroke="#00E5FF" stroke-width="1.5"/>
+      <circle cx="55" cy="50" r="28" fill="#FFB800" fill-opacity="0.2" stroke="#FFB800" stroke-width="2"/>
+      <polygon points="55,35 60,45 70,45 62,52 65,62 55,56 45,62 48,52 40,45 50,45" fill="#FFD54F"/>
+      <text x="105" y="45" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#FFFFFF">Первый Контакт</text>
+      <text x="105" y="72" font-family="sans-serif" font-size="14" fill="#90A4AE">Уничтожьте 10 вражеских дронов в сюжетных миссиях.</text>
+      <!-- Completed Stamp -->
+      <rect x="710" y="32" width="120" height="36" rx="6" fill="#00E676" fill-opacity="0.2" stroke="#00E676" stroke-width="1.5"/>
+      <text x="770" y="55" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="12" fill="#00E676" text-anchor="middle">ПОЛУЧЕНО</text>
+    </g>
+
+    <!-- Achievement Item 2 -->
+    <g transform="translate(40, 230)">
+      <rect width="860" height="100" rx="8" fill="#091424" stroke="#1E385B" stroke-width="1.5"/>
+      <circle cx="55" cy="50" r="28" fill="#00E5FF" fill-opacity="0.1" stroke="#00E5FF" stroke-width="1.5"/>
+      <text x="105" y="45" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#CFD8DC">Мастер Парирования</text>
+      <text x="105" y="72" font-family="sans-serif" font-size="14" fill="#78909C">Отразите 25 атак врагов в тайминг (Прогресс: 18 / 25).</text>
+      <!-- Progress Bar -->
+      <rect x="680" y="42" width="150" height="16" rx="4" fill="#040912"/>
+      <rect x="680" y="42" width="108" height="16" rx="4" fill="#00E5FF"/>
+    </g>
+
+    <!-- Close Button -->
+    <g transform="translate(330, 690)">
+      <rect width="280" height="52" rx="8" fill="#0E1B2E" stroke="#00E5FF" stroke-width="2"/>
+      <text x="140" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#00E5FF" text-anchor="middle">ЗАКРЫТЬ</text>
+    </g>
+  </g>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">SCREEN ENGINEERING BAY</div>
+          <div class="screen-meta">Файл: Figma_Design_Kit/screens/screen_engineering_bay.svg • Разрешение: 1920×1080</div>
+        </div>
+        <button class="btn-copy" onclick="copySvg('screen_engineering_bay.svg')">📋 Скопировать SVG для Figma</button>
+      </div>
+      <div class="screen-preview" id="preview_screen_engineering_bay.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <radialGradient id="engBg" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#0B182B"/>
+      <stop offset="100%" stop-color="#02050B"/>
+    </radialGradient>
+    <linearGradient id="engCard" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0D1E36" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#050C18" stop-opacity="0.98"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="url(#engBg)"/>
+
+  <!-- ================= TOP HEADER ================= -->
+  <rect x="0" y="0" width="1920" height="74" fill="#060C17" fill-opacity="0.9"/>
+  <line x1="0" y1="74" x2="1920" y2="74" stroke="#00E5FF" stroke-width="2"/>
+
+  <!-- Back button -->
+  <g transform="translate(40, 16)">
+    <rect width="160" height="42" rx="6" fill="#0E1B2E" stroke="#00E5FF" stroke-width="1.5"/>
+    <text x="80" y="27" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="15" fill="#00E5FF" text-anchor="middle">← В МЕНЮ</text>
+  </g>
+
+  <text x="960" y="46" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="22" fill="#FFFFFF" text-anchor="middle" letter-spacing="3">ИНЖЕНЕРНЫЙ ДОК // МОДЕРНИЗАЦИЯ СУДНА</text>
+
+  <!-- Right Currencies -->
+  <g transform="translate(1480, 16)">
+    <rect width="180" height="42" rx="6" fill="#0E1B2E" stroke="#FFB300" stroke-width="1.5"/>
+    <polygon points="24,12 34,18 34,30 24,36 14,30 14,18" fill="#FFB300"/>
+    <text x="44" y="27" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFD54F">2,450</text>
+  </g>
+  <g transform="translate(1690, 16)">
+    <rect width="180" height="42" rx="6" fill="#180C28" stroke="#D500F9" stroke-width="1.5"/>
+    <polygon points="24,10 28,20 38,24 28,28 24,38 20,28 10,24 20,20" fill="#E040FB"/>
+    <text x="46" y="27" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#EA80FC">18 ЯДЕР</text>
+  </g>
+
+  <!-- ================= LEFT: 3D WIREFRAME SCHEMATIC ================= -->
+  <g transform="translate(80, 120)">
+    <rect width="800" height="880" rx="10" fill="url(#engCard)" stroke="#00E5FF" stroke-width="2"/>
+    <text x="40" y="50" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="20" fill="#00E5FF" letter-spacing="1">ЧЕРТЁЖ КОМПОНЕНТОВ ASTRO K</text>
+    <line x1="40" y1="70" x2="760" y2="70" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.3"/>
+
+    <!-- Wireframe Ship Schematic in Center -->
+    <g transform="translate(400, 480)">
+      <ellipse cx="0" cy="0" rx="300" ry="120" fill="#00E5FF" fill-opacity="0.05" stroke="#00E5FF" stroke-width="1.5" stroke-dasharray="8 6"/>
+      <ellipse cx="0" cy="0" rx="200" ry="80" fill="none" stroke="#80D8FF" stroke-width="1" stroke-dasharray="4 4"/>
+      <!-- Core Point -->
+      <circle cx="0" cy="0" r="14" fill="#00E5FF" stroke="#FFF" stroke-width="2"/>
+      <text x="0" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="12" fill="#80D8FF" text-anchor="middle">ЯДРО СИСТЕМЫ</text>
+
+      <!-- Node 1: Hull Generator (Top Left) -->
+      <line x1="-120" y1="-50" x2="-200" y2="-150" stroke="#00E676" stroke-width="2"/>
+      <circle cx="-200" cy="-150" r="12" fill="#00E676"/>
+      <text x="-200" y="-172" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#00E676" text-anchor="middle">ЩИТ КОРПУСА (+HP)</text>
+
+      <!-- Node 2: Hyper-Rage Resonator (Top Right) -->
+      <line x1="120" y1="-50" x2="200" y2="-150" stroke="#E040FB" stroke-width="2"/>
+      <circle cx="200" cy="-150" r="12" fill="#E040FB"/>
+      <text x="200" y="-172" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#E040FB" text-anchor="middle">РЕЗОНАТОР ЯРОСТИ</text>
+
+      <!-- Node 3: Nanite Magnet (Bottom Left) -->
+      <line x1="-120" y1="50" x2="-200" y2="150" stroke="#40C4FF" stroke-width="2"/>
+      <circle cx="-200" cy="150" r="12" fill="#40C4FF"/>
+      <text x="-200" y="180" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#40C4FF" text-anchor="middle">ГРАВИ-МАГНИТ</text>
+
+      <!-- Node 4: Parry Reflector (Bottom Right) -->
+      <line x1="120" y1="50" x2="200" y2="150" stroke="#FFB800" stroke-width="2"/>
+      <circle cx="200" cy="150" r="12" fill="#FFB800"/>
+      <text x="200" y="180" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#FFB800" text-anchor="middle">РЕФЛЕКТОР ПАРИРОВАНИЯ</text>
+    </g>
+  </g>
+
+  <!-- ================= RIGHT: UPGRADE NODES LIST ================= -->
+  <g transform="translate(920, 120)">
+    <rect width="920" height="880" rx="10" fill="url(#engCard)" stroke="#00E5FF" stroke-width="2"/>
+    <text x="40" y="50" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="20" fill="#00E5FF" letter-spacing="1">МОДУЛИ ПОСТОЯННОЙ ПРОКАЧКИ</text>
+    <line x1="40" y1="70" x2="880" y2="70" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.3"/>
+
+    <!-- Module 1: Hull Generator -->
+    <g transform="translate(30, 95)">
+      <rect width="860" height="150" rx="8" fill="#0A1828" stroke="#00E676" stroke-width="2"/>
+      <rect x="20" y="20" width="70" height="70" rx="6" fill="#060C17" stroke="#00E676" stroke-width="1.5"/>
+      <path d="M55 35 L70 42 V56 C70 65 62 72 55 75 C48 72 40 65 40 56 V42 Z" fill="#00E676" fill-opacity="0.3" stroke="#00E676" stroke-width="2"/>
+      <text x="110" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#FFFFFF">Генератор Силового Поля</text>
+      <text x="110" y="68" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="14" fill="#00E676">Уровень 2 / 5 (+1 Макс. HP, текущая прочность: 4 HP)</text>
+      <text x="110" y="90" font-family="sans-serif" font-size="13" fill="#90A4AE">Повышает прочность корпуса корабля во всех режимах игры.</text>
+      <!-- Upgrade Button -->
+      <rect x="630" y="95" width="210" height="42" rx="6" fill="#00E676" stroke="#B9F6CA" stroke-width="1.5"/>
+      <text x="735" y="122" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#000" text-anchor="middle">АПГРЕЙД: 350 КРЕД</text>
+    </g>
+
+    <!-- Module 2: Hyper-Rage Resonator -->
+    <g transform="translate(30, 265)">
+      <rect width="860" height="150" rx="8" fill="#0A1828" stroke="#1E385B" stroke-width="1.5"/>
+      <rect x="20" y="20" width="70" height="70" rx="6" fill="#060C17" stroke="#E040FB" stroke-width="1.5"/>
+      <circle cx="55" cy="55" r="18" stroke="#E040FB" stroke-width="2" stroke-dasharray="4 4"/>
+      <text x="110" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#FFFFFF">Резонатор Гипер-Ярости</text>
+      <text x="110" y="68" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="14" fill="#E040FB">Уровень 1 / 5 (+15% к темпу накопления Super)</text>
+      <text x="110" y="90" font-family="sans-serif" font-size="13" fill="#90A4AE">Ускоряет генерацию шкалы Ярости от уничтожения врагов и сфер.</text>
+      <rect x="630" y="95" width="210" height="42" rx="6" fill="#E040FB" fill-opacity="0.3" stroke="#EA80FC" stroke-width="1.5"/>
+      <text x="735" y="122" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#EA80FC" text-anchor="middle">АПГРЕЙД: 250 КРЕД</text>
+    </g>
+
+    <!-- Module 3: Grav-Magnet -->
+    <g transform="translate(30, 435)">
+      <rect width="860" height="150" rx="8" fill="#0A1828" stroke="#1E385B" stroke-width="1.5"/>
+      <rect x="20" y="20" width="70" height="70" rx="6" fill="#060C17" stroke="#40C4FF" stroke-width="1.5"/>
+      <path d="M45 42 V54 C45 60 49 64 55 64 C61 64 65 60 65 54 V42" stroke="#40C4FF" stroke-width="2.5"/>
+      <text x="110" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#FFFFFF">Гравитационный Захват</text>
+      <text x="110" y="68" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="14" fill="#40C4FF">Уровень 1 / 4 (+30% к радиусу притягивания)</text>
+      <text x="110" y="90" font-family="sans-serif" font-size="13" fill="#90A4AE">Позволяет собирать наниты и кредиты на дистанции без риска.</text>
+      <rect x="630" y="95" width="210" height="42" rx="6" fill="#40C4FF" fill-opacity="0.3" stroke="#80D8FF" stroke-width="1.5"/>
+      <text x="735" y="122" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#40C4FF" text-anchor="middle">АПГРЕЙД: 180 КРЕД</text>
+    </g>
+
+    <!-- Module 4: Kinetic Reflector (Parry) -->
+    <g transform="translate(30, 605)">
+      <rect width="860" height="150" rx="8" fill="#0A1828" stroke="#1E385B" stroke-width="1.5"/>
+      <rect x="20" y="20" width="70" height="70" rx="6" fill="#060C17" stroke="#FFB800" stroke-width="1.5"/>
+      <circle cx="55" cy="55" r="16" stroke="#FFB800" stroke-width="2"/>
+      <path d="M48 55 L55 48 M55 62 L48 55 M55 55 H68" stroke="#FFE082" stroke-width="2"/>
+      <text x="110" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#FFFFFF">Кинетический Рефлектор Парирования</text>
+      <text x="110" y="68" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="14" fill="#FFB800">Уровень 1 / 3 (+0.08 сек к окну парирования)</text>
+      <text x="110" y="90" font-family="sans-serif" font-size="13" fill="#90A4AE">Облегчает отражение розовых снарядов и заряжает супер-атаку.</text>
+      <rect x="630" y="95" width="210" height="42" rx="6" fill="#FFB800" fill-opacity="0.3" stroke="#FFE082" stroke-width="1.5"/>
+      <text x="735" y="122" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#FFB800" text-anchor="middle">АПГРЕЙД: 200 КРЕД</text>
+    </g>
+  </g>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">SCREEN HANGAR</div>
+          <div class="screen-meta">Файл: Figma_Design_Kit/screens/screen_hangar.svg • Разрешение: 1920×1080</div>
+        </div>
+        <button class="btn-copy" onclick="copySvg('screen_hangar.svg')">📋 Скопировать SVG для Figma</button>
+      </div>
+      <div class="screen-preview" id="preview_screen_hangar.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <radialGradient id="hangarBg" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#0E1A2E"/>
+      <stop offset="100%" stop-color="#02050A"/>
+    </radialGradient>
+    <linearGradient id="hangarCardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0B1526" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#050A14" stop-opacity="0.98"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="url(#hangarBg)"/>
+
+  <!-- ================= TOP HEADER ================= -->
+  <rect x="0" y="0" width="1920" height="74" fill="#060C17" fill-opacity="0.9"/>
+  <line x1="0" y1="74" x2="1920" y2="74" stroke="#00E5FF" stroke-width="2"/>
+
+  <!-- Back to Menu Button -->
+  <g transform="translate(40, 16)">
+    <rect width="160" height="42" rx="6" fill="#0E1B2E" stroke="#00E5FF" stroke-width="1.5"/>
+    <text x="80" y="27" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="15" fill="#00E5FF" text-anchor="middle">← В МЕНЮ</text>
+  </g>
+
+  <!-- Title Center -->
+  <text x="960" y="46" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="22" fill="#FFFFFF" text-anchor="middle" letter-spacing="3">КОСМИЧЕСКИЙ АНГАР И АРСЕНАЛ</text>
+
+  <!-- Right Currencies -->
+  <g transform="translate(1500, 16)">
+    <rect width="170" height="42" rx="6" fill="#0E1B2E" stroke="#FFB300" stroke-width="1.5"/>
+    <polygon points="24,12 34,18 34,30 24,36 14,30 14,18" fill="#FFB300"/>
+    <text x="44" y="27" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFD54F">1,240</text>
+  </g>
+  <g transform="translate(1700, 16)">
+    <rect width="180" height="42" rx="6" fill="#180C28" stroke="#D500F9" stroke-width="1.5"/>
+    <polygon points="24,10 28,20 38,24 28,28 24,38 20,28 10,24 20,20" fill="#E040FB"/>
+    <text x="46" y="27" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#EA80FC">14 ЯДЕР</text>
+  </g>
+
+  <!-- ================= LEFT: WEAPON ARSENAL GRID ================= -->
+  <g transform="translate(80, 120)">
+    <rect width="520" height="880" rx="10" fill="url(#hangarCardBg)" stroke="#00E5FF" stroke-width="2"/>
+    <text x="40" y="50" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="20" fill="#00E5FF" letter-spacing="1">АРСЕНАЛ ВООРУЖЕНИЯ</text>
+    <line x1="40" y1="70" x2="480" y2="70" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.3"/>
+
+    <!-- Weapon Item 1 (Selected) -->
+    <g transform="translate(30, 90)">
+      <rect width="460" height="150" rx="8" fill="#0D1E36" stroke="#00E5FF" stroke-width="2"/>
+      <rect x="20" y="20" width="70" height="70" rx="6" fill="#060C17" stroke="#00E5FF" stroke-width="1.5"/>
+      <circle cx="55" cy="55" r="18" fill="#00E5FF" fill-opacity="0.3"/>
+      <text x="110" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="17" fill="#FFFFFF">Двойной Бластер</text>
+      <text x="110" y="68" font-family="'JetBrains Mono', sans-serif" font-weight="600" font-size="13" fill="#80D8FF">Уровень 2 / 3</text>
+      <text x="110" y="90" font-family="sans-serif" font-size="12" fill="#B0BEC5">Урон: 3 | Скорострельность: 10 выстр/сек</text>
+      <!-- Upgrade Button -->
+      <rect x="290" y="100" width="150" height="36" rx="6" fill="#FFB800" stroke="#FFE082" stroke-width="1"/>
+      <text x="365" y="123" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="12" fill="#000" text-anchor="middle">АПГРЕЙД: 400 ОСК</text>
+      <!-- Status Badge -->
+      <rect x="20" y="104" width="100" height="26" rx="4" fill="#00E5FF" fill-opacity="0.2"/>
+      <text x="70" y="121" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="11" fill="#00E5FF" text-anchor="middle">УСТАНОВЛЕНО</text>
+    </g>
+
+    <!-- Weapon Item 2 -->
+    <g transform="translate(30, 260)">
+      <rect width="460" height="150" rx="8" fill="#08101E" stroke="#1E385B" stroke-width="1.5"/>
+      <rect x="20" y="20" width="70" height="70" rx="6" fill="#060C17" stroke="#1E385B" stroke-width="1"/>
+      <polygon points="55,35 70,65 40,65" fill="#00E5FF" fill-opacity="0.4"/>
+      <text x="110" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="17" fill="#CFD8DC">Плазменный Спрей</text>
+      <text x="110" y="68" font-family="'JetBrains Mono', sans-serif" font-weight="600" font-size="13" fill="#78909C">Уровень 1 / 3</text>
+      <text x="110" y="90" font-family="sans-serif" font-size="12" fill="#78909C">Широкий сектор поражения против роев.</text>
+      <rect x="330" y="100" width="110" height="36" rx="6" fill="#00E5FF" fill-opacity="0.2" stroke="#00E5FF" stroke-width="1"/>
+      <text x="385" y="123" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="12" fill="#00E5FF" text-anchor="middle">ВЫБРАТЬ</text>
+    </g>
+
+    <!-- Weapon Item 3 -->
+    <g transform="translate(30, 430)">
+      <rect width="460" height="150" rx="8" fill="#08101E" stroke="#1E385B" stroke-width="1.5"/>
+      <rect x="20" y="20" width="70" height="70" rx="6" fill="#060C17" stroke="#1E385B" stroke-width="1"/>
+      <line x1="35" y1="55" x2="75" y2="55" stroke="#FF5252" stroke-width="4"/>
+      <text x="110" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="17" fill="#CFD8DC">Тяжёлый Рельсотрон</text>
+      <text x="110" y="68" font-family="'JetBrains Mono', sans-serif" font-weight="600" font-size="13" fill="#78909C">Уровень 1 / 3</text>
+      <text x="110" y="90" font-family="sans-serif" font-size="12" fill="#78909C">Пронзает врагов насквозь мощным лучом.</text>
+      <rect x="330" y="100" width="110" height="36" rx="6" fill="#00E5FF" fill-opacity="0.2" stroke="#00E5FF" stroke-width="1"/>
+      <text x="385" y="123" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="12" fill="#00E5FF" text-anchor="middle">ВЫБРАТЬ</text>
+    </g>
+  </g>
+
+  <!-- ================= CENTER: 3D SHIP DOCK PREVIEW ================= -->
+  <g transform="translate(960, 480)">
+    <!-- Rotating Cyber Ring -->
+    <ellipse cx="0" cy="180" rx="280" ry="40" fill="#00E5FF" fill-opacity="0.08" stroke="#00E5FF" stroke-width="2"/>
+    <ellipse cx="0" cy="180" rx="220" ry="30" fill="none" stroke="#80D8FF" stroke-width="1.5" stroke-dasharray="14 8"/>
+    <!-- Ship Model -->
+    <path d="M-130 -30 C-40 -50 80 -45 150 0 C80 45 -40 50 -130 30 C-155 20 -155 -20 -130 -30 Z" fill="#1E3A5F" stroke="#00E5FF" stroke-width="3.5"/>
+    <ellipse cx="15" cy="-8" rx="60" ry="24" fill="#00E5FF" fill-opacity="0.3" stroke="#80D8FF" stroke-width="2"/>
+    <!-- Engine Exhaust -->
+    <path d="M-140 0 L-220 -16 L-190 0 L-220 16 Z" fill="#00E5FF" opacity="0.8"/>
+  </g>
+
+  <!-- Center Ship Stats Box -->
+  <g transform="translate(680, 760)">
+    <rect width="560" height="240" rx="10" fill="url(#hangarCardBg)" stroke="#00E5FF" stroke-width="1.8"/>
+    <text x="40" y="40" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#FFB800">ТЕХНИЧЕСКИЙ ПАСПОРТ СУДНА</text>
+    <!-- Stat 1: Hull -->
+    <text x="40" y="80" font-family="sans-serif" font-size="14" fill="#B0BEC5">Прочность корпуса:</text>
+    <rect x="220" y="68" width="280" height="14" rx="3" fill="#060C17"/>
+    <rect x="220" y="68" width="200" height="14" rx="3" fill="#00E676"/>
+    <!-- Stat 2: Speed -->
+    <text x="40" y="115" font-family="sans-serif" font-size="14" fill="#B0BEC5">Манёвренность / Скорость:</text>
+    <rect x="220" y="103" width="280" height="14" rx="3" fill="#060C17"/>
+    <rect x="220" y="103" width="240" height="14" rx="3" fill="#00E5FF"/>
+    <!-- Stat 3: Reactor -->
+    <text x="40" y="150" font-family="sans-serif" font-size="14" fill="#B0BEC5">Генератор Ярости:</text>
+    <rect x="220" y="138" width="280" height="14" rx="3" fill="#060C17"/>
+    <rect x="220" y="138" width="160" height="14" rx="3" fill="#E040FB"/>
+    <!-- Stat 4: Magnet -->
+    <text x="40" y="185" font-family="sans-serif" font-size="14" fill="#B0BEC5">Радиус захвата нанитов:</text>
+    <rect x="220" y="173" width="280" height="14" rx="3" fill="#060C17"/>
+    <rect x="220" y="173" width="180" height="14" rx="3" fill="#FFB800"/>
+  </g>
+
+  <!-- ================= RIGHT: HULL SKINS & COSMETICS ================= -->
+  <g transform="translate(1320, 120)">
+    <rect width="520" height="880" rx="10" fill="url(#hangarCardBg)" stroke="#00E5FF" stroke-width="2"/>
+    <text x="40" y="50" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="20" fill="#00E5FF" letter-spacing="1">ОБЛИКИ КОРПУСА</text>
+    <line x1="40" y1="70" x2="480" y2="70" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.3"/>
+
+    <!-- Skin 1: Default (Equipped) -->
+    <g transform="translate(30, 90)">
+      <rect width="460" height="110" rx="8" fill="#0D1E36" stroke="#00E5FF" stroke-width="1.8"/>
+      <circle cx="55" cy="55" r="28" fill="#1C314E" stroke="#00E5FF" stroke-width="2"/>
+      <text x="105" y="48" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFFFFF">Базовый Корпус</text>
+      <text x="105" y="70" font-family="sans-serif" font-size="13" fill="#80D8FF">Стандартная заводская сборка Astro K</text>
+      <rect x="340" y="38" width="100" height="34" rx="6" fill="#00E5FF" fill-opacity="0.2"/>
+      <text x="390" y="60" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="12" fill="#00E5FF" text-anchor="middle">АКТИВЕН</text>
+    </g>
+
+    <!-- Skin 2: Cyber Neon (Unlocked) -->
+    <g transform="translate(30, 220)">
+      <rect width="460" height="110" rx="8" fill="#08101E" stroke="#1E385B" stroke-width="1.5"/>
+      <circle cx="55" cy="55" r="28" fill="#00E5FF" stroke="#FFFFFF" stroke-width="2"/>
+      <text x="105" y="48" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#CFD8DC">Неоновый Киберпанк</text>
+      <text x="105" y="70" font-family="sans-serif" font-size="13" fill="#78909C">Люминесцентные ионные дорожки</text>
+      <rect x="340" y="38" width="100" height="34" rx="6" fill="#00E5FF" fill-opacity="0.2" stroke="#00E5FF" stroke-width="1"/>
+      <text x="390" y="60" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="12" fill="#00E5FF" text-anchor="middle">ВЫБРАТЬ</text>
+    </g>
+
+    <!-- Skin 3: Void Reaper (Locked - Star Cores) -->
+    <g transform="translate(30, 350)">
+      <rect width="460" height="110" rx="8" fill="#08101E" stroke="#1E385B" stroke-width="1.5"/>
+      <circle cx="55" cy="55" r="28" fill="#7C4DFF" stroke="#D500F9" stroke-width="2"/>
+      <text x="105" y="48" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#CFD8DC">Тёмная Материя</text>
+      <text x="105" y="70" font-family="sans-serif" font-size="13" fill="#78909C">Корпус из гравитационного монолита</text>
+      <rect x="310" y="38" width="130" height="34" rx="6" fill="#D500F9" fill-opacity="0.2" stroke="#D500F9" stroke-width="1.5"/>
+      <text x="375" y="60" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="12" fill="#EA80FC" text-anchor="middle">КУПИТЬ: 5 ЯДЕР</text>
+    </g>
+  </g>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">SCREEN HUD</div>
+          <div class="screen-meta">Файл: Figma_Design_Kit/screens/screen_hud.svg • Разрешение: 1920×1080</div>
+        </div>
+        <button class="btn-copy" onclick="copySvg('screen_hud.svg')">📋 Скопировать SVG для Figma</button>
+      </div>
+      <div class="screen-preview" id="preview_screen_hud.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <radialGradient id="gameBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0E1626"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="hpFill" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00E676"/>
+      <stop offset="100%" stop-color="#69F0AE"/>
+    </linearGradient>
+    <linearGradient id="bossHpFill" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF1744"/>
+      <stop offset="100%" stop-color="#FF5252"/>
+    </linearGradient>
+    <linearGradient id="hypeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7C4DFF"/>
+      <stop offset="50%" stop-color="#E040FB"/>
+      <stop offset="100%" stop-color="#00E5FF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Gameplay Background -->
+  <rect width="1920" height="1080" fill="url(#gameBg)"/>
+
+  <!-- ================= TOP HUD HEADER ================= -->
+  <!-- Top Left: Pilot Status & Shields -->
+  <g transform="translate(40, 30)">
+    <!-- Container -->
+    <rect width="360" height="74" rx="8" fill="#060C17" fill-opacity="0.88" stroke="#1E385B" stroke-width="1.8"/>
+    <!-- Pilot Portrait / Ship Icon -->
+    <rect x="14" y="12" width="50" height="50" rx="6" fill="#0E1B2E" stroke="#00E5FF" stroke-width="1.5"/>
+    <polygon points="39,20 54,48 39,42 24,48" fill="#00E5FF"/>
+    <!-- Hull Segments (3/3 HP) -->
+    <text x="76" y="30" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="12" fill="#80D8FF">ПРОЧНОСТЬ КОРПУСА</text>
+    <g transform="translate(76, 36)">
+      <rect x="0" y="0" width="80" height="16" rx="3" fill="url(#hpFill)"/>
+      <rect x="88" y="0" width="80" height="16" rx="3" fill="url(#hpFill)"/>
+      <rect x="176" y="0" width="80" height="16" rx="3" fill="url(#hpFill)"/>
+    </g>
+    <!-- Parry Indicator -->
+    <circle cx="334" cy="37" r="12" fill="#FFB800" fill-opacity="0.2" stroke="#FFB800" stroke-width="1.5"/>
+    <text x="334" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="13" fill="#FFD54F" text-anchor="middle">⚡</text>
+  </g>
+
+  <!-- Top Center: Boss Health Bar -->
+  <g transform="translate(660, 30)">
+    <rect width="600" height="64" rx="8" fill="#060C17" fill-opacity="0.9" stroke="#FF5252" stroke-width="1.8"/>
+    <!-- Boss Name & Phase -->
+    <text x="24" y="24" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="14" fill="#FF8A80">ФЛАГМАН-ЖНЕЦ // ФАЗА II</text>
+    <text x="576" y="24" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="13" fill="#B0BEC5" text-anchor="end">65% HP</text>
+    <!-- Health Bar -->
+    <rect x="24" y="32" width="552" height="18" rx="4" fill="#2A0B10"/>
+    <rect x="24" y="32" width="360" height="18" rx="4" fill="url(#bossHpFill)"/>
+  </g>
+
+  <!-- Top Right: Currencies & Pause -->
+  <g transform="translate(1520, 30)">
+    <rect width="360" height="64" rx="8" fill="#060C17" fill-opacity="0.88" stroke="#1E385B" stroke-width="1.8"/>
+    <!-- Soft Currency -->
+    <polygon points="28,24 38,30 38,42 28,48 18,42 18,30" fill="#FFB300"/>
+    <text x="46" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFD54F">+84</text>
+    <!-- Star Cores -->
+    <polygon points="140,24 144,32 152,36 144,40 140,48 136,40 128,36 136,32" fill="#E040FB"/>
+    <text x="160" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#EA80FC">2</text>
+    <!-- Pause Button -->
+    <rect x="280" y="14" width="64" height="36" rx="4" fill="#0E1B2E" stroke="#00E5FF" stroke-width="1.5"/>
+    <line x1="306" y1="23" x2="306" y2="41" stroke="#00E5FF" stroke-width="3" stroke-linecap="round"/>
+    <line x1="318" y1="23" x2="318" y2="41" stroke="#00E5FF" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- ================= BOTTOM HUD ================= -->
+  <!-- Bottom Left: Super / Hype Energy Gauge -->
+  <g transform="translate(40, 960)">
+    <rect width="440" height="80" rx="8" fill="#060C17" fill-opacity="0.9" stroke="#00E5FF" stroke-width="1.8"/>
+    <!-- Label -->
+    <text x="20" y="28" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="14" fill="#00E5FF" letter-spacing="1.5">РЕЗОНАТОР ЯРОСТИ</text>
+    <text x="420" y="28" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="14" fill="#E040FB" text-anchor="end">SUPER ГОТОВ!</text>
+    <!-- Segmented Gauge (3 Segments: EX 1, EX 2, SUPER) -->
+    <g transform="translate(20, 38)">
+      <rect x="0" y="0" width="128" height="24" rx="4" fill="url(#hypeGrad)"/>
+      <rect x="136" y="0" width="128" height="24" rx="4" fill="url(#hypeGrad)"/>
+      <rect x="272" y="0" width="128" height="24" rx="4" fill="url(#hypeGrad)"/>
+    </g>
+  </g>
+
+  <!-- Bottom Right: Weapon Active & Fire Mode -->
+  <g transform="translate(1540, 960)">
+    <rect width="340" height="80" rx="8" fill="#060C17" fill-opacity="0.9" stroke="#1E385B" stroke-width="1.8"/>
+    <rect x="16" y="14" width="52" height="52" rx="6" fill="#0E1B2E" stroke="#FFB800" stroke-width="1.5"/>
+    <circle cx="42" cy="40" r="12" fill="#FFB800" fill-opacity="0.3"/>
+    <text x="80" y="34" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="15" fill="#FFFFFF">ДВОЙНОЙ БЛАСТЕР</text>
+    <text x="80" y="54" font-family="'JetBrains Mono', sans-serif" font-weight="600" font-size="13" fill="#80D8FF">УРОВЕНЬ III // МАКС.</text>
+  </g>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">SCREEN MAIN MENU</div>
+          <div class="screen-meta">Файл: Figma_Design_Kit/screens/screen_main_menu.svg • Разрешение: 1920×1080</div>
+        </div>
+        <button class="btn-copy" onclick="copySvg('screen_main_menu.svg')">📋 Скопировать SVG для Figma</button>
+      </div>
+      <div class="screen-preview" id="preview_screen_main_menu.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <!-- Background Gradients -->
+    <radialGradient id="spaceGlow" cx="30%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#142038"/>
+      <stop offset="50%" stop-color="#080C16"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="primaryBtnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF9E00"/>
+      <stop offset="50%" stop-color="#FF6A00"/>
+      <stop offset="100%" stop-color="#D34500"/>
+    </linearGradient>
+    <linearGradient id="secBtnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0D1E36"/>
+      <stop offset="100%" stop-color="#060C17"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A1324" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#04070D" stop-opacity="0.98"/>
+    </linearGradient>
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Deep Space Canvas -->
+  <rect width="1920" height="1080" fill="url(#spaceGlow)"/>
+
+  <!-- Subtle Perspective Starfield Grid -->
+  <g opacity="0.15" stroke="#00E5FF" stroke-width="1">
+    <line x1="0" y1="200" x2="1920" y2="200"/>
+    <line x1="0" y1="400" x2="1920" y2="400"/>
+    <line x1="0" y1="600" x2="1920" y2="600"/>
+    <line x1="0" y1="800" x2="1920" y2="800"/>
+    <line x1="0" y1="1000" x2="1920" y2="1000"/>
+    <line x1="300" y1="0" x2="300" y2="1080"/>
+    <line x1="600" y1="0" x2="600" y2="1080"/>
+    <line x1="960" y1="0" x2="960" y2="1080"/>
+    <line x1="1320" y1="0" x2="1320" y2="1080"/>
+    <line x1="1620" y1="0" x2="1620" y2="1080"/>
+  </g>
+
+  <!-- Stars -->
+  <g fill="#FFFFFF" opacity="0.6">
+    <circle cx="120" cy="80" r="1.5"/><circle cx="450" cy="180" r="1"/><circle cx="890" cy="90" r="2"/>
+    <circle cx="1400" cy="140" r="1.5"/><circle cx="1780" cy="90" r="2"/><circle cx="220" cy="550" r="1"/>
+    <circle cx="820" cy="720" r="1.5"/><circle cx="1250" cy="890" r="1"/><circle cx="1680" cy="650" r="2"/>
+  </g>
+
+  <!-- ================= TOP HEADER BAR ================= -->
+  <rect x="0" y="0" width="1920" height="74" fill="#060C17" fill-opacity="0.9"/>
+  <line x1="0" y1="74" x2="1920" y2="74" stroke="#00E5FF" stroke-width="2"/>
+
+  <!-- Left: Pilot Dossier Badge -->
+  <rect x="40" y="15" width="280" height="44" rx="6" fill="#0E1B2E" stroke="#1E385B" stroke-width="1.5"/>
+  <!-- Rank Medal Icon -->
+  <circle cx="66" cy="37" r="12" fill="#FFB800" fill-opacity="0.2" stroke="#FFB800" stroke-width="1.5"/>
+  <polygon points="66,29 69,35 75,35 70,39 72,45 66,41 60,45 62,39 57,35 63,35" fill="#FFD54F"/>
+  <text x="90" y="34" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="13" fill="#80D8FF">РАНГ ПИЛОТА</text>
+  <text x="90" y="49" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="14" fill="#FFFFFF">ВЕТЕРАН (СБИТО: 142)</text>
+
+  <!-- Center: Player Tag & Auth -->
+  <rect x="800" y="16" width="320" height="42" rx="6" fill="#0A1424" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.4"/>
+  <circle cx="826" cy="37" r="10" fill="#00E5FF" fill-opacity="0.3"/>
+  <text x="846" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="600" font-size="14" fill="#E0F7FA">ПИЛОТ: ГОСТЬ</text>
+  <!-- Auth Button -->
+  <rect x="990" y="21" width="120" height="32" rx="4" fill="#00E5FF" fill-opacity="0.2" stroke="#00E5FF" stroke-width="1.5"/>
+  <text x="1050" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="13" fill="#00E5FF" text-anchor="middle">ВОЙТИ</text>
+
+  <!-- Right: Currency Counters -->
+  <!-- Soft Currency: Quantum Shards -->
+  <rect x="1460" y="16" width="190" height="42" rx="6" fill="#0E1B2E" stroke="#FFB300" stroke-width="1.5"/>
+  <polygon points="1482,24 1494,30 1494,44 1482,50 1470,44 1470,30" fill="#FFB300" stroke="#FFE082" stroke-width="1"/>
+  <text x="1506" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFD54F">1,240</text>
+  <!-- Hard Currency: Star Cores -->
+  <rect x="1670" y="16" width="180" height="42" rx="6" fill="#180C28" stroke="#D500F9" stroke-width="1.5"/>
+  <polygon points="1692,23 1696,33 1706,37 1696,41 1692,51 1688,41 1678,37 1688,33" fill="#E040FB" stroke="#EA80FC" stroke-width="1"/>
+  <text x="1716" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#EA80FC">14 ЯДЕР</text>
+
+  <!-- ================= LEFT: HANGAR SHOWCASE ================= -->
+  <!-- Game Logo -->
+  <g transform="translate(200, 140)">
+    <text x="260" y="60" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="52" fill="#FFB800" text-anchor="middle" letter-spacing="4">ASTRO K</text>
+    <text x="260" y="96" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="22" fill="#00E5FF" text-anchor="middle" letter-spacing="6">FLIGHT HOME</text>
+    <line x1="60" y1="112" x2="460" y2="112" stroke="#00E5FF" stroke-width="2" stroke-opacity="0.6"/>
+  </g>
+
+  <!-- Holographic Platform -->
+  <g transform="translate(460, 520)">
+    <!-- Cyan Bevel Ring -->
+    <ellipse cx="0" cy="70" rx="220" ry="24" fill="#00E5FF" fill-opacity="0.1" stroke="#00E5FF" stroke-width="2" filter="url(#neonGlow)"/>
+    <ellipse cx="0" cy="70" rx="160" ry="16" fill="none" stroke="#80D8FF" stroke-width="1.5" stroke-dasharray="10 6"/>
+
+    <!-- Spaceship Silhouette / Graphic (Saucer Fighter) -->
+    <!-- Thruster Flame -->
+    <path d="M-110 0 L-180 -12 L-150 0 L-180 12 Z" fill="#00E5FF" filter="url(#neonGlow)"/>
+    <!-- Ship Hull -->
+    <path d="M-100 -25 C-30 -40 60 -35 110 0 C60 35 -30 40 -100 25 C-120 15 -120 -15 -100 -25 Z" fill="#1C314E" stroke="#00E5FF" stroke-width="3"/>
+    <!-- Cockpit Dome -->
+    <ellipse cx="10" cy="-6" rx="45" ry="18" fill="#00E5FF" fill-opacity="0.3" stroke="#80D8FF" stroke-width="2"/>
+    <ellipse cx="20" cy="-10" rx="20" ry="6" fill="#FFFFFF" fill-opacity="0.6"/>
+    <!-- Wing Blasters -->
+    <rect x="-30" y="-36" width="30" height="6" rx="2" fill="#00E5FF"/>
+    <rect x="-30" y="30" width="30" height="6" rx="2" fill="#00E5FF"/>
+  </g>
+
+  <!-- Skin Label -->
+  <rect x="340" y="640" width="240" height="34" rx="4" fill="#0A1526" stroke="#00E5FF" stroke-width="1"/>
+  <text x="460" y="662" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="14" fill="#80D8FF" text-anchor="middle">КОРПУС: КИБЕР-ПАНК</text>
+
+  <!-- Sector Progress Card -->
+  <g transform="translate(180, 720)">
+    <rect width="560" height="150" rx="10" fill="url(#cardGrad)" stroke="#00E5FF" stroke-width="2"/>
+    <path d="M4 16 V4 H24" stroke="#00E5FF" stroke-width="3"/>
+    <path d="M556 16 V4 H536" stroke="#00E5FF" stroke-width="3"/>
+    <text x="30" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#FFB800" letter-spacing="1">ТЕКУЩИЙ СЕКТОР 01: НЕОНОВЫЙ КОРИДОР</text>
+    <text x="30" y="76" font-family="sans-serif" font-size="14" fill="#B0BEC5">Astro K выходит из доков Neon City.</text>
+    <text x="30" y="98" font-family="sans-serif" font-size="14" fill="#78909C">Уничтожьте боевой патруль и перехватите гипер-врата.</text>
+    <!-- Difficulty / Reward Badge -->
+    <rect x="30" y="114" width="120" height="22" rx="3" fill="#00E5FF" fill-opacity="0.15"/>
+    <text x="90" y="129" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="11" fill="#00E5FF" text-anchor="middle">НАГРАДА: 50 ОСК</text>
+  </g>
+
+  <!-- ================= RIGHT: COMMAND CONSOLE ================= -->
+  <g transform="translate(1220, 240)">
+    <!-- 1. CAMPAIGN BUTTON (Primary Orange) -->
+    <g transform="translate(0, 0)">
+      <path d="M14 2 H486 L498 14 V58 L486 70 H14 L2 58 V14 L14 2 Z" fill="url(#primaryBtnGrad)" stroke="#FFE082" stroke-width="2.5" filter="url(#neonGlow)"/>
+      <circle cx="48" cy="36" r="14" fill="#FFD54F" fill-opacity="0.3" stroke="#FFF" stroke-width="1.8"/>
+      <circle cx="48" cy="36" r="5" fill="#FFF"/>
+      <text x="82" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="22" fill="#FFFFFF" letter-spacing="2">БОЕВАЯ КАМПАНИЯ</text>
+    </g>
+
+    <!-- 2. ROGUE EXPEDITION BUTTON (Primary Cyan/Purple) -->
+    <g transform="translate(0, 95)">
+      <linearGradient id="rogueGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#00B0FF"/>
+        <stop offset="100%" stop-color="#7C4DFF"/>
+      </linearGradient>
+      <path d="M14 2 H486 L498 14 V58 L486 70 H14 L2 58 V14 L14 2 Z" fill="url(#rogueGrad)" stroke="#80D8FF" stroke-width="2.5"/>
+      <circle cx="48" cy="36" r="14" fill="#FFF" fill-opacity="0.2" stroke="#FFF" stroke-width="1.8"/>
+      <path d="M48 26 C42 26 38 30 38 36 C38 42 42 46 48 46" stroke="#FFF" stroke-width="2"/>
+      <text x="82" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="22" fill="#FFFFFF" letter-spacing="2">РОГАЛИК: ЭКСПЕДИЦИЯ</text>
+    </g>
+
+    <!-- 3. HANGAR & ARSENAL BUTTON -->
+    <g transform="translate(0, 190)">
+      <path d="M10 2 H490 L498 10 V44 L490 52 H10 L2 44 V10 L10 2 Z" fill="url(#secBtnGrad)" stroke="#00E5FF" stroke-width="1.8"/>
+      <!-- Icon -->
+      <polygon points="48,16 58,40 48,35 38,40" fill="#00E5FF"/>
+      <text x="82" y="34" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="18" fill="#E1F5FE" letter-spacing="1">АНГАР И АРСЕНАЛ</text>
+    </g>
+
+    <!-- 4. FLIGHT LOG / LORE BUTTON -->
+    <g transform="translate(0, 265)">
+      <path d="M10 2 H490 L498 10 V44 L490 52 H10 L2 44 V10 L10 2 Z" fill="url(#secBtnGrad)" stroke="#00E5FF" stroke-width="1.8"/>
+      <rect x="38" y="16" width="20" height="24" rx="2" fill="none" stroke="#00E5FF" stroke-width="2"/>
+      <line x1="42" y1="22" x2="54" y2="22" stroke="#00E5FF" stroke-width="1.5"/>
+      <line x1="42" y1="28" x2="50" y2="28" stroke="#00E5FF" stroke-width="1.5"/>
+      <text x="82" y="34" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="18" fill="#E1F5FE" letter-spacing="1">БОРТОВОЙ ЖУРНАЛ И ЛОР</text>
+    </g>
+
+    <!-- 5. ACHIEVEMENTS BUTTON -->
+    <g transform="translate(0, 340)">
+      <path d="M10 2 H490 L498 10 V44 L490 52 H10 L2 44 V10 L10 2 Z" fill="url(#secBtnGrad)" stroke="#00E5FF" stroke-width="1.8"/>
+      <polygon points="48,16 51,23 58,23 53,27 55,34 48,30 42,34 44,27 39,23 46,23" fill="#FFB800"/>
+      <text x="82" y="34" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="18" fill="#E1F5FE" letter-spacing="1">ДОСТИЖЕНИЯ</text>
+    </g>
+
+    <!-- 6. SETTINGS BUTTON -->
+    <g transform="translate(0, 415)">
+      <path d="M10 2 H490 L498 10 V44 L490 52 H10 L2 44 V10 L10 2 Z" fill="url(#secBtnGrad)" stroke="#00E5FF" stroke-width="1.8"/>
+      <circle cx="48" cy="27" r="8" stroke="#90A4AE" stroke-width="2" stroke-dasharray="3 3"/>
+      <text x="82" y="34" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="18" fill="#E1F5FE" letter-spacing="1">НАСТРОЙКИ</text>
+    </g>
+
+    <!-- 7. EXIT GAME BUTTON -->
+    <g transform="translate(0, 490)">
+      <path d="M8 2 H492 L498 8 V40 L492 46 H8 L2 40 V8 L8 2 Z" fill="#1C0A10" stroke="#FF5252" stroke-width="1.5"/>
+      <path d="M42 16 H36 V38 H42 M54 27 L46 22 V32 Z" stroke="#FF7043" stroke-width="2" fill="none"/>
+      <text x="82" y="31" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="16" fill="#FF8A80" letter-spacing="1">ВЫХОД ИЗ ИГРЫ</text>
+    </g>
+  </g>
+
+  <!-- Footer / Status Bar -->
+  <g transform="translate(40, 1045)">
+    <circle cx="10" cy="0" r="5" fill="#00E676"/>
+    <text x="24" y="4" font-family="'JetBrains Mono', sans-serif" font-size="13" fill="#90A4AE">YANDEX GAMES SDK // ОНЛАЙН</text>
+    <text x="1800" y="4" font-family="'JetBrains Mono', sans-serif" font-size="13" fill="#546E7A" text-anchor="end">ASTRO K BUILD 2026.11 // V1.4.0</text>
+  </g>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">SCREEN RADIO COMMS</div>
+          <div class="screen-meta">Файл: Figma_Design_Kit/screens/screen_radio_comms.svg • Разрешение: 1920×1080</div>
+        </div>
+        <button class="btn-copy" onclick="copySvg('screen_radio_comms.svg')">📋 Скопировать SVG для Figma</button>
+      </div>
+      <div class="screen-preview" id="preview_screen_radio_comms.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <radialGradient id="commBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0E1626"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="commBoxBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A1526" stop-opacity="0.96"/>
+      <stop offset="100%" stop-color="#03060C" stop-opacity="0.98"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#commBg)"/>
+
+  <!-- In-game Radio Dialog Box at bottom (1100x200) -->
+  <g transform="translate(410, 820)">
+    <rect width="1100" height="200" rx="10" fill="url(#commBoxBg)" stroke="#00E5FF" stroke-width="2.5"/>
+    <path d="M4 20 V4 H24" stroke="#00E5FF" stroke-width="3"/>
+    <path d="M1096 20 V4 H1076" stroke="#00E5FF" stroke-width="3"/>
+
+    <!-- Avatar Box (Left) -->
+    <rect x="25" y="25" width="150" height="150" rx="8" fill="#040912" stroke="#00E5FF" stroke-width="2"/>
+    <circle cx="100" cy="85" r="35" fill="#1E3A5F" stroke="#80D8FF" stroke-width="2"/>
+    <polygon points="100,60 115,95 85,95" fill="#FFB800"/>
+    <rect x="50" y="140" width="100" height="22" rx="4" fill="#00E5FF" fill-opacity="0.2"/>
+    <text x="100" y="156" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="11" fill="#00E5FF" text-anchor="middle">БАРНИ // ШТАБ</text>
+
+    <!-- Dialog Text -->
+    <text x="210" y="60" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="20" fill="#FFB800">ШТАБ СВЯЗИ «НЕОНОВЫЙ КОРИДОР»</text>
+    <line x1="210" y1="75" x2="1060" y2="75" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.3"/>
+    <text x="210" y="115" font-family="sans-serif" font-size="18" fill="#FFFFFF">«Пилот Astro K! Датчики дальнего сканирования фиксируют перегрузку в секторе 01.</text>
+    <text x="210" y="145" font-family="sans-serif" font-size="18" fill="#B0BEC5">Приготовьтесь к парированию ионных залпов. Выход на гипер-врата открыт!»</text>
+
+    <!-- Tap to continue prompt -->
+    <text x="1060" y="175" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="13" fill="#80D8FF" text-anchor="end">[НАЖМИТЕ ДЛЯ ПРОДОЛЖЕНИЯ  ▶]</text>
+  </g>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">SCREEN ROGUE PERKS</div>
+          <div class="screen-meta">Файл: Figma_Design_Kit/screens/screen_rogue_perks.svg • Разрешение: 1920×1080</div>
+        </div>
+        <button class="btn-copy" onclick="copySvg('screen_rogue_perks.svg')">📋 Скопировать SVG для Figma</button>
+      </div>
+      <div class="screen-preview" id="preview_screen_rogue_perks.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <radialGradient id="perkBackdrop" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#08101E" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#020408" stop-opacity="0.98"/>
+    </radialGradient>
+    <linearGradient id="card1Grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1A1828"/>
+      <stop offset="100%" stop-color="#0C0A14"/>
+    </linearGradient>
+    <filter id="cardGlowOrange" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#FF6A00" flood-opacity="0.4"/>
+    </filter>
+    <filter id="cardGlowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#00E5FF" flood-opacity="0.4"/>
+    </filter>
+    <filter id="cardGlowGreen" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#00E676" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Dark Blurred Modal Overlay -->
+  <rect width="1920" height="1080" fill="url(#perkBackdrop)"/>
+
+  <!-- Modal Header Section -->
+  <g transform="translate(960, 140)">
+    <rect x="-350" y="-30" width="700" height="60" rx="30" fill="#060C17" stroke="#00E5FF" stroke-width="1.5"/>
+    <text x="0" y="8" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="24" fill="#00E5FF" text-anchor="middle" letter-spacing="3">ВЫБЕРИТЕ УЛУЧШЕНИЕ ЭКСПЕДИЦИИ</text>
+    <text x="0" y="55" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="16" fill="#FFE082" text-anchor="middle">ВОЛНА 05 УСПЕШНО ЗАВЕРШЕНА // СЕКТОР ОЧИЩЕН</text>
+  </g>
+
+  <!-- ================= 3 CARDS ================= -->
+  <!-- CARD 1: DAMAGE (Orange) -->
+  <g transform="translate(360, 260)" filter="url(#cardGlowOrange)">
+    <path d="M16 2 H344 L358 16 V504 L344 518 H16 L2 504 V16 L16 2 Z" fill="url(#card1Grad)" stroke="#FF6A00" stroke-width="2.5"/>
+    <!-- Top Pill -->
+    <rect x="100" y="24" width="160" height="30" rx="6" fill="#FF6A00" fill-opacity="0.2" stroke="#FF6A00" stroke-width="1"/>
+    <text x="180" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#FF8A80" text-anchor="middle" letter-spacing="1.5">АРСЕНАЛ</text>
+    <!-- Icon Circle -->
+    <circle cx="180" cy="140" r="54" fill="#FF6A00" fill-opacity="0.1" stroke="#FF6A00" stroke-width="2"/>
+    <path d="M180 110 L188 128 L206 122 L194 138 L212 150 L190 154 L194 172 L178 158 L166 170 L170 148 L152 146 L170 134 L160 114 L178 126 Z" fill="#FF3D00" stroke="#FFD54F" stroke-width="2"/>
+    <!-- Title -->
+    <text x="180" y="235" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="22" fill="#FFFFFF" text-anchor="middle">Тяжёлый Заряд</text>
+    <!-- Divider -->
+    <line x1="40" y1="260" x2="320" y2="260" stroke="#FF6A00" stroke-width="1.5" stroke-opacity="0.3"/>
+    <!-- Description -->
+    <text x="180" y="305" font-family="sans-serif" font-size="16" fill="#ECEFF1" text-anchor="middle">+1 к урону выстрелов</text>
+    <text x="180" y="332" font-family="sans-serif" font-size="14" fill="#90A4AE" text-anchor="middle">Усиливает основной бластер,</text>
+    <text x="180" y="354" font-family="sans-serif" font-size="14" fill="#90A4AE" text-anchor="middle">дробь и рельсотрон тарелки.</text>
+    <!-- Select Button -->
+    <g transform="translate(40, 430)">
+      <rect width="280" height="52" rx="8" fill="#FF6A00" stroke="#FFE082" stroke-width="1.8"/>
+      <text x="140" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">ВЫБРАТЬ</text>
+    </g>
+  </g>
+
+  <!-- CARD 2: FIRE RATE (Cyan) -->
+  <g transform="translate(780, 260)" filter="url(#cardGlowCyan)">
+    <path d="M16 2 H344 L358 16 V504 L344 518 H16 L2 504 V16 L16 2 Z" fill="url(#card1Grad)" stroke="#00E5FF" stroke-width="2.5"/>
+    <rect x="80" y="24" width="200" height="30" rx="6" fill="#00E5FF" fill-opacity="0.2" stroke="#00E5FF" stroke-width="1"/>
+    <text x="180" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#80D8FF" text-anchor="middle" letter-spacing="1.5">ТЕМП СТРЕЛЬБЫ</text>
+    <!-- Icon Circle -->
+    <circle cx="180" cy="140" r="54" fill="#00E5FF" fill-opacity="0.1" stroke="#00E5FF" stroke-width="2"/>
+    <polygon points="186,105 160,140 180,140 176,175 202,135 182,135" fill="#00E5FF" stroke="#FFFFFF" stroke-width="1.5"/>
+    <!-- Title -->
+    <text x="180" y="235" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="22" fill="#FFFFFF" text-anchor="middle">Форсаж Плазмы</text>
+    <line x1="40" y1="260" x2="320" y2="260" stroke="#00E5FF" stroke-width="1.5" stroke-opacity="0.3"/>
+    <text x="180" y="305" font-family="sans-serif" font-size="16" fill="#ECEFF1" text-anchor="middle">+20% к скорости стрельбы</text>
+    <text x="180" y="332" font-family="sans-serif" font-size="14" fill="#90A4AE" text-anchor="middle">Ускоряет перезарядку генератора,</text>
+    <text x="180" y="354" font-family="sans-serif" font-size="14" fill="#90A4AE" text-anchor="middle">создавая непрерывный шквал огня.</text>
+    <g transform="translate(40, 430)">
+      <rect width="280" height="52" rx="8" fill="#00E5FF" fill-opacity="0.3" stroke="#00E5FF" stroke-width="2"/>
+      <text x="140" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#00E5FF" text-anchor="middle" letter-spacing="1">ВЫБРАТЬ</text>
+    </g>
+  </g>
+
+  <!-- CARD 3: DEFENSE (Green) -->
+  <g transform="translate(1200, 260)" filter="url(#cardGlowGreen)">
+    <path d="M16 2 H344 L358 16 V504 L344 518 H16 L2 504 V16 L16 2 Z" fill="url(#card1Grad)" stroke="#00E676" stroke-width="2.5"/>
+    <rect x="100" y="24" width="160" height="30" rx="6" fill="#00E676" fill-opacity="0.2" stroke="#00E676" stroke-width="1"/>
+    <text x="180" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#B9F6CA" text-anchor="middle" letter-spacing="1.5">ЗАЩИТА</text>
+    <!-- Icon Circle -->
+    <circle cx="180" cy="140" r="54" fill="#00E676" fill-opacity="0.1" stroke="#00E676" stroke-width="2"/>
+    <path d="M180 108 L206 116 V138 C206 156 194 170 180 176 C166 170 154 156 154 138 V116 Z" fill="#00E676" fill-opacity="0.3" stroke="#00E676" stroke-width="2.5"/>
+    <!-- Title -->
+    <text x="180" y="235" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="22" fill="#FFFFFF" text-anchor="middle">Нано-Броня</text>
+    <line x1="40" y1="260" x2="320" y2="260" stroke="#00E676" stroke-width="1.5" stroke-opacity="0.3"/>
+    <text x="180" y="305" font-family="sans-serif" font-size="16" fill="#ECEFF1" text-anchor="middle">+1 макс. прочность</text>
+    <text x="180" y="332" font-family="sans-serif" font-size="14" fill="#90A4AE" text-anchor="middle">Мгновенно восстанавливает все</text>
+    <text x="180" y="354" font-family="sans-serif" font-size="14" fill="#90A4AE" text-anchor="middle">повреждения корпуса тарелки.</text>
+    <g transform="translate(40, 430)">
+      <rect width="280" height="52" rx="8" fill="#00E676" fill-opacity="0.3" stroke="#00E676" stroke-width="2"/>
+      <text x="140" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#00E676" text-anchor="middle" letter-spacing="1">ВЫБРАТЬ</text>
+    </g>
+  </g>
+
+  <!-- Bottom Tip -->
+  <g transform="translate(960, 890)">
+    <rect x="-300" y="0" width="600" height="40" rx="8" fill="#060C17" stroke="#1E385B" stroke-width="1"/>
+    <text x="0" y="25" font-family="'JetBrains Mono', sans-serif" font-size="14" fill="#90A4AE" text-anchor="middle">💡 СОВЕТ: Парирование атак заряжает полосу Ярости для экстренных залпов</text>
+  </g>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">SCREEN SETTINGS</div>
+          <div class="screen-meta">Файл: Figma_Design_Kit/screens/screen_settings.svg • Разрешение: 1920×1080</div>
+        </div>
+        <button class="btn-copy" onclick="copySvg('screen_settings.svg')">📋 Скопировать SVG для Figma</button>
+      </div>
+      <div class="screen-preview" id="preview_screen_settings.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <radialGradient id="setBg" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#0E1A2C" stop-opacity="0.96"/>
+      <stop offset="100%" stop-color="#02050A" stop-opacity="0.98"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#setBg)"/>
+
+  <g transform="translate(540, 180)">
+    <rect width="840" height="720" rx="12" fill="#08101E" stroke="#00E5FF" stroke-width="2"/>
+    <text x="420" y="55" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="26" fill="#00E5FF" text-anchor="middle" letter-spacing="2">НАСТРОЙКИ СИСТЕМЫ</text>
+    <line x1="40" y1="80" x2="800" y2="80" stroke="#00E5FF" stroke-width="1.5" stroke-opacity="0.4"/>
+
+    <!-- Sound Slider -->
+    <g transform="translate(60, 130)">
+      <text x="0" y="24" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFFFFF">ГРОМКОСТЬ ЭФФЕКТОВ (SFX)</text>
+      <rect x="360" y="10" width="360" height="14" rx="4" fill="#040912"/>
+      <rect x="360" y="10" width="280" height="14" rx="4" fill="#00E5FF"/>
+      <circle cx="640" cy="17" r="12" fill="#FFFFFF" stroke="#00E5FF" stroke-width="2"/>
+    </g>
+
+    <!-- Music Slider -->
+    <g transform="translate(60, 210)">
+      <text x="0" y="24" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFFFFF">МУЗЫКА СЕКТОРА</text>
+      <rect x="360" y="10" width="360" height="14" rx="4" fill="#040912"/>
+      <rect x="360" y="10" width="220" height="14" rx="4" fill="#00E5FF"/>
+      <circle cx="580" cy="17" r="12" fill="#FFFFFF" stroke="#00E5FF" stroke-width="2"/>
+    </g>
+
+    <!-- Reset Progress Button (Danger) -->
+    <g transform="translate(60, 520)">
+      <rect width="720" height="50" rx="8" fill="#24080D" stroke="#FF5252" stroke-width="1.5"/>
+      <text x="360" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="15" fill="#FF8A80" text-anchor="middle">СБРОСИТЬ ВЕСЬ ПРОГРЕСС И ОБУЧЕНИЕ</text>
+    </g>
+
+    <!-- Close Button -->
+    <g transform="translate(280, 630)">
+      <rect width="280" height="52" rx="8" fill="#0E1B2E" stroke="#00E5FF" stroke-width="2"/>
+      <text x="140" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#00E5FF" text-anchor="middle">ЗАКРЫТЬ</text>
+    </g>
+  </g>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">SCREEN VICTORY</div>
+          <div class="screen-meta">Файл: Figma_Design_Kit/screens/screen_victory.svg • Разрешение: 1920×1080</div>
+        </div>
+        <button class="btn-copy" onclick="copySvg('screen_victory.svg')">📋 Скопировать SVG для Figma</button>
+      </div>
+      <div class="screen-preview" id="preview_screen_victory.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <radialGradient id="vicBackdrop" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#0A1424" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#020408" stop-opacity="0.98"/>
+    </radialGradient>
+    <linearGradient id="vicCardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0F1F38"/>
+      <stop offset="100%" stop-color="#060C18"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="50%" stop-color="#FFB800"/>
+      <stop offset="100%" stop-color="#FF6F00"/>
+    </linearGradient>
+    <filter id="gradeGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="16" flood-color="#FFB800" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Backdrop -->
+  <rect width="1920" height="1080" fill="url(#vicBackdrop)"/>
+
+  <!-- Center Card (760x780) -->
+  <g transform="translate(580, 150)">
+    <path d="M20 2 H740 L758 20 V760 L740 778 H20 L2 760 V20 L20 2 Z" fill="url(#vicCardBg)" stroke="#00E5FF" stroke-width="2.5"/>
+    <path d="M6 30 V6 H30" stroke="#00E5FF" stroke-width="3.5"/>
+    <path d="M754 30 V6 H730" stroke="#00E5FF" stroke-width="3.5"/>
+
+    <!-- Header Title -->
+    <text x="380" y="60" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="28" fill="#00E5FF" text-anchor="middle" letter-spacing="3">СЕКТОР ЗАЧИЩЕН // МИССИЯ ВЫПОЛНЕНА</text>
+    <line x1="50" y1="85" x2="710" y2="85" stroke="#00E5FF" stroke-width="1.5" stroke-opacity="0.4"/>
+
+    <!-- Grade Circle (Cuphead Grade S) -->
+    <g transform="translate(380, 200)" filter="url(#gradeGlow)">
+      <circle cx="0" cy="0" r="70" fill="#060C17" stroke="url(#goldGrad)" stroke-width="4"/>
+      <text x="0" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="92" fill="url(#goldGrad)" text-anchor="middle">S</text>
+    </g>
+    <text x="380" y="300" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#FFE082" text-anchor="middle">ИДЕАЛЬНЫЙ РЕЗУЛЬТАТ: РАНГ S</text>
+
+    <!-- Stats Table Box -->
+    <g transform="translate(50, 330)">
+      <rect width="660" height="230" rx="8" fill="#08101E" stroke="#1E385B" stroke-width="1.5"/>
+
+      <!-- Row 1: Time -->
+      <text x="30" y="45" font-family="'JetBrains Mono', sans-serif" font-size="16" fill="#80D8FF">⏱ ВРЕМЯ ПРОХОЖДЕНИЯ:</text>
+      <text x="630" y="45" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFFFFF" text-anchor="end">01:42 (ЗОЛОТО)</text>
+      <line x1="30" y1="65" x2="630" y2="65" stroke="#1E385B" stroke-width="1"/>
+
+      <!-- Row 2: Hull HP -->
+      <text x="30" y="100" font-family="'JetBrains Mono', sans-serif" font-size="16" fill="#80D8FF">❤️ ЦЕЛОСТНОСТЬ КОРПУСА:</text>
+      <text x="630" y="100" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#00E676" text-anchor="end">3 / 3 (БЕЗ УРОНА)</text>
+      <line x1="30" y1="120" x2="630" y2="120" stroke="#1E385B" stroke-width="1"/>
+
+      <!-- Row 3: Parries -->
+      <text x="30" y="155" font-family="'JetBrains Mono', sans-serif" font-size="16" fill="#80D8FF">⚡ ПАРИРОВАНИЙ ОТРАЖЕНО:</text>
+      <text x="630" y="155" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFD54F" text-anchor="end">7 ВЫСТРЕЛОВ</text>
+      <line x1="30" y1="175" x2="630" y2="175" stroke="#1E385B" stroke-width="1"/>
+
+      <!-- Row 4: Super Attacks -->
+      <text x="30" y="210" font-family="'JetBrains Mono', sans-serif" font-size="16" fill="#80D8FF">💥 СВЕРХСПОСОБНОСТЕЙ SUPER:</text>
+      <text x="630" y="210" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#EA80FC" text-anchor="end">2 ЗАЛПА</text>
+    </g>
+
+    <!-- Rewards Badge -->
+    <g transform="translate(50, 580)">
+      <rect width="660" height="70" rx="8" fill="#142416" stroke="#00E676" stroke-width="1.8"/>
+      <polygon points="40,24 50,30 50,42 40,48 30,42 30,30" fill="#FFB300"/>
+      <text x="65" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#FFD54F">+80 КВАНТОВЫХ ОСКОЛКОВ</text>
+      <polygon points="460,24 464,32 472,36 464,40 460,48 456,40 448,36 456,32" fill="#E040FB"/>
+      <text x="485" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#EA80FC">+1 ЗВЁЗДНОЕ ЯДРО</text>
+    </g>
+
+    <!-- Action Buttons -->
+    <g transform="translate(50, 680)">
+      <!-- Next Mission (Primary Gold) -->
+      <rect x="0" y="0" width="320" height="60" rx="8" fill="#FF8F00" stroke="#FFE082" stroke-width="2"/>
+      <text x="160" y="37" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#000000" text-anchor="middle">СЛЕДУЮЩИЙ СЕКТОР →</text>
+
+      <!-- Back to Hangar (Secondary Blue) -->
+      <rect x="340" y="0" width="320" height="60" rx="8" fill="#0E1B2E" stroke="#00E5FF" stroke-width="2"/>
+      <text x="500" y="37" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="16" fill="#00E5FF" text-anchor="middle">ВЕРНУТЬСЯ В АНГАР</text>
+    </g>
+  </g>
+</svg>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-title">
+    <span>🚀</span> МОДЕЛИ ВЕКТОРНЫХ АССЕТОВ (КОРАБЛИ, БОССЫ, ВРАГИ, СНАРЯДЫ)
+  </div>
+
+  <div class="grid-models">
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">ASTEROID</div>
+        <button class="btn-copy" onclick="copySvg('asteroid.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_asteroid.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
+  <path d="M30 10 L70 15 L92 45 L80 82 L45 92 L15 75 L8 38 Z" fill="#4E342E" stroke="#8D6E63" stroke-width="3"/>
+  <!-- Craters -->
+  <circle cx="40" cy="35" r="10" fill="#3E2723" stroke="#6D4C41" stroke-width="1.5"/>
+  <circle cx="70" cy="60" r="8" fill="#3E2723" stroke="#6D4C41" stroke-width="1.5"/>
+  <circle cx="32" cy="68" r="6" fill="#3E2723"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">BOSS CRUISER</div>
+        <button class="btn-copy" onclick="copySvg('boss_cruiser.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_boss_cruiser.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 160" width="260" height="160" fill="none">
+  <defs>
+    <linearGradient id="bossCruiserGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#B71C1C"/>
+      <stop offset="100%" stop-color="#3E0808"/>
+    </linearGradient>
+  </defs>
+  <!-- Heavy Battleship Hull -->
+  <path d="M40 30 L180 15 L245 80 L180 145 L40 130 L10 80 Z" fill="url(#bossCruiserGrad)" stroke="#FF5252" stroke-width="3.5"/>
+  <!-- Front Ram & Laser Cannon -->
+  <rect x="220" y="74" width="35" height="12" rx="2" fill="#FF1744" stroke="#FFE082" stroke-width="1.5"/>
+  <!-- Armor Plates -->
+  <path d="M70 45 L150 35 L170 80 L150 125 L70 115 Z" fill="#260406" stroke="#FF8A80" stroke-width="2"/>
+  <circle cx="120" cy="80" r="16" fill="#FF1744" fill-opacity="0.5" stroke="#FFF" stroke-width="2"/>
+  <!-- Triple Turrets -->
+  <circle cx="100" cy="50" r="8" fill="#FF8A80"/><circle cx="100" cy="110" r="8" fill="#FF8A80"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">BOSS CRUISER OVERCHARGE</div>
+        <button class="btn-copy" onclick="copySvg('boss_cruiser_overcharge.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_boss_cruiser_overcharge.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 160" width="260" height="160" fill="none">
+  <defs>
+    <radialGradient id="beamCharge" cx="90%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="60%" stop-color="#FF1744"/>
+      <stop offset="100%" stop-color="#3E0808"/>
+    </radialGradient>
+  </defs>
+  <path d="M40 30 L180 15 L245 80 L180 145 L40 130 L10 80 Z" fill="url(#beamCharge)" stroke="#FF1744" stroke-width="3.5"/>
+  <!-- Overcharge Coils -->
+  <circle cx="225" cy="80" r="25" fill="#FF1744" fill-opacity="0.4" stroke="#FFE082" stroke-width="2"/>
+  <line x1="245" y1="80" x2="320" y2="80" stroke="#FFE082" stroke-width="8" stroke-linecap="round"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">BOSS DREADNOUGHT</div>
+        <button class="btn-copy" onclick="copySvg('boss_dreadnought.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_boss_dreadnought.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 180" width="280" height="180" fill="none">
+  <defs>
+    <linearGradient id="bossDreadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#263238"/>
+      <stop offset="100%" stop-color="#0D1317"/>
+    </linearGradient>
+  </defs>
+  <path d="M20 30 H160 L260 90 L160 150 H20 L50 90 Z" fill="url(#bossDreadGrad)" stroke="#00E5FF" stroke-width="4"/>
+  <line x1="60" y1="45" x2="160" y2="45" stroke="#00E5FF" stroke-width="3"/>
+  <line x1="60" y1="135" x2="160" y2="135" stroke="#00E5FF" stroke-width="3"/>
+  <!-- Energy Reactor Ring -->
+  <circle cx="140" cy="90" r="28" fill="#00E5FF" fill-opacity="0.2" stroke="#80D8FF" stroke-width="3"/>
+  <polygon points="140,75 152,95 128,95" fill="#FFE082"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">BOSS REAPER</div>
+        <button class="btn-copy" onclick="copySvg('boss_reaper.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_boss_reaper.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 160" width="260" height="160" fill="none">
+  <defs>
+    <linearGradient id="reaperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#311B92"/>
+      <stop offset="100%" stop-color="#0A041E"/>
+    </linearGradient>
+  </defs>
+  <!-- Scythe Wings -->
+  <path d="M30 10 C100 20 180 30 250 80 C180 130 100 140 30 150 C80 110 90 90 60 80 C90 70 80 50 30 10 Z" fill="url(#reaperGrad)" stroke="#D500F9" stroke-width="3"/>
+  <ellipse cx="140" cy="80" rx="35" ry="18" fill="#D500F9" fill-opacity="0.3" stroke="#FFF" stroke-width="2"/>
+  <circle cx="150" cy="80" r="8" fill="#FF1744"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">DRONE LASER WINGMAN</div>
+        <button class="btn-copy" onclick="copySvg('drone_laser_wingman.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_drone_laser_wingman.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 60" width="90" height="60" fill="none">
+  <polygon points="20,15 75,30 20,45 35,30" fill="#0E2442" stroke="#00E5FF" stroke-width="2.5"/>
+  <circle cx="45" cy="30" r="8" fill="#00E5FF" fill-opacity="0.4" stroke="#80D8FF" stroke-width="1.5"/>
+  <!-- Wing emitters -->
+  <rect x="25" y="10" width="16" height="4" rx="2" fill="#00E5FF"/>
+  <rect x="25" y="46" width="16" height="4" rx="2" fill="#00E5FF"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">DRONE SHIELD ESCORT</div>
+        <button class="btn-copy" onclick="copySvg('drone_shield_escort.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_drone_shield_escort.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 60" width="90" height="60" fill="none">
+  <circle cx="45" cy="30" r="22" fill="#0A2218" stroke="#00E676" stroke-width="2.5"/>
+  <polygon points="45,16 60,24 60,38 45,46 30,38 30,24" stroke="#B9F6CA" stroke-width="1.8"/>
+  <circle cx="45" cy="30" r="5" fill="#FFF"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">ENEMY HEAVY DESTROYER</div>
+        <button class="btn-copy" onclick="copySvg('enemy_heavy_destroyer.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_enemy_heavy_destroyer.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 100" width="140" height="100" fill="none">
+  <path d="M15 20 L95 10 L130 50 L95 90 L15 80 L35 50 Z" fill="#37474F" stroke="#FF5252" stroke-width="3"/>
+  <rect x="50" y="38" width="40" height="24" rx="4" fill="#D32F2F" stroke="#FF8A80" stroke-width="1.5"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">ENEMY INTERCEPTOR</div>
+        <button class="btn-copy" onclick="copySvg('enemy_interceptor.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_enemy_interceptor.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80" width="100" height="80" fill="none">
+  <polygon points="20,15 85,40 20,65 35,40" fill="#B71C1C" stroke="#FF5252" stroke-width="2.5"/>
+  <circle cx="50" cy="40" r="6" fill="#FFD54F"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">POWERUP HYPER CELL</div>
+        <button class="btn-copy" onclick="copySvg('powerup_hyper_cell.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_powerup_hyper_cell.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" width="60" height="60" fill="none">
+  <circle cx="30" cy="30" r="26" fill="#1C092E" stroke="#E040FB" stroke-width="2.5"/>
+  <polygon points="32,10 18,32 30,32 28,50 44,28 32,28" fill="#EA80FC" stroke="#FFF" stroke-width="1.5"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">POWERUP REPAIR NANITES</div>
+        <button class="btn-copy" onclick="copySvg('powerup_repair_nanites.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_powerup_repair_nanites.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" width="60" height="60" fill="none">
+  <rect x="6" y="6" width="48" height="48" rx="10" fill="#072012" stroke="#00E676" stroke-width="2.5"/>
+  <!-- Cross -->
+  <rect x="24" y="14" width="12" height="32" rx="3" fill="#00E676"/>
+  <rect x="14" y="24" width="32" height="12" rx="3" fill="#00E676"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">PROJ PLASMA SPREAD</div>
+        <button class="btn-copy" onclick="copySvg('proj_plasma_spread.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_proj_plasma_spread.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 60" width="80" height="60" fill="none">
+  <circle cx="50" cy="30" r="12" fill="#00E5FF" stroke="#FFF" stroke-width="2"/>
+  <circle cx="35" cy="15" r="8" fill="#00E5FF" stroke="#80D8FF" stroke-width="1.5"/>
+  <circle cx="35" cy="45" r="8" fill="#00E5FF" stroke="#80D8FF" stroke-width="1.5"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">PROJ RAILGUN BEAM</div>
+        <button class="btn-copy" onclick="copySvg('proj_railgun_beam.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_proj_railgun_beam.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 30" width="120" height="30" fill="none">
+  <rect x="4" y="10" width="112" height="10" rx="5" fill="#FF1744" stroke="#FFE082" stroke-width="2"/>
+  <line x1="8" y1="15" x2="112" y2="15" stroke="#FFFFFF" stroke-width="3"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">PROJ SAW DISC</div>
+        <button class="btn-copy" onclick="copySvg('proj_saw_disc.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_proj_saw_disc.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" width="60" height="60" fill="none">
+  <circle cx="30" cy="30" r="24" fill="#37474F" stroke="#00E5FF" stroke-width="2.5"/>
+  <!-- Teeth -->
+  <polygon points="30,4 34,14 26,14" fill="#00E5FF"/>
+  <polygon points="56,30 46,34 46,26" fill="#00E5FF"/>
+  <polygon points="30,56 26,46 34,46" fill="#00E5FF"/>
+  <polygon points="4,30 14,26 14,34" fill="#00E5FF"/>
+  <circle cx="30" cy="30" r="8" fill="#00E5FF"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">PROJ TWIN BLASTER</div>
+        <button class="btn-copy" onclick="copySvg('proj_twin_blaster.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_proj_twin_blaster.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 40" width="80" height="40" fill="none">
+  <rect x="10" y="8" width="50" height="8" rx="4" fill="#00E5FF" stroke="#FFF" stroke-width="1.5"/>
+  <rect x="10" y="24" width="50" height="8" rx="4" fill="#00E5FF" stroke="#FFF" stroke-width="1.5"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">SHIP BIO</div>
+        <button class="btn-copy" onclick="copySvg('ship_bio.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_ship_bio.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120" fill="none">
+  <defs>
+    <linearGradient id="shipBio" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1B5E20"/>
+      <stop offset="100%" stop-color="#00330C"/>
+    </linearGradient>
+  </defs>
+  <polygon points="10,60 -20,50 0,60 -20,70" fill="#76FF03"/>
+  <path d="M20 40 C50 10 120 15 185 60 C120 105 50 110 20 80 C10 65 30 60 20 40 Z" fill="url(#shipBio)" stroke="#00E676" stroke-width="3"/>
+  <!-- Organic pods -->
+  <circle cx="80" cy="40" r="8" fill="#00E676" fill-opacity="0.5"/>
+  <circle cx="80" cy="80" r="8" fill="#00E676" fill-opacity="0.5"/>
+  <ellipse cx="125" cy="56" rx="30" ry="14" fill="#76FF03" fill-opacity="0.4" stroke="#CCFF90" stroke-width="2"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">SHIP CYBERPUNK</div>
+        <button class="btn-copy" onclick="copySvg('ship_cyberpunk.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_ship_cyberpunk.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120" fill="none">
+  <defs>
+    <linearGradient id="shipCyber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A1828"/>
+      <stop offset="100%" stop-color="#050C16"/>
+    </linearGradient>
+  </defs>
+  <polygon points="10,60 -30,46 0,60 -30,74" fill="#E040FB"/>
+  <path d="M20 38 L90 14 L185 60 L90 106 L20 82 L35 60 Z" fill="url(#shipCyber)" stroke="#00E5FF" stroke-width="3"/>
+  <!-- Neon Circuit Traces -->
+  <path d="M40 60 H110 L140 45" stroke="#00E5FF" stroke-width="2"/>
+  <path d="M70 60 L110 75" stroke="#E040FB" stroke-width="2"/>
+  <ellipse cx="115" cy="54" rx="36" ry="16" fill="#00E5FF" fill-opacity="0.3" stroke="#E040FB" stroke-width="2"/>
+  <circle cx="150" cy="60" r="3" fill="#FFE082"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">SHIP DEFAULT</div>
+        <button class="btn-copy" onclick="copySvg('ship_default.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_ship_default.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120" fill="none">
+  <defs>
+    <linearGradient id="shipDef" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2C4875"/>
+      <stop offset="100%" stop-color="#122036"/>
+    </linearGradient>
+  </defs>
+  <!-- Flame -->
+  <polygon points="10,60 -20,48 0,60 -20,72" fill="#00E5FF"/>
+  <!-- Main Saucer Hull -->
+  <path d="M20 40 C60 15 150 20 185 60 C150 100 60 105 20 80 C5 70 5 50 20 40 Z" fill="url(#shipDef)" stroke="#00E5FF" stroke-width="3"/>
+  <!-- Cockpit Dome -->
+  <ellipse cx="115" cy="54" rx="42" ry="18" fill="#00E5FF" fill-opacity="0.25" stroke="#80D8FF" stroke-width="2"/>
+  <ellipse cx="125" cy="50" rx="18" ry="6" fill="#FFF" fill-opacity="0.6"/>
+  <!-- Wing Blasters -->
+  <rect x="70" y="24" width="28" height="6" rx="2" fill="#00E5FF"/>
+  <rect x="70" y="90" width="28" height="6" rx="2" fill="#00E5FF"/>
+  <!-- Engine Nozzle -->
+  <rect x="12" y="50" width="12" height="20" rx="3" fill="#1A2D4A" stroke="#00E5FF" stroke-width="1.5"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">SHIP GOLD</div>
+        <button class="btn-copy" onclick="copySvg('ship_gold.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_ship_gold.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120" fill="none">
+  <defs>
+    <linearGradient id="shipGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="50%" stop-color="#FFB300"/>
+      <stop offset="100%" stop-color="#FF6F00"/>
+    </linearGradient>
+  </defs>
+  <polygon points="10,60 -25,48 0,60 -25,72" fill="#FFD54F"/>
+  <path d="M20 40 C60 15 150 20 188 60 C150 100 60 105 20 80 C5 70 5 50 20 40 Z" fill="url(#shipGold)" stroke="#FFF8E1" stroke-width="3"/>
+  <ellipse cx="115" cy="54" rx="40" ry="18" fill="#FFF8E1" fill-opacity="0.4" stroke="#FFF" stroke-width="2"/>
+  <polygon points="115,42 120,52 130,54 122,61 125,70 115,64 105,70 108,61 100,54 110,52" fill="#FFFFFF"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">SHIP STEAMPUNK</div>
+        <button class="btn-copy" onclick="copySvg('ship_steampunk.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_ship_steampunk.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120" fill="none">
+  <defs>
+    <linearGradient id="shipSteam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8D6E63"/>
+      <stop offset="50%" stop-color="#5D4037"/>
+      <stop offset="100%" stop-color="#3E2723"/>
+    </linearGradient>
+  </defs>
+  <polygon points="10,60 -20,50 0,60 -20,70" fill="#FFAB91"/>
+  <path d="M20 40 C60 18 140 22 185 60 C140 98 60 102 20 80 Z" fill="url(#shipSteam)" stroke="#FFB74D" stroke-width="3"/>
+  <!-- Brass Rivets -->
+  <circle cx="60" cy="36" r="3" fill="#FFE082"/><circle cx="90" cy="30" r="3" fill="#FFE082"/>
+  <circle cx="120" cy="34" r="3" fill="#FFE082"/><circle cx="60" cy="84" r="3" fill="#FFE082"/>
+  <circle cx="90" cy="90" r="3" fill="#FFE082"/><circle cx="120" cy="86" r="3" fill="#FFE082"/>
+  <!-- Glass Brass Porthole -->
+  <circle cx="120" cy="56" r="18" fill="#4DD0E1" fill-opacity="0.4" stroke="#FFB74D" stroke-width="3"/>
+  <line x1="102" y1="56" x2="138" y2="56" stroke="#FFB74D" stroke-width="1.5"/>
+  <line x1="120" y1="38" x2="120" y2="74" stroke="#FFB74D" stroke-width="1.5"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="model-card">
+      <div class="comp-header">
+        <div class="comp-title">SHIP VOID</div>
+        <button class="btn-copy" onclick="copySvg('ship_void.svg')">📋 Копировать</button>
+      </div>
+      <div class="model-preview" id="preview_ship_void.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120" fill="none">
+  <defs>
+    <linearGradient id="shipVoid" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4A148C"/>
+      <stop offset="100%" stop-color="#120024"/>
+    </linearGradient>
+  </defs>
+  <polygon points="10,60 -25,48 0,60 -25,72" fill="#EA80FC"/>
+  <path d="M20 40 L80 18 L190 60 L80 102 L20 80 L50 60 Z" fill="url(#shipVoid)" stroke="#D500F9" stroke-width="3"/>
+  <!-- Void Core -->
+  <polygon points="110,40 135,60 110,80 85,60" fill="#E040FB" fill-opacity="0.4" stroke="#FFF" stroke-width="1.5"/>
+  <circle cx="110" cy="60" r="5" fill="#FFF"/>
+</svg>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-title">
+    <span>🧩</span> UI КОМПОНЕНТЫ (КНОПКИ, ПАНЕЛИ, КАРТОЧКИ)
+  </div>
+
+  <div class="grid-comps">
+
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-title">BADGE GRADE S</div>
+        <button class="btn-copy" onclick="copySvg('badge_grade_s.svg')">📋 Копировать</button>
+      </div>
+      <div class="comp-preview" id="preview_badge_grade_s.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" fill="none">
+  <defs>
+    <linearGradient id="gradeSGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="50%" stop-color="#FFB800"/>
+      <stop offset="100%" stop-color="#FF6F00"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="54" fill="#080E18" stroke="url(#gradeSGrad)" stroke-width="4"/>
+  <circle cx="60" cy="60" r="46" stroke="#FFE082" stroke-width="1" stroke-dasharray="6 3"/>
+  <!-- S letter -->
+  <text x="60" y="82" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="70" fill="url(#gradeSGrad)" text-anchor="middle">S</text>
+  <!-- Star on top -->
+  <polygon points="60,6 63,14 71,14 65,19 67,27 60,22 53,27 55,19 49,14 57,14" fill="#FFE082"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-title">BOSS DANGER ALERT</div>
+        <button class="btn-copy" onclick="copySvg('boss_danger_alert.svg')">📋 Копировать</button>
+      </div>
+      <div class="comp-preview" id="preview_boss_danger_alert.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 70" width="680" height="70" fill="none">
+  <!-- Red Hazard Box -->
+  <rect x="2" y="2" width="676" height="66" rx="8" fill="#2E080E" stroke="#FF1744" stroke-width="2.5"/>
+  <!-- Hazard Stripes -->
+  <polygon points="20,2 35,2 15,68 0,68" fill="#FF1744" fill-opacity="0.3"/>
+  <polygon points="45,2 60,2 40,68 25,68" fill="#FF1744" fill-opacity="0.3"/>
+  <polygon points="655,2 670,2 650,68 635,68" fill="#FF1744" fill-opacity="0.3"/>
+  <!-- Warning Sign -->
+  <polygon points="90,16 110,54 70,54" fill="#FF1744" stroke="#FFE082" stroke-width="2"/>
+  <text x="90" y="48" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="20" fill="#FFF" text-anchor="middle">!</text>
+  <!-- Text -->
+  <text x="360" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="18" fill="#FF5252" text-anchor="middle" letter-spacing="2">ТРЕВОГА // ОБНАРУЖЕН БОСС</text>
+  <text x="360" y="52" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="13" fill="#FFE082" text-anchor="middle">ФЛАГМАН-ЖНЕЦ ВХОДИТ В СЕКТОР</text>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-title">BTN DANGER</div>
+        <button class="btn-copy" onclick="copySvg('btn_danger.svg')">📋 Копировать</button>
+      </div>
+      <div class="comp-preview" id="preview_btn_danger.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 48" width="480" height="48" fill="none">
+  <defs>
+    <linearGradient id="dangerBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2C0C12"/>
+      <stop offset="100%" stop-color="#150508"/>
+    </linearGradient>
+  </defs>
+  <path d="M8 2 H472 L478 8 V40 L472 46 H8 L2 40 V8 L8 2 Z" fill="url(#dangerBg)" stroke="#FF5252" stroke-width="1.8"/>
+  <line x1="12" y1="6" x2="468" y2="6" stroke="#FF8A80" stroke-width="1" stroke-opacity="0.35"/>
+  <text x="240" y="30" font-family="'JetBrains Mono', 'Roboto', 'Segoe UI', sans-serif" font-weight="700" font-size="15" fill="#FF8A80" text-anchor="middle" letter-spacing="1">ПРЕРВАТЬ МИССИЮ</text>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-title">BTN PRIMARY</div>
+        <button class="btn-copy" onclick="copySvg('btn_primary.svg')">📋 Копировать</button>
+      </div>
+      <div class="comp-preview" id="preview_btn_primary.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 64" width="480" height="64" fill="none">
+  <defs>
+    <linearGradient id="primaryBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF9E00"/>
+      <stop offset="50%" stop-color="#FF6A00"/>
+      <stop offset="100%" stop-color="#D34500"/>
+    </linearGradient>
+    <linearGradient id="primaryBorder" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="100%" stop-color="#FF8F00"/>
+    </linearGradient>
+    <filter id="primaryGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#FF6A00" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <!-- Background Shape with Chamfered Corners -->
+  <path d="M12 2 H468 L478 12 V52 L468 62 H12 L2 52 V12 L12 2 Z" fill="url(#primaryBg)" stroke="url(#primaryBorder)" stroke-width="2.5" filter="url(#primaryGlow)"/>
+  <!-- Top Bevel Highlight Line -->
+  <line x1="16" y1="6" x2="464" y2="6" stroke="#FFF" stroke-width="1.5" stroke-opacity="0.4" stroke-linecap="round"/>
+  <!-- Corner Tech Accent Dots -->
+  <circle cx="16" cy="14" r="2" fill="#FFE082"/>
+  <circle cx="464" cy="14" r="2" fill="#FFE082"/>
+  <!-- Content Placeholder (Text) -->
+  <text x="240" y="39" font-family="'JetBrains Mono', 'Roboto', 'Segoe UI', sans-serif" font-weight="800" font-size="20" fill="#FFFFFF" text-anchor="middle" letter-spacing="1.5">БОЕВАЯ КАМПАНИЯ</text>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-title">BTN SECONDARY</div>
+        <button class="btn-copy" onclick="copySvg('btn_secondary.svg')">📋 Копировать</button>
+      </div>
+      <div class="comp-preview" id="preview_btn_secondary.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 52" width="480" height="52" fill="none">
+  <defs>
+    <linearGradient id="secBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0E1E34"/>
+      <stop offset="100%" stop-color="#060C18"/>
+    </linearGradient>
+    <linearGradient id="secBorder" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00E5FF"/>
+      <stop offset="50%" stop-color="#0091EA"/>
+      <stop offset="100%" stop-color="#00E5FF"/>
+    </linearGradient>
+  </defs>
+  <!-- Outer Box with Cut Corners -->
+  <path d="M10 2 H470 L478 10 V42 L470 50 H10 L2 42 V10 L10 2 Z" fill="url(#secBg)" stroke="url(#secBorder)" stroke-width="1.8"/>
+  <!-- Tech Brackets on left/right -->
+  <path d="M6 14 L12 14 V38 L6 38" stroke="#00E5FF" stroke-width="2" stroke-linecap="square" fill="none"/>
+  <path d="M474 14 L468 14 V38 L474 38" stroke="#00E5FF" stroke-width="2" stroke-linecap="square" fill="none"/>
+  <!-- Sub-glow line at bottom -->
+  <line x1="24" y1="48" x2="456" y2="48" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.3"/>
+  <text x="240" y="33" font-family="'JetBrains Mono', 'Roboto', 'Segoe UI', sans-serif" font-weight="700" font-size="16" fill="#E1F5FE" text-anchor="middle" letter-spacing="1.2">КОСМИЧЕСКИЙ АНГАР</text>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-title">CARD PERK</div>
+        <button class="btn-copy" onclick="copySvg('card_perk.svg')">📋 Копировать</button>
+      </div>
+      <div class="comp-preview" id="preview_card_perk.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 340" width="240" height="340" fill="none">
+  <defs>
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#121828"/>
+      <stop offset="100%" stop-color="#070A12"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+  <!-- Card Base -->
+  <path d="M12 2 H228 L238 12 V328 L228 338 H12 L2 328 V12 L12 2 Z" fill="url(#cardBg)" stroke="#00E5FF" stroke-width="2" filter="url(#cardShadow)"/>
+  <!-- Top Category Badge Pill -->
+  <rect x="50" y="16" width="140" height="24" rx="4" fill="#00E5FF" fill-opacity="0.15" stroke="#00E5FF" stroke-width="1"/>
+  <text x="120" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="11" fill="#80D8FF" text-anchor="middle" letter-spacing="1">ОРУЖИЕ</text>
+  <!-- Icon Well Circle -->
+  <circle cx="120" cy="98" r="40" fill="#00E5FF" fill-opacity="0.08" stroke="#00E5FF" stroke-width="1.5"/>
+  <!-- Title -->
+  <text x="120" y="172" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFFFFF" text-anchor="middle">Тяжёлый Заряд</text>
+  <!-- Divider -->
+  <line x1="30" y1="190" x2="210" y2="190" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.3"/>
+  <!-- Description -->
+  <text x="120" y="222" font-family="sans-serif" font-size="13" fill="#B0BEC5" text-anchor="middle">+1 к урону выстрелов</text>
+  <text x="120" y="242" font-family="sans-serif" font-size="12" fill="#78909C" text-anchor="middle">всех типов орудий</text>
+  <!-- Choose Button at Bottom -->
+  <rect x="24" y="280" width="192" height="38" rx="6" fill="#00E5FF" fill-opacity="0.2" stroke="#00E5FF" stroke-width="1.5"/>
+  <text x="120" y="304" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="13" fill="#00E5FF" text-anchor="middle">ВЫБРАТЬ</text>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-title">DIALOG BOX CYBER</div>
+        <button class="btn-copy" onclick="copySvg('dialog_box_cyber.svg')">📋 Копировать</button>
+      </div>
+      <div class="comp-preview" id="preview_dialog_box_cyber.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 140" width="800" height="140" fill="none">
+  <defs>
+    <linearGradient id="dlgBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A1628" stop-opacity="0.96"/>
+      <stop offset="100%" stop-color="#03060C" stop-opacity="0.98"/>
+    </linearGradient>
+  </defs>
+  <path d="M12 2 H788 L798 12 V128 L788 138 H12 L2 128 V12 L12 2 Z" fill="url(#dlgBg)" stroke="#00E5FF" stroke-width="2"/>
+  <path d="M6 18 V6 H18" stroke="#00E5FF" stroke-width="2.5"/>
+  <path d="M794 18 V6 H782" stroke="#00E5FF" stroke-width="2.5"/>
+  <!-- Comms Avatar Box -->
+  <rect x="20" y="20" width="100" height="100" rx="6" fill="#060C17" stroke="#00E5FF" stroke-width="1.5"/>
+  <circle cx="70" cy="62" r="24" fill="#1C314E" stroke="#80D8FF" stroke-width="1.5"/>
+  <polygon points="70,45 80,70 60,70" fill="#FFB800"/>
+  <rect x="30" y="96" width="80" height="18" rx="3" fill="#00E5FF" fill-opacity="0.2"/>
+  <text x="70" y="109" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="10" fill="#00E5FF" text-anchor="middle">БАРНИ // ШТАБ</text>
+  <!-- Content -->
+  <text x="140" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFB800">РАДИОКАНАЛ: НЕОНОВЫЙ КОРИДОР</text>
+  <text x="140" y="74" font-family="sans-serif" font-size="14" fill="#FFFFFF">«Пилот! Отражай розовые сферы парированием, чтобы накопить энергию Super!»</text>
+  <!-- Voice Wave Bars -->
+  <g transform="translate(680, 26)">
+    <rect x="0" y="8" width="4" height="14" rx="2" fill="#00E5FF"/>
+    <rect x="8" y="2" width="4" height="26" rx="2" fill="#00E5FF"/>
+    <rect x="16" y="5" width="4" height="20" rx="2" fill="#00E5FF"/>
+    <rect x="24" y="0" width="4" height="30" rx="2" fill="#00E5FF"/>
+    <rect x="32" y="10" width="4" height="10" rx="2" fill="#00E5FF"/>
+  </g>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-title">GAUGE HYPE</div>
+        <button class="btn-copy" onclick="copySvg('gauge_hype.svg')">📋 Копировать</button>
+      </div>
+      <div class="comp-preview" id="preview_gauge_hype.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 36" width="320" height="36" fill="none">
+  <defs>
+    <linearGradient id="hypeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7C4DFF"/>
+      <stop offset="50%" stop-color="#E040FB"/>
+      <stop offset="100%" stop-color="#00E5FF"/>
+    </linearGradient>
+  </defs>
+  <!-- Frame -->
+  <rect x="2" y="2" width="316" height="32" rx="4" fill="#0B101D" stroke="#37474F" stroke-width="1.8"/>
+  <!-- Fill (e.g. 70%) -->
+  <rect x="5" y="5" width="220" height="26" rx="2" fill="url(#hypeGrad)"/>
+  <!-- Markers for EX (33%) and SUPER (100%) -->
+  <line x1="108" y1="2" x2="108" y2="34" stroke="#FFE082" stroke-width="2"/>
+  <line x1="212" y1="2" x2="212" y2="34" stroke="#FFE082" stroke-width="2"/>
+  <!-- Label -->
+  <text x="12" y="22" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="11" fill="#FFFFFF" letter-spacing="1">ЯРОСТЬ // SUPER</text>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-title">PANEL CYBER</div>
+        <button class="btn-copy" onclick="copySvg('panel_cyber.svg')">📋 Копировать</button>
+      </div>
+      <div class="comp-preview" id="preview_panel_cyber.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 400" width="560" height="400" fill="none">
+  <defs>
+    <linearGradient id="panelFill" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#08101E" stop-opacity="0.96"/>
+      <stop offset="100%" stop-color="#03060C" stop-opacity="0.98"/>
+    </linearGradient>
+    <linearGradient id="panelBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00E5FF"/>
+      <stop offset="50%" stop-color="#1565C0"/>
+      <stop offset="100%" stop-color="#00E5FF"/>
+    </linearGradient>
+    <filter id="panelGlow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.7"/>
+    </filter>
+  </defs>
+  <!-- Background Shape with Chamfered Corners -->
+  <path d="M20 2 H540 L558 20 V380 L540 398 H20 L2 380 V20 L20 2 Z" fill="url(#panelFill)" stroke="url(#panelBorder)" stroke-width="2" filter="url(#panelGlow)"/>
+  <!-- Inner Technical Accent Lines -->
+  <path d="M8 30 V8 H30" stroke="#00E5FF" stroke-width="3" stroke-linecap="square"/>
+  <path d="M552 30 V8 H530" stroke="#00E5FF" stroke-width="3" stroke-linecap="square"/>
+  <path d="M8 370 V392 H30" stroke="#00E5FF" stroke-width="3" stroke-linecap="square"/>
+  <path d="M552 370 V392 H530" stroke="#00E5FF" stroke-width="3" stroke-linecap="square"/>
+  <!-- Top Header Divider Line -->
+  <line x1="24" y1="56" x2="536" y2="56" stroke="#00E5FF" stroke-width="1.5" stroke-opacity="0.4"/>
+  <circle cx="280" cy="56" r="3" fill="#00E5FF"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-title">RADAR MINIMAP</div>
+        <button class="btn-copy" onclick="copySvg('radar_minimap.svg')">📋 Копировать</button>
+      </div>
+      <div class="comp-preview" id="preview_radar_minimap.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" fill="none">
+  <defs>
+    <radialGradient id="radarBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00E5FF" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#040914" stop-opacity="0.95"/>
+    </radialGradient>
+  </defs>
+  <!-- Frame -->
+  <circle cx="100" cy="100" r="95" fill="url(#radarBg)" stroke="#00E5FF" stroke-width="2.5"/>
+  <circle cx="100" cy="100" r="70" stroke="#00E5FF" stroke-width="1" stroke-dasharray="6 4" stroke-opacity="0.5"/>
+  <circle cx="100" cy="100" r="40" stroke="#00E5FF" stroke-width="1" stroke-dasharray="4 4" stroke-opacity="0.3"/>
+  <!-- Crosshairs -->
+  <line x1="100" y1="10" x2="100" y2="190" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.4"/>
+  <line x1="10" y1="100" x2="190" y2="100" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.4"/>
+  <!-- Player Center Arrow -->
+  <polygon points="100,88 108,108 100,103 92,108" fill="#00E5FF"/>
+  <!-- Enemy Blips (Red) -->
+  <circle cx="145" cy="65" r="4.5" fill="#FF1744"/>
+  <circle cx="145" cy="65" r="9" stroke="#FF1744" stroke-width="1" stroke-opacity="0.5"/>
+  <circle cx="60" cy="130" r="3.5" fill="#FF5252"/>
+  <circle cx="150" cy="140" r="3.5" fill="#FF5252"/>
+  <!-- Boss Direction (Gold Skull Marker) -->
+  <polygon points="175,95 185,100 175,105" fill="#FFB800"/>
+  <!-- Sweep Line -->
+  <line x1="100" y1="100" x2="165" y2="35" stroke="#80D8FF" stroke-width="2"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-title">SUBPANEL CYBER</div>
+        <button class="btn-copy" onclick="copySvg('subpanel_cyber.svg')">📋 Копировать</button>
+      </div>
+      <div class="comp-preview" id="preview_subpanel_cyber.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 90" width="500" height="90" fill="none">
+  <defs>
+    <linearGradient id="subBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0B1526" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#060C16" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+  <path d="M8 2 H492 L498 8 V82 L492 88 H8 L2 82 V8 L8 2 Z" fill="url(#subBg)" stroke="#1E3A5F" stroke-width="1.5"/>
+  <line x1="2" y1="12" x2="2" y2="78" stroke="#00E5FF" stroke-width="3"/>
+  <circle cx="488" cy="14" r="2" fill="#00E5FF" fill-opacity="0.6"/>
+</svg>
+
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-title">TAB SELECTOR</div>
+        <button class="btn-copy" onclick="copySvg('tab_selector.svg')">📋 Копировать</button>
+      </div>
+      <div class="comp-preview" id="preview_tab_selector.svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 50" width="600" height="50" fill="none">
+  <rect width="600" height="50" rx="8" fill="#060C17" stroke="#1E385B" stroke-width="1.5"/>
+  <!-- Tab 1: Active (Cyber Cyan) -->
+  <rect x="6" y="6" width="190" height="38" rx="6" fill="#00E5FF" fill-opacity="0.18"/>
+  <text x="101" y="30" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="14" fill="#00E5FF" text-anchor="middle">АРСЕНАЛ ОРУДИЙ</text>
+  <line x1="20" y1="44" x2="182" y2="44" stroke="#00E5FF" stroke-width="2.5"/>
+  <!-- Tab 2: Inactive -->
+  <text x="300" y="30" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="14" fill="#90A4AE" text-anchor="middle">ОБЛИКИ СУДНА</text>
+  <!-- Tab 3: Inactive -->
+  <text x="500" y="30" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="14" fill="#90A4AE" text-anchor="middle">ИНЖЕНЕРНЫЙ ДОК</text>
+</svg>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-title">
+    <span>💎</span> КАСТОМНЫЕ ВЕКТОРНЫЕ ИКОНКИ (БЕЗ EMOJI)
+  </div>
+
+  <div class="grid-icons">
+
+    <div class="icon-card" onclick="copySvg('icon_campaign.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_campaign.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <circle cx="24" cy="24" r="18" stroke="#FFB800" stroke-width="2.5" stroke-dasharray="8 4"/>
+  <circle cx="24" cy="24" r="11" stroke="#FFA000" stroke-width="2"/>
+  <circle cx="24" cy="24" r="4" fill="#FFD54F"/>
+  <line x1="24" y1="2" x2="24" y2="10" stroke="#FFB800" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="24" y1="38" x2="24" y2="46" stroke="#FFB800" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="2" y1="24" x2="10" y2="24" stroke="#FFB800" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="38" y1="24" x2="46" y2="24" stroke="#FFB800" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
+</div>
+      <div class="icon-title">campaign</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_coin.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_coin.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <polygon points="24,4 40,13 40,35 24,44 8,35 8,13" fill="#FFB300" fill-opacity="0.3" stroke="#FFB300" stroke-width="2.5" stroke-linejoin="round"/>
+  <polygon points="24,10 35,16.5 35,31.5 24,38 13,31.5 13,16.5" stroke="#FFE082" stroke-width="1.8" stroke-linejoin="round"/>
+  <circle cx="24" cy="24" r="5" fill="#FFF" fill-opacity="0.8"/>
+  <line x1="24" y1="14" x2="24" y2="34" stroke="#FF8F00" stroke-width="1.5"/>
+</svg>
+</div>
+      <div class="icon-title">coin</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_damage.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_damage.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <path d="M24 4L28 16L40 12L32 22L44 30L30 32L32 44L22 34L14 42L16 28L4 26L16 18L10 6L22 14L24 4Z" fill="#FF3D00" fill-opacity="0.3" stroke="#FF5722" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="24" cy="24" r="5" fill="#FFD54F"/>
+</svg>
+</div>
+      <div class="icon-title">damage</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_energy.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_energy.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <circle cx="24" cy="24" r="18" stroke="#D500F9" stroke-width="2" stroke-dasharray="4 4"/>
+  <polygon points="26,6 14,24 24,24 22,42 34,22 24,22" fill="#E040FB" fill-opacity="0.3" stroke="#EA80FC" stroke-width="2.5" stroke-linejoin="round"/>
+</svg>
+</div>
+      <div class="icon-title">energy</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_exit.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_exit.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <path d="M18 8H10C8.9 8 8 8.9 8 10V38C8 39.1 8.9 40 10 40H18" stroke="#EF5350" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M28 16L36 24L28 32" stroke="#FF7043" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="16" y1="24" x2="36" y2="24" stroke="#FF7043" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
+</div>
+      <div class="icon-title">exit</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_fire_rate.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_fire_rate.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <polygon points="26,4 12,26 24,26 22,44 36,22 24,22" fill="#00E5FF" fill-opacity="0.3" stroke="#00E5FF" stroke-width="2.5" stroke-linejoin="round"/>
+  <line x1="6" y1="12" x2="14" y2="12" stroke="#80D8FF" stroke-width="2" stroke-linecap="round"/>
+  <line x1="4" y1="20" x2="10" y2="20" stroke="#80D8FF" stroke-width="2" stroke-linecap="round"/>
+</svg>
+</div>
+      <div class="icon-title">fire_rate</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_hangar.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_hangar.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <path d="M24 6L38 38L24 32L10 38L24 6Z" fill="#00E5FF" fill-opacity="0.2" stroke="#00E5FF" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M24 6V32" stroke="#80D8FF" stroke-width="2" stroke-linecap="round"/>
+  <path d="M17 28L7 34L10 42L18 36" stroke="#00B0FF" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M31 28L41 34L38 42L30 36" stroke="#00B0FF" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="24" cy="38" r="2" fill="#FF5252"/>
+</svg>
+</div>
+      <div class="icon-title">hangar</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_journal.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_journal.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <rect x="8" y="6" width="32" height="36" rx="4" fill="#0F1B2D" stroke="#00E5FF" stroke-width="2.5"/>
+  <line x1="14" y1="14" x2="34" y2="14" stroke="#80D8FF" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="14" y1="22" x2="30" y2="22" stroke="#80D8FF" stroke-width="2" stroke-linecap="round"/>
+  <line x1="14" y1="29" x2="34" y2="29" stroke="#80D8FF" stroke-width="2" stroke-linecap="round"/>
+  <line x1="14" y1="35" x2="24" y2="35" stroke="#00E5FF" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="34" cy="35" r="2" fill="#FFD54F"/>
+</svg>
+</div>
+      <div class="icon-title">journal</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_magnet.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_magnet.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <path d="M12 12V24C12 30.63 17.37 36 24 36C30.63 36 36 30.63 36 24V12" stroke="#40C4FF" stroke-width="3" stroke-linecap="round"/>
+  <rect x="8" y="8" width="8" height="8" rx="1" fill="#FF5252"/>
+  <rect x="32" y="8" width="8" height="8" rx="1" fill="#448AFF"/>
+  <path d="M18 24C18 27.31 20.69 30 24 30C27.31 30 30 27.31 30 24" stroke="#80D8FF" stroke-width="1.8" stroke-linecap="round"/>
+</svg>
+</div>
+      <div class="icon-title">magnet</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_parry.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_parry.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <circle cx="24" cy="24" r="16" stroke="#FFD54F" stroke-width="2.5"/>
+  <path d="M14 24L20 18M20 30L14 24M20 24H34" stroke="#FFB300" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M28 14L34 24L28 34" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+</div>
+      <div class="icon-title">parry</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_rogue.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_rogue.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <path d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20" stroke="#00E5FF" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M24 10c-7.73 0-14 6.27-14 14s6.27 14 14 14 14-6.27 14-14" stroke="#7C4DFF" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="12 6"/>
+  <path d="M24 16c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8" stroke="#00E5FF" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="24" cy="24" r="3.5" fill="#E040FB"/>
+</svg>
+</div>
+      <div class="icon-title">rogue</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_settings.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_settings.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <circle cx="24" cy="24" r="6" stroke="#90A4AE" stroke-width="2.5"/>
+  <path d="M24 4V8M24 40V44M4 24H8M40 24H44M9.86 9.86L12.69 12.69M35.31 35.31L38.14 38.14M9.86 38.14L12.69 35.31M35.31 12.69L38.14 9.86" stroke="#B0BEC5" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="24" cy="24" r="14" stroke="#78909C" stroke-width="2" stroke-dasharray="6 6"/>
+</svg>
+</div>
+      <div class="icon-title">settings</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_shield.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_shield.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <path d="M24 4L38 9V22C38 31.5 32 40 24 44C16 40 10 31.5 10 22V9L24 4Z" fill="#00E676" fill-opacity="0.2" stroke="#00E676" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M24 10L33 14V22C33 28.5 29 34.5 24 37.5C19 34.5 15 28.5 15 22V14L24 10Z" stroke="#B9F6CA" stroke-width="1.8" stroke-linejoin="round"/>
+  <circle cx="24" cy="22" r="3" fill="#FFFFFF"/>
+</svg>
+</div>
+      <div class="icon-title">shield</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_speed.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_speed.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <path d="M8 24C8 15.16 15.16 8 24 8C32.84 8 40 15.16 40 24" stroke="#FFD600" stroke-width="3" stroke-linecap="round"/>
+  <path d="M24 24L34 14" stroke="#FF6D00" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="24" cy="24" r="4" fill="#FFD600"/>
+  <line x1="12" y1="24" x2="16" y2="24" stroke="#FFE57F" stroke-width="2" stroke-linecap="round"/>
+  <line x1="32" y1="24" x2="36" y2="24" stroke="#FFE57F" stroke-width="2" stroke-linecap="round"/>
+  <line x1="24" y1="12" x2="24" y2="16" stroke="#FFE57F" stroke-width="2" stroke-linecap="round"/>
+</svg>
+</div>
+      <div class="icon-title">speed</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_star_core.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_star_core.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <polygon points="24,2 29,16 43,11 34,24 46,31 31,34 31,46 24,37 17,46 17,34 2,31 14,24 5,11 19,16" fill="#D500F9" fill-opacity="0.3" stroke="#E040FB" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="24" cy="24" r="7" fill="#EA80FC" stroke="#FFFFFF" stroke-width="1.5"/>
+</svg>
+</div>
+      <div class="icon-title">star_core</div>
+    </div>
+
+    <div class="icon-card" onclick="copySvg('icon_trophy.svg')" title="Нажмите, чтобы скопировать SVG для Figma">
+      <div id="preview_icon_trophy.svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <path d="M14 8H34V20C34 25.52 29.52 30 24 30C18.48 30 14 25.52 14 20V8Z" fill="#FFB800" fill-opacity="0.25" stroke="#FFB800" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M14 12H7C5.9 12 5 12.9 5 14V18C5 21.31 7.69 24 11 24H14" stroke="#FFD54F" stroke-width="2" stroke-linecap="round"/>
+  <path d="M34 12H41C42.1 12 43 12.9 43 14V18C43 21.31 40.31 24 37 24H34" stroke="#FFD54F" stroke-width="2" stroke-linecap="round"/>
+  <path d="M24 30V38M16 42H32M20 38H28" stroke="#FFB800" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="24,14 26,18 30,18.5 27,21.5 28,26 24,23.5 20,26 21,21.5 18,18.5 22,18" fill="#FFF8E1"/>
+</svg>
+</div>
+      <div class="icon-title">trophy</div>
+    </div>
+
+  </div>
+
+  <div id="toast" class="toast">✓ SVG успешно скопирован! Вставьте в Figma через Ctrl + V</div>
+
+  <script>
+    function copySvg(id) {
+      const el = document.getElementById("preview_" + id);
+      if (!el) return;
+      const svg = el.querySelector("svg");
+      if (!svg) return;
+      const svgText = svg.outerHTML;
+
+      navigator.clipboard.writeText(svgText).then(() => {
+        showToast("✓ SVG [" + id + "] скопирован! Вставьте в Figma (Ctrl + V)");
+      }).catch(err => {
+        console.error(err);
+      });
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.innerText = msg;
+      t.classList.add("show");
+      setTimeout(() => {
+        t.classList.remove("show");
+      }, 2500);
+    }
+  </script>
+</body>
+</html>

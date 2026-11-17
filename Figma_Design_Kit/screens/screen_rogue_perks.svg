@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <radialGradient id="perkBackdrop" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#08101E" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#020408" stop-opacity="0.98"/>
+    </radialGradient>
+    <linearGradient id="card1Grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1A1828"/>
+      <stop offset="100%" stop-color="#0C0A14"/>
+    </linearGradient>
+    <filter id="cardGlowOrange" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#FF6A00" flood-opacity="0.4"/>
+    </filter>
+    <filter id="cardGlowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#00E5FF" flood-opacity="0.4"/>
+    </filter>
+    <filter id="cardGlowGreen" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#00E676" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Dark Blurred Modal Overlay -->
+  <rect width="1920" height="1080" fill="url(#perkBackdrop)"/>
+
+  <!-- Modal Header Section -->
+  <g transform="translate(960, 140)">
+    <rect x="-350" y="-30" width="700" height="60" rx="30" fill="#060C17" stroke="#00E5FF" stroke-width="1.5"/>
+    <text x="0" y="8" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="24" fill="#00E5FF" text-anchor="middle" letter-spacing="3">ВЫБЕРИТЕ УЛУЧШЕНИЕ ЭКСПЕДИЦИИ</text>
+    <text x="0" y="55" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="16" fill="#FFE082" text-anchor="middle">ВОЛНА 05 УСПЕШНО ЗАВЕРШЕНА // СЕКТОР ОЧИЩЕН</text>
+  </g>
+
+  <!-- ================= 3 CARDS ================= -->
+  <!-- CARD 1: DAMAGE (Orange) -->
+  <g transform="translate(360, 260)" filter="url(#cardGlowOrange)">
+    <path d="M16 2 H344 L358 16 V504 L344 518 H16 L2 504 V16 L16 2 Z" fill="url(#card1Grad)" stroke="#FF6A00" stroke-width="2.5"/>
+    <!-- Top Pill -->
+    <rect x="100" y="24" width="160" height="30" rx="6" fill="#FF6A00" fill-opacity="0.2" stroke="#FF6A00" stroke-width="1"/>
+    <text x="180" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#FF8A80" text-anchor="middle" letter-spacing="1.5">АРСЕНАЛ</text>
+    <!-- Icon Circle -->
+    <circle cx="180" cy="140" r="54" fill="#FF6A00" fill-opacity="0.1" stroke="#FF6A00" stroke-width="2"/>
+    <path d="M180 110 L188 128 L206 122 L194 138 L212 150 L190 154 L194 172 L178 158 L166 170 L170 148 L152 146 L170 134 L160 114 L178 126 Z" fill="#FF3D00" stroke="#FFD54F" stroke-width="2"/>
+    <!-- Title -->
+    <text x="180" y="235" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="22" fill="#FFFFFF" text-anchor="middle">Тяжёлый Заряд</text>
+    <!-- Divider -->
+    <line x1="40" y1="260" x2="320" y2="260" stroke="#FF6A00" stroke-width="1.5" stroke-opacity="0.3"/>
+    <!-- Description -->
+    <text x="180" y="305" font-family="sans-serif" font-size="16" fill="#ECEFF1" text-anchor="middle">+1 к урону выстрелов</text>
+    <text x="180" y="332" font-family="sans-serif" font-size="14" fill="#90A4AE" text-anchor="middle">Усиливает основной бластер,</text>
+    <text x="180" y="354" font-family="sans-serif" font-size="14" fill="#90A4AE" text-anchor="middle">дробь и рельсотрон тарелки.</text>
+    <!-- Select Button -->
+    <g transform="translate(40, 430)">
+      <rect width="280" height="52" rx="8" fill="#FF6A00" stroke="#FFE082" stroke-width="1.8"/>
+      <text x="140" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">ВЫБРАТЬ</text>
+    </g>
+  </g>
+
+  <!-- CARD 2: FIRE RATE (Cyan) -->
+  <g transform="translate(780, 260)" filter="url(#cardGlowCyan)">
+    <path d="M16 2 H344 L358 16 V504 L344 518 H16 L2 504 V16 L16 2 Z" fill="url(#card1Grad)" stroke="#00E5FF" stroke-width="2.5"/>
+    <rect x="80" y="24" width="200" height="30" rx="6" fill="#00E5FF" fill-opacity="0.2" stroke="#00E5FF" stroke-width="1"/>
+    <text x="180" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#80D8FF" text-anchor="middle" letter-spacing="1.5">ТЕМП СТРЕЛЬБЫ</text>
+    <!-- Icon Circle -->
+    <circle cx="180" cy="140" r="54" fill="#00E5FF" fill-opacity="0.1" stroke="#00E5FF" stroke-width="2"/>
+    <polygon points="186,105 160,140 180,140 176,175 202,135 182,135" fill="#00E5FF" stroke="#FFFFFF" stroke-width="1.5"/>
+    <!-- Title -->
+    <text x="180" y="235" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="22" fill="#FFFFFF" text-anchor="middle">Форсаж Плазмы</text>
+    <line x1="40" y1="260" x2="320" y2="260" stroke="#00E5FF" stroke-width="1.5" stroke-opacity="0.3"/>
+    <text x="180" y="305" font-family="sans-serif" font-size="16" fill="#ECEFF1" text-anchor="middle">+20% к скорости стрельбы</text>
+    <text x="180" y="332" font-family="sans-serif" font-size="14" fill="#90A4AE" text-anchor="middle">Ускоряет перезарядку генератора,</text>
+    <text x="180" y="354" font-family="sans-serif" font-size="14" fill="#90A4AE" text-anchor="middle">создавая непрерывный шквал огня.</text>
+    <g transform="translate(40, 430)">
+      <rect width="280" height="52" rx="8" fill="#00E5FF" fill-opacity="0.3" stroke="#00E5FF" stroke-width="2"/>
+      <text x="140" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#00E5FF" text-anchor="middle" letter-spacing="1">ВЫБРАТЬ</text>
+    </g>
+  </g>
+
+  <!-- CARD 3: DEFENSE (Green) -->
+  <g transform="translate(1200, 260)" filter="url(#cardGlowGreen)">
+    <path d="M16 2 H344 L358 16 V504 L344 518 H16 L2 504 V16 L16 2 Z" fill="url(#card1Grad)" stroke="#00E676" stroke-width="2.5"/>
+    <rect x="100" y="24" width="160" height="30" rx="6" fill="#00E676" fill-opacity="0.2" stroke="#00E676" stroke-width="1"/>
+    <text x="180" y="44" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="13" fill="#B9F6CA" text-anchor="middle" letter-spacing="1.5">ЗАЩИТА</text>
+    <!-- Icon Circle -->
+    <circle cx="180" cy="140" r="54" fill="#00E676" fill-opacity="0.1" stroke="#00E676" stroke-width="2"/>
+    <path d="M180 108 L206 116 V138 C206 156 194 170 180 176 C166 170 154 156 154 138 V116 Z" fill="#00E676" fill-opacity="0.3" stroke="#00E676" stroke-width="2.5"/>
+    <!-- Title -->
+    <text x="180" y="235" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="22" fill="#FFFFFF" text-anchor="middle">Нано-Броня</text>
+    <line x1="40" y1="260" x2="320" y2="260" stroke="#00E676" stroke-width="1.5" stroke-opacity="0.3"/>
+    <text x="180" y="305" font-family="sans-serif" font-size="16" fill="#ECEFF1" text-anchor="middle">+1 макс. прочность</text>
+    <text x="180" y="332" font-family="sans-serif" font-size="14" fill="#90A4AE" text-anchor="middle">Мгновенно восстанавливает все</text>
+    <text x="180" y="354" font-family="sans-serif" font-size="14" fill="#90A4AE" text-anchor="middle">повреждения корпуса тарелки.</text>
+    <g transform="translate(40, 430)">
+      <rect width="280" height="52" rx="8" fill="#00E676" fill-opacity="0.3" stroke="#00E676" stroke-width="2"/>
+      <text x="140" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#00E676" text-anchor="middle" letter-spacing="1">ВЫБРАТЬ</text>
+    </g>
+  </g>
+
+  <!-- Bottom Tip -->
+  <g transform="translate(960, 890)">
+    <rect x="-300" y="0" width="600" height="40" rx="8" fill="#060C17" stroke="#1E385B" stroke-width="1"/>
+    <text x="0" y="25" font-family="'JetBrains Mono', sans-serif" font-size="14" fill="#90A4AE" text-anchor="middle">💡 СОВЕТ: Парирование атак заряжает полосу Ярости для экстренных залпов</text>
+  </g>
+</svg>

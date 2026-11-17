@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 48" width="480" height="48" fill="none">
+  <defs>
+    <linearGradient id="dangerBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2C0C12"/>
+      <stop offset="100%" stop-color="#150508"/>
+    </linearGradient>
+  </defs>
+  <path d="M8 2 H472 L478 8 V40 L472 46 H8 L2 40 V8 L8 2 Z" fill="url(#dangerBg)" stroke="#FF5252" stroke-width="1.8"/>
+  <line x1="12" y1="6" x2="468" y2="6" stroke="#FF8A80" stroke-width="1" stroke-opacity="0.35"/>
+  <text x="240" y="30" font-family="'JetBrains Mono', 'Roboto', 'Segoe UI', sans-serif" font-weight="700" font-size="15" fill="#FF8A80" text-anchor="middle" letter-spacing="1">ПРЕРВАТЬ МИССИЮ</text>
+</svg>

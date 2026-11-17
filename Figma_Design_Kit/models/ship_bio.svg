@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120" fill="none">
+  <defs>
+    <linearGradient id="shipBio" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1B5E20"/>
+      <stop offset="100%" stop-color="#00330C"/>
+    </linearGradient>
+  </defs>
+  <polygon points="10,60 -20,50 0,60 -20,70" fill="#76FF03"/>
+  <path d="M20 40 C50 10 120 15 185 60 C120 105 50 110 20 80 C10 65 30 60 20 40 Z" fill="url(#shipBio)" stroke="#00E676" stroke-width="3"/>
+  <!-- Organic pods -->
+  <circle cx="80" cy="40" r="8" fill="#00E676" fill-opacity="0.5"/>
+  <circle cx="80" cy="80" r="8" fill="#00E676" fill-opacity="0.5"/>
+  <ellipse cx="125" cy="56" rx="30" ry="14" fill="#76FF03" fill-opacity="0.4" stroke="#CCFF90" stroke-width="2"/>
+</svg>

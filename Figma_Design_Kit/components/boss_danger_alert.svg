@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 70" width="680" height="70" fill="none">
+  <!-- Red Hazard Box -->
+  <rect x="2" y="2" width="676" height="66" rx="8" fill="#2E080E" stroke="#FF1744" stroke-width="2.5"/>
+  <!-- Hazard Stripes -->
+  <polygon points="20,2 35,2 15,68 0,68" fill="#FF1744" fill-opacity="0.3"/>
+  <polygon points="45,2 60,2 40,68 25,68" fill="#FF1744" fill-opacity="0.3"/>
+  <polygon points="655,2 670,2 650,68 635,68" fill="#FF1744" fill-opacity="0.3"/>
+  <!-- Warning Sign -->
+  <polygon points="90,16 110,54 70,54" fill="#FF1744" stroke="#FFE082" stroke-width="2"/>
+  <text x="90" y="48" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="20" fill="#FFF" text-anchor="middle">!</text>
+  <!-- Text -->
+  <text x="360" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="18" fill="#FF5252" text-anchor="middle" letter-spacing="2">ТРЕВОГА // ОБНАРУЖЕН БОСС</text>
+  <text x="360" y="52" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="13" fill="#FFE082" text-anchor="middle">ФЛАГМАН-ЖНЕЦ ВХОДИТ В СЕКТОР</text>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 64" width="480" height="64" fill="none">
+  <defs>
+    <linearGradient id="primaryBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF9E00"/>
+      <stop offset="50%" stop-color="#FF6A00"/>
+      <stop offset="100%" stop-color="#D34500"/>
+    </linearGradient>
+    <linearGradient id="primaryBorder" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="100%" stop-color="#FF8F00"/>
+    </linearGradient>
+    <filter id="primaryGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#FF6A00" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <!-- Background Shape with Chamfered Corners -->
+  <path d="M12 2 H468 L478 12 V52 L468 62 H12 L2 52 V12 L12 2 Z" fill="url(#primaryBg)" stroke="url(#primaryBorder)" stroke-width="2.5" filter="url(#primaryGlow)"/>
+  <!-- Top Bevel Highlight Line -->
+  <line x1="16" y1="6" x2="464" y2="6" stroke="#FFF" stroke-width="1.5" stroke-opacity="0.4" stroke-linecap="round"/>
+  <!-- Corner Tech Accent Dots -->
+  <circle cx="16" cy="14" r="2" fill="#FFE082"/>
+  <circle cx="464" cy="14" r="2" fill="#FFE082"/>
+  <!-- Content Placeholder (Text) -->
+  <text x="240" y="39" font-family="'JetBrains Mono', 'Roboto', 'Segoe UI', sans-serif" font-weight="800" font-size="20" fill="#FFFFFF" text-anchor="middle" letter-spacing="1.5">БОЕВАЯ КАМПАНИЯ</text>
+</svg>

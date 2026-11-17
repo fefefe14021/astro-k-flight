@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" fill="none">
+  <defs>
+    <radialGradient id="radarBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00E5FF" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#040914" stop-opacity="0.95"/>
+    </radialGradient>
+  </defs>
+  <!-- Frame -->
+  <circle cx="100" cy="100" r="95" fill="url(#radarBg)" stroke="#00E5FF" stroke-width="2.5"/>
+  <circle cx="100" cy="100" r="70" stroke="#00E5FF" stroke-width="1" stroke-dasharray="6 4" stroke-opacity="0.5"/>
+  <circle cx="100" cy="100" r="40" stroke="#00E5FF" stroke-width="1" stroke-dasharray="4 4" stroke-opacity="0.3"/>
+  <!-- Crosshairs -->
+  <line x1="100" y1="10" x2="100" y2="190" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.4"/>
+  <line x1="10" y1="100" x2="190" y2="100" stroke="#00E5FF" stroke-width="1" stroke-opacity="0.4"/>
+  <!-- Player Center Arrow -->
+  <polygon points="100,88 108,108 100,103 92,108" fill="#00E5FF"/>
+  <!-- Enemy Blips (Red) -->
+  <circle cx="145" cy="65" r="4.5" fill="#FF1744"/>
+  <circle cx="145" cy="65" r="9" stroke="#FF1744" stroke-width="1" stroke-opacity="0.5"/>
+  <circle cx="60" cy="130" r="3.5" fill="#FF5252"/>
+  <circle cx="150" cy="140" r="3.5" fill="#FF5252"/>
+  <!-- Boss Direction (Gold Skull Marker) -->
+  <polygon points="175,95 185,100 175,105" fill="#FFB800"/>
+  <!-- Sweep Line -->
+  <line x1="100" y1="100" x2="165" y2="35" stroke="#80D8FF" stroke-width="2"/>
+</svg>

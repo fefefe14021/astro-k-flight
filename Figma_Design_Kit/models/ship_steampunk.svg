@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120" fill="none">
+  <defs>
+    <linearGradient id="shipSteam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8D6E63"/>
+      <stop offset="50%" stop-color="#5D4037"/>
+      <stop offset="100%" stop-color="#3E2723"/>
+    </linearGradient>
+  </defs>
+  <polygon points="10,60 -20,50 0,60 -20,70" fill="#FFAB91"/>
+  <path d="M20 40 C60 18 140 22 185 60 C140 98 60 102 20 80 Z" fill="url(#shipSteam)" stroke="#FFB74D" stroke-width="3"/>
+  <!-- Brass Rivets -->
+  <circle cx="60" cy="36" r="3" fill="#FFE082"/><circle cx="90" cy="30" r="3" fill="#FFE082"/>
+  <circle cx="120" cy="34" r="3" fill="#FFE082"/><circle cx="60" cy="84" r="3" fill="#FFE082"/>
+  <circle cx="90" cy="90" r="3" fill="#FFE082"/><circle cx="120" cy="86" r="3" fill="#FFE082"/>
+  <!-- Glass Brass Porthole -->
+  <circle cx="120" cy="56" r="18" fill="#4DD0E1" fill-opacity="0.4" stroke="#FFB74D" stroke-width="3"/>
+  <line x1="102" y1="56" x2="138" y2="56" stroke="#FFB74D" stroke-width="1.5"/>
+  <line x1="120" y1="38" x2="120" y2="74" stroke="#FFB74D" stroke-width="1.5"/>
+</svg>

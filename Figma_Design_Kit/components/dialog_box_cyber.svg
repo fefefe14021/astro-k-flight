@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 140" width="800" height="140" fill="none">
+  <defs>
+    <linearGradient id="dlgBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A1628" stop-opacity="0.96"/>
+      <stop offset="100%" stop-color="#03060C" stop-opacity="0.98"/>
+    </linearGradient>
+  </defs>
+  <path d="M12 2 H788 L798 12 V128 L788 138 H12 L2 128 V12 L12 2 Z" fill="url(#dlgBg)" stroke="#00E5FF" stroke-width="2"/>
+  <path d="M6 18 V6 H18" stroke="#00E5FF" stroke-width="2.5"/>
+  <path d="M794 18 V6 H782" stroke="#00E5FF" stroke-width="2.5"/>
+  <!-- Comms Avatar Box -->
+  <rect x="20" y="20" width="100" height="100" rx="6" fill="#060C17" stroke="#00E5FF" stroke-width="1.5"/>
+  <circle cx="70" cy="62" r="24" fill="#1C314E" stroke="#80D8FF" stroke-width="1.5"/>
+  <polygon points="70,45 80,70 60,70" fill="#FFB800"/>
+  <rect x="30" y="96" width="80" height="18" rx="3" fill="#00E5FF" fill-opacity="0.2"/>
+  <text x="70" y="109" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="10" fill="#00E5FF" text-anchor="middle">БАРНИ // ШТАБ</text>
+  <!-- Content -->
+  <text x="140" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFB800">РАДИОКАНАЛ: НЕОНОВЫЙ КОРИДОР</text>
+  <text x="140" y="74" font-family="sans-serif" font-size="14" fill="#FFFFFF">«Пилот! Отражай розовые сферы парированием, чтобы накопить энергию Super!»</text>
+  <!-- Voice Wave Bars -->
+  <g transform="translate(680, 26)">
+    <rect x="0" y="8" width="4" height="14" rx="2" fill="#00E5FF"/>
+    <rect x="8" y="2" width="4" height="26" rx="2" fill="#00E5FF"/>
+    <rect x="16" y="5" width="4" height="20" rx="2" fill="#00E5FF"/>
+    <rect x="24" y="0" width="4" height="30" rx="2" fill="#00E5FF"/>
+    <rect x="32" y="10" width="4" height="10" rx="2" fill="#00E5FF"/>
+  </g>
+</svg>

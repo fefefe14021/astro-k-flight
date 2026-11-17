@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <radialGradient id="achBg" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#0E1A2C" stop-opacity="0.96"/>
+      <stop offset="100%" stop-color="#02050A" stop-opacity="0.98"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#achBg)"/>
+
+  <!-- Center Card (940x780) -->
+  <g transform="translate(490, 150)">
+    <rect width="940" height="780" rx="12" fill="#08101E" stroke="#00E5FF" stroke-width="2"/>
+    <text x="470" y="55" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="26" fill="#00E5FF" text-anchor="middle" letter-spacing="2">БОЕВЫЕ ДОСТИЖЕНИЯ</text>
+    <line x1="40" y1="80" x2="900" y2="80" stroke="#00E5FF" stroke-width="1.5" stroke-opacity="0.4"/>
+
+    <!-- Achievement Item 1 -->
+    <g transform="translate(40, 110)">
+      <rect width="860" height="100" rx="8" fill="#0E1B2E" stroke="#00E5FF" stroke-width="1.5"/>
+      <circle cx="55" cy="50" r="28" fill="#FFB800" fill-opacity="0.2" stroke="#FFB800" stroke-width="2"/>
+      <polygon points="55,35 60,45 70,45 62,52 65,62 55,56 45,62 48,52 40,45 50,45" fill="#FFD54F"/>
+      <text x="105" y="45" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#FFFFFF">Первый Контакт</text>
+      <text x="105" y="72" font-family="sans-serif" font-size="14" fill="#90A4AE">Уничтожьте 10 вражеских дронов в сюжетных миссиях.</text>
+      <!-- Completed Stamp -->
+      <rect x="710" y="32" width="120" height="36" rx="6" fill="#00E676" fill-opacity="0.2" stroke="#00E676" stroke-width="1.5"/>
+      <text x="770" y="55" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="12" fill="#00E676" text-anchor="middle">ПОЛУЧЕНО</text>
+    </g>
+
+    <!-- Achievement Item 2 -->
+    <g transform="translate(40, 230)">
+      <rect width="860" height="100" rx="8" fill="#091424" stroke="#1E385B" stroke-width="1.5"/>
+      <circle cx="55" cy="50" r="28" fill="#00E5FF" fill-opacity="0.1" stroke="#00E5FF" stroke-width="1.5"/>
+      <text x="105" y="45" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="18" fill="#CFD8DC">Мастер Парирования</text>
+      <text x="105" y="72" font-family="sans-serif" font-size="14" fill="#78909C">Отразите 25 атак врагов в тайминг (Прогресс: 18 / 25).</text>
+      <!-- Progress Bar -->
+      <rect x="680" y="42" width="150" height="16" rx="4" fill="#040912"/>
+      <rect x="680" y="42" width="108" height="16" rx="4" fill="#00E5FF"/>
+    </g>
+
+    <!-- Close Button -->
+    <g transform="translate(330, 690)">
+      <rect width="280" height="52" rx="8" fill="#0E1B2E" stroke="#00E5FF" stroke-width="2"/>
+      <text x="140" y="32" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#00E5FF" text-anchor="middle">ЗАКРЫТЬ</text>
+    </g>
+  </g>
+</svg>

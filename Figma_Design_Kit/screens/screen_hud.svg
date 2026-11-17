@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  <defs>
+    <radialGradient id="gameBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0E1626"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="hpFill" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00E676"/>
+      <stop offset="100%" stop-color="#69F0AE"/>
+    </linearGradient>
+    <linearGradient id="bossHpFill" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF1744"/>
+      <stop offset="100%" stop-color="#FF5252"/>
+    </linearGradient>
+    <linearGradient id="hypeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7C4DFF"/>
+      <stop offset="50%" stop-color="#E040FB"/>
+      <stop offset="100%" stop-color="#00E5FF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Gameplay Background -->
+  <rect width="1920" height="1080" fill="url(#gameBg)"/>
+
+  <!-- ================= TOP HUD HEADER ================= -->
+  <!-- Top Left: Pilot Status & Shields -->
+  <g transform="translate(40, 30)">
+    <!-- Container -->
+    <rect width="360" height="74" rx="8" fill="#060C17" fill-opacity="0.88" stroke="#1E385B" stroke-width="1.8"/>
+    <!-- Pilot Portrait / Ship Icon -->
+    <rect x="14" y="12" width="50" height="50" rx="6" fill="#0E1B2E" stroke="#00E5FF" stroke-width="1.5"/>
+    <polygon points="39,20 54,48 39,42 24,48" fill="#00E5FF"/>
+    <!-- Hull Segments (3/3 HP) -->
+    <text x="76" y="30" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="12" fill="#80D8FF">ПРОЧНОСТЬ КОРПУСА</text>
+    <g transform="translate(76, 36)">
+      <rect x="0" y="0" width="80" height="16" rx="3" fill="url(#hpFill)"/>
+      <rect x="88" y="0" width="80" height="16" rx="3" fill="url(#hpFill)"/>
+      <rect x="176" y="0" width="80" height="16" rx="3" fill="url(#hpFill)"/>
+    </g>
+    <!-- Parry Indicator -->
+    <circle cx="334" cy="37" r="12" fill="#FFB800" fill-opacity="0.2" stroke="#FFB800" stroke-width="1.5"/>
+    <text x="334" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="900" font-size="13" fill="#FFD54F" text-anchor="middle">⚡</text>
+  </g>
+
+  <!-- Top Center: Boss Health Bar -->
+  <g transform="translate(660, 30)">
+    <rect width="600" height="64" rx="8" fill="#060C17" fill-opacity="0.9" stroke="#FF5252" stroke-width="1.8"/>
+    <!-- Boss Name & Phase -->
+    <text x="24" y="24" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="14" fill="#FF8A80">ФЛАГМАН-ЖНЕЦ // ФАЗА II</text>
+    <text x="576" y="24" font-family="'JetBrains Mono', sans-serif" font-weight="700" font-size="13" fill="#B0BEC5" text-anchor="end">65% HP</text>
+    <!-- Health Bar -->
+    <rect x="24" y="32" width="552" height="18" rx="4" fill="#2A0B10"/>
+    <rect x="24" y="32" width="360" height="18" rx="4" fill="url(#bossHpFill)"/>
+  </g>
+
+  <!-- Top Right: Currencies & Pause -->
+  <g transform="translate(1520, 30)">
+    <rect width="360" height="64" rx="8" fill="#060C17" fill-opacity="0.88" stroke="#1E385B" stroke-width="1.8"/>
+    <!-- Soft Currency -->
+    <polygon points="28,24 38,30 38,42 28,48 18,42 18,30" fill="#FFB300"/>
+    <text x="46" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#FFD54F">+84</text>
+    <!-- Star Cores -->
+    <polygon points="140,24 144,32 152,36 144,40 140,48 136,40 128,36 136,32" fill="#E040FB"/>
+    <text x="160" y="42" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="16" fill="#EA80FC">2</text>
+    <!-- Pause Button -->
+    <rect x="280" y="14" width="64" height="36" rx="4" fill="#0E1B2E" stroke="#00E5FF" stroke-width="1.5"/>
+    <line x1="306" y1="23" x2="306" y2="41" stroke="#00E5FF" stroke-width="3" stroke-linecap="round"/>
+    <line x1="318" y1="23" x2="318" y2="41" stroke="#00E5FF" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- ================= BOTTOM HUD ================= -->
+  <!-- Bottom Left: Super / Hype Energy Gauge -->
+  <g transform="translate(40, 960)">
+    <rect width="440" height="80" rx="8" fill="#060C17" fill-opacity="0.9" stroke="#00E5FF" stroke-width="1.8"/>
+    <!-- Label -->
+    <text x="20" y="28" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="14" fill="#00E5FF" letter-spacing="1.5">РЕЗОНАТОР ЯРОСТИ</text>
+    <text x="420" y="28" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="14" fill="#E040FB" text-anchor="end">SUPER ГОТОВ!</text>
+    <!-- Segmented Gauge (3 Segments: EX 1, EX 2, SUPER) -->
+    <g transform="translate(20, 38)">
+      <rect x="0" y="0" width="128" height="24" rx="4" fill="url(#hypeGrad)"/>
+      <rect x="136" y="0" width="128" height="24" rx="4" fill="url(#hypeGrad)"/>
+      <rect x="272" y="0" width="128" height="24" rx="4" fill="url(#hypeGrad)"/>
+    </g>
+  </g>
+
+  <!-- Bottom Right: Weapon Active & Fire Mode -->
+  <g transform="translate(1540, 960)">
+    <rect width="340" height="80" rx="8" fill="#060C17" fill-opacity="0.9" stroke="#1E385B" stroke-width="1.8"/>
+    <rect x="16" y="14" width="52" height="52" rx="6" fill="#0E1B2E" stroke="#FFB800" stroke-width="1.5"/>
+    <circle cx="42" cy="40" r="12" fill="#FFB800" fill-opacity="0.3"/>
+    <text x="80" y="34" font-family="'JetBrains Mono', sans-serif" font-weight="800" font-size="15" fill="#FFFFFF">ДВОЙНОЙ БЛАСТЕР</text>
+    <text x="80" y="54" font-family="'JetBrains Mono', sans-serif" font-weight="600" font-size="13" fill="#80D8FF">УРОВЕНЬ III // МАКС.</text>
+  </g>
+</svg>

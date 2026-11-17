@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 400" width="560" height="400" fill="none">
+  <defs>
+    <linearGradient id="panelFill" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#08101E" stop-opacity="0.96"/>
+      <stop offset="100%" stop-color="#03060C" stop-opacity="0.98"/>
+    </linearGradient>
+    <linearGradient id="panelBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00E5FF"/>
+      <stop offset="50%" stop-color="#1565C0"/>
+      <stop offset="100%" stop-color="#00E5FF"/>
+    </linearGradient>
+    <filter id="panelGlow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.7"/>
+    </filter>
+  </defs>
+  <!-- Background Shape with Chamfered Corners -->
+  <path d="M20 2 H540 L558 20 V380 L540 398 H20 L2 380 V20 L20 2 Z" fill="url(#panelFill)" stroke="url(#panelBorder)" stroke-width="2" filter="url(#panelGlow)"/>
+  <!-- Inner Technical Accent Lines -->
+  <path d="M8 30 V8 H30" stroke="#00E5FF" stroke-width="3" stroke-linecap="square"/>
+  <path d="M552 30 V8 H530" stroke="#00E5FF" stroke-width="3" stroke-linecap="square"/>
+  <path d="M8 370 V392 H30" stroke="#00E5FF" stroke-width="3" stroke-linecap="square"/>
+  <path d="M552 370 V392 H530" stroke="#00E5FF" stroke-width="3" stroke-linecap="square"/>
+  <!-- Top Header Divider Line -->
+  <line x1="24" y1="56" x2="536" y2="56" stroke="#00E5FF" stroke-width="1.5" stroke-opacity="0.4"/>
+  <circle cx="280" cy="56" r="3" fill="#00E5FF"/>
+</svg>

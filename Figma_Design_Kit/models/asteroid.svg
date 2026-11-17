@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
+  <path d="M30 10 L70 15 L92 45 L80 82 L45 92 L15 75 L8 38 Z" fill="#4E342E" stroke="#8D6E63" stroke-width="3"/>
+  <!-- Craters -->
+  <circle cx="40" cy="35" r="10" fill="#3E2723" stroke="#6D4C41" stroke-width="1.5"/>
+  <circle cx="70" cy="60" r="8" fill="#3E2723" stroke="#6D4C41" stroke-width="1.5"/>
+  <circle cx="32" cy="68" r="6" fill="#3E2723"/>
+</svg>
