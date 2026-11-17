@@ -22,6 +22,11 @@ namespace KANYE.Systems
     public class GameData
     {
         public int coins;
+        public int starCores;
+        public int hullMetaLevel = 1;
+        public int hypeMetaLevel = 1;
+        public int magnetMetaLevel = 1;
+        public int parryMetaLevel = 1;
         public int totalKills;
         public int currentMission;
         public bool introCutsceneSeen;

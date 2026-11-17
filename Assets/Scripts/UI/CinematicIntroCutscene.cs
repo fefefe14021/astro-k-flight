@@ -355,7 +355,7 @@ namespace KANYE.UI
             rect.anchoredPosition = pos;
             rect.sizeDelta = sizeDelta;
             var t = go.GetComponent<Text>();
-            t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            t.font = UIFont.DefaultFont;
             t.text = text;
             t.fontSize = size;
             t.fontStyle = style;

@@ -107,7 +107,7 @@ namespace KANYE.UI
             rect.anchoredPosition = position;
             rect.sizeDelta = new Vector2(-32f, 36f);
             var text = textObject.GetComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = UIFont.DefaultFont;
             text.fontSize = fontSize;
             text.alignment = TextAnchor.UpperLeft;
             text.color = color;

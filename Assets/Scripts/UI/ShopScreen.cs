@@ -247,6 +247,7 @@ namespace KANYE.UI
             upgradeButton = upgObj.GetComponent<Button>();
             upgradeButton.onClick.AddListener(OnUpgradeButtonClicked);
             upgradeButtonText = CreateText(upgObj.transform, "UpgText", "ПРОКАЧАТЬ ОРУЖИЕ", 16, Vector2.zero, new Vector2(360f, 36f), Color.white, FontStyle.Bold);
+            UITween.AttachButtonFeedback(upgradeButton);
 
             // Action Button (Buy / Equip)
             var btnObj = new GameObject("ActionButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
@@ -263,6 +264,7 @@ namespace KANYE.UI
             actionButton = btnObj.GetComponent<Button>();
             actionButton.onClick.AddListener(OnActionButtonClicked);
             actionButtonText = CreateText(btnObj.transform, "BtnText", "ВЫБРАТЬ", 18, Vector2.zero, new Vector2(360f, 36f), Color.white, FontStyle.Bold);
+            UITween.AttachButtonFeedback(actionButton);
 
             // Return to Main Menu
             var backBtn = new GameObject("BackBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
@@ -276,8 +278,10 @@ namespace KANYE.UI
             var backImg = backBtn.GetComponent<Image>();
             backImg.sprite = PixelUiAtlas.ButtonSecondary;
             backImg.type = Image.Type.Sliced;
-            backBtn.GetComponent<Button>().onClick.AddListener(SceneLoader.ReturnToMainMenu);
-            CreateText(backBtn.transform, "BackText", "В ГЛАВНОЕ МЕНЮ", 18, Vector2.zero, new Vector2(260f, 36f), Color.white, FontStyle.Bold);
+            var backButton = backBtn.GetComponent<Button>();
+            backButton.onClick.AddListener(SceneLoader.ReturnToMainMenu);
+            CreateText(backBtn.transform, "BackText", "← В ГЛАВНОЕ МЕНЮ", 17, Vector2.zero, new Vector2(260f, 36f), Color.white, FontStyle.Bold);
+            UITween.AttachButtonFeedback(backButton);
         }
 
         private void SetTab(ShopTab tab)
@@ -424,8 +428,8 @@ namespace KANYE.UI
                         var cost = save != null ? save.GetUpgradeCost(weapon.Id) : 50;
                         var canAfford = save != null && save.Data.coins >= cost;
                         upgradeButtonText.text = canAfford
-                            ? $"ПРОКАЧАТЬ ДО УР. {level + 1} ({cost} 💰)"
-                            : $"ДО УР. {level + 1} НЕ ХВАТАЕТ {Mathf.Max(0, cost - (save != null ? save.Data.coins : 0))} 💰";
+                            ? $"ПРОКАЧАТЬ ДО УР. {level + 1} ({cost} КРЕДИТОВ)"
+                            : $"ДО УР. {level + 1} НЕ ХВАТАЕТ {Mathf.Max(0, cost - (save != null ? save.Data.coins : 0))} КРЕДИТОВ";
                         upgradeButton.interactable = true;
                         upgradeButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.72f, 0.15f) : new Color(0.45f, 0.35f, 0.25f);
                     }
@@ -473,12 +477,12 @@ namespace KANYE.UI
                 {
                     var coins = save != null ? save.Data.coins : 0;
                     var canAfford = coins >= weapon.Price;
-                    actionButtonText.text = canAfford ? $"КУПИТЬ ЗА {weapon.Price} 💰" : $"НЕ ХВАТАЕТ {weapon.Price - coins} 💰";
+                    actionButtonText.text = canAfford ? $"КУПИТЬ ЗА {weapon.Price} КРЕДИТОВ" : $"НЕ ХВАТАЕТ {weapon.Price - coins} КРЕДИТОВ";
                     actionButton.interactable = true;
                     actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.6f, 0.15f) : new Color(0.55f, 0.28f, 0.28f);
                     ShowHint(canAfford
-                        ? "Покупка сразу поставит оружие в бой."
-                        : $"На счету {coins}. До этой пушки ещё {weapon.Price - coins} монет.");
+                        ? "Покупка сразу установит оружие на корабль."
+                        : $"На счету {coins}. До этой пушки ещё {weapon.Price - coins} кредитов.");
                 }
             }
         }
@@ -554,12 +558,12 @@ namespace KANYE.UI
                 {
                     var coins = save != null ? save.Data.coins : 0;
                     var canAfford = coins >= skin.Price;
-                    actionButtonText.text = canAfford ? $"КУПИТЬ ЗА {skin.Price} 💰" : $"НЕ ХВАТАЕТ {skin.Price - coins} 💰";
+                    actionButtonText.text = canAfford ? $"КУПИТЬ ЗА {skin.Price} КРЕДИТОВ" : $"НЕ ХВАТАЕТ {skin.Price - coins} КРЕДИТОВ";
                     actionButton.interactable = true;
                     actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.6f, 0.15f) : new Color(0.55f, 0.28f, 0.28f);
                     ShowHint(canAfford
-                        ? "После покупки корпус сразу надевается."
-                        : $"На счету {coins}. До корпуса ещё {skin.Price - coins} монет.");
+                        ? "После покупки корпус сразу активируется."
+                        : $"На счету {coins}. До корпуса ещё {skin.Price - coins} кредитов.");
                 }
             }
         }
@@ -766,7 +770,7 @@ namespace KANYE.UI
             rect.sizeDelta = size;
 
             var label = go.GetComponent<Text>();
-            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.font = UIFont.DefaultFont;
             label.fontSize = fontSize;
             label.fontStyle = fontStyle;
             label.alignment = TextAnchor.MiddleCenter;
@@ -801,13 +805,13 @@ namespace KANYE.UI
         {
             var save = SaveManager.Instance;
             var coins = save != null ? save.Data.coins : 0;
-            return $"БАЛАНС: {coins} 💰    {NextDeal(save, coins)}";
+            return $"БАЛАНС: {coins} КРЕДИТОВ    {NextDeal(save, coins)}";
         }
 
         private static string NextDeal(SaveManager save, int coins)
         {
             if (save == null)
-                return "Сначала зайди в игру, чтобы кошелёк сохранился.";
+                return "Войдите в сектор, чтобы сохранить прогресс.";
 
             ShipSkin cheapest = null;
             for (var i = 0; i < ShipSkinCatalog.All.Length; i++)
@@ -822,12 +826,12 @@ namespace KANYE.UI
             }
 
             if (cheapest == null)
-                return "Доступные корпуса уже в ангаре.";
+                return "Все доступные корпуса разблокированы.";
 
             if (coins >= cheapest.Price)
-                return $"Можно купить «{cheapest.Title}» за {cheapest.Price}.";
+                return $"Доступно для покупки: «{cheapest.Title}» за {cheapest.Price} кредитов.";
 
-            return $"До «{cheapest.Title}» ещё {cheapest.Price - coins} монет.";
+            return $"До «{cheapest.Title}» ещё {cheapest.Price - coins} кредитов.";
         }
     }
 }

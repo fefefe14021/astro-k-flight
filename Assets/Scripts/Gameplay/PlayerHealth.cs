@@ -41,6 +41,13 @@ namespace KANYE.Gameplay
 
             hitBox.isTrigger = false;
             hitBox.size = hitBoxSize;
+
+            var save = Systems.SaveManager.Instance;
+            if (save != null && save.Data != null && save.Data.hullMetaLevel > 1)
+            {
+                maxLives = 3 + (save.Data.hullMetaLevel - 1);
+                Lives = maxLives;
+            }
         }
 
         public void TakeDamage(int amount)

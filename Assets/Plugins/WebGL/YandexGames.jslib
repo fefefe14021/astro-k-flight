@@ -1,80 +1,134 @@
-function YG_Send(objectName, methodName, payload) {
-  var inst = window.unityInstance || window.gameInstance;
-  if (!inst) {
-    console.log("Yandex SDK reply before Unity instance: " + payload);
-    return;
-  }
-  inst.SendMessage(objectName, methodName, payload);
-}
-
-function YG_ReadPlayer(ysdk, kind, objectName, methodName) {
-  ysdk.getPlayer({ signed: false }).then(function (player) {
-    var name = "";
-    var id = "";
-    var auth = 0;
-    try { name = player.getName() || ""; } catch (e) { name = ""; }
-    try { id = player.getUniqueID() || ""; } catch (e) { id = ""; }
-    try { auth = player.isAuthorized && player.isAuthorized() ? 1 : 0; } catch (e) { auth = 0; }
-    name = String(name).replace(/\|/g, " ");
-    id = String(id).replace(/\|/g, "");
-    YG_Send(objectName, methodName, kind + "|" + name + "|" + id + "|" + auth);
-  }).catch(function () {
-    YG_Send(objectName, methodName, kind + "|Гость||0");
-  });
-}
-
 mergeInto(LibraryManager.library, {
   YG_Init: function (objectNamePtr, methodNamePtr) {
     var objectName = UTF8ToString(objectNamePtr);
     var methodName = UTF8ToString(methodNamePtr);
-    if (typeof YaGames === "undefined") {
-      YG_Send(objectName, methodName, "error|SDK Яндекс Игр не найден. Игра запущена вне площадки.");
+
+    function sendToUnity(payload) {
+      var inst = window.unityInstance || window.gameInstance;
+      if (inst && typeof inst.SendMessage === "function") {
+        inst.SendMessage(objectName, methodName, payload);
+      } else {
+        console.log("[YG_Init] SendMessage before Unity instance: " + payload);
+      }
+    }
+
+    function readPlayer(ysdk, kind) {
+      var lang = window.__yandexLang || "ru";
+      try {
+        if (ysdk && ysdk.environment && ysdk.environment.i18n && ysdk.environment.i18n.lang) {
+          lang = ysdk.environment.i18n.lang;
+          window.__yandexLang = lang;
+        }
+      } catch (e) {
+        console.warn("[YG_Init] Ошибка чтения i18n.lang: ", e);
+      }
+
+      if (!ysdk || !ysdk.getPlayer) {
+        sendToUnity(kind + "|Гость||0|" + lang);
+        return;
+      }
+
+      ysdk.getPlayer({ signed: false }).then(function (player) {
+        var name = "";
+        var id = "";
+        var auth = 0;
+        try { name = player.getName() || ""; } catch (e) { name = ""; }
+        try { id = player.getUniqueID() || ""; } catch (e) { id = ""; }
+        try { auth = player.isAuthorized && player.isAuthorized() ? 1 : 0; } catch (e) { auth = 0; }
+        name = String(name).replace(/\|/g, " ");
+        id = String(id).replace(/\|/g, "");
+        sendToUnity(kind + "|" + name + "|" + id + "|" + auth + "|" + lang);
+      }).catch(function () {
+        sendToUnity(kind + "|Гость||0|" + lang);
+      });
+    }
+
+    if (window.__ysdk) {
+      readPlayer(window.__ysdk, "ready");
       return;
     }
+
+    if (typeof YaGames === "undefined") {
+      sendToUnity("error|SDK Яндекс Игр не найден. Игра запущена вне площадки.");
+      return;
+    }
+
     YaGames.init().then(function (ysdk) {
       window.__ysdk = ysdk;
-      YG_ReadPlayer(ysdk, "ready", objectName, methodName);
+      window.ysdk = ysdk;
+      readPlayer(ysdk, "ready");
     }).catch(function (err) {
       var message = err && err.message ? err.message : "Не удалось инициализировать SDK";
-      YG_Send(objectName, methodName, "error|" + String(message).replace(/\|/g, " "));
+      sendToUnity("error|" + String(message).replace(/\|/g, " "));
     });
   },
 
   YG_Authorize: function (objectNamePtr, methodNamePtr) {
     var objectName = UTF8ToString(objectNamePtr);
     var methodName = UTF8ToString(methodNamePtr);
-    var ysdk = window.__ysdk;
+
+    function sendToUnity(payload) {
+      var inst = window.unityInstance || window.gameInstance;
+      if (inst && typeof inst.SendMessage === "function") {
+        inst.SendMessage(objectName, methodName, payload);
+      }
+    }
+
+    var ysdk = window.__ysdk || window.ysdk;
     if (!ysdk || !ysdk.auth || !ysdk.auth.openAuthDialog) {
-      YG_Send(objectName, methodName, "error|Окно авторизации недоступно");
+      sendToUnity("error|Окно авторизации недоступно");
       return;
     }
+
     ysdk.auth.openAuthDialog().then(function () {
-      YG_ReadPlayer(ysdk, "auth", objectName, methodName);
+      ysdk.getPlayer({ signed: false }).then(function (player) {
+        var name = "";
+        var id = "";
+        var auth = 0;
+        try { name = player.getName() || ""; } catch (e) { name = ""; }
+        try { id = player.getUniqueID() || ""; } catch (e) { id = ""; }
+        try { auth = player.isAuthorized && player.isAuthorized() ? 1 : 0; } catch (e) { auth = 0; }
+        name = String(name).replace(/\|/g, " ");
+        id = String(id).replace(/\|/g, "");
+        sendToUnity("auth|" + name + "|" + id + "|" + auth);
+      }).catch(function () {
+        sendToUnity("auth|Гость||0");
+      });
     }).catch(function () {
-      YG_Send(objectName, methodName, "cancel|Авторизация отменена");
+      sendToUnity("cancel|Авторизация отменена");
     });
   },
 
   YG_GameReady: function () {
-    var ysdk = window.__ysdk;
-    if (ysdk && ysdk.features && ysdk.features.LoadingAPI && ysdk.features.LoadingAPI.ready)
+    var ysdk = window.__ysdk || window.ysdk;
+    if (ysdk && ysdk.features && ysdk.features.LoadingAPI && ysdk.features.LoadingAPI.ready) {
       ysdk.features.LoadingAPI.ready();
+    }
   },
 
   YG_ShowRewarded: function (objectNamePtr, methodNamePtr) {
     var objectName = UTF8ToString(objectNamePtr);
     var methodName = UTF8ToString(methodNamePtr);
-    var ysdk = window.__ysdk;
+
+    function sendToUnity(payload) {
+      var inst = window.unityInstance || window.gameInstance;
+      if (inst && typeof inst.SendMessage === "function") {
+        inst.SendMessage(objectName, methodName, payload);
+      }
+    }
+
+    var ysdk = window.__ysdk || window.ysdk;
     if (!ysdk || !ysdk.adv || !ysdk.adv.showRewardedVideo) {
-      YG_Send(objectName, methodName, "rewarded|error");
+      sendToUnity("rewarded|error");
       return;
     }
+
     var granted = false;
     ysdk.adv.showRewardedVideo({
       callbacks: {
         onRewarded: function () { granted = true; },
-        onClose: function () { YG_Send(objectName, methodName, granted ? "rewarded|1" : "rewarded|0"); },
-        onError: function () { YG_Send(objectName, methodName, "rewarded|error"); }
+        onClose: function () { sendToUnity(granted ? "rewarded|1" : "rewarded|0"); },
+        onError: function () { sendToUnity("rewarded|error"); }
       }
     });
   },
@@ -82,15 +136,24 @@ mergeInto(LibraryManager.library, {
   YG_ShowInterstitial: function (objectNamePtr, methodNamePtr) {
     var objectName = UTF8ToString(objectNamePtr);
     var methodName = UTF8ToString(methodNamePtr);
-    var ysdk = window.__ysdk;
+
+    function sendToUnity(payload) {
+      var inst = window.unityInstance || window.gameInstance;
+      if (inst && typeof inst.SendMessage === "function") {
+        inst.SendMessage(objectName, methodName, payload);
+      }
+    }
+
+    var ysdk = window.__ysdk || window.ysdk;
     if (!ysdk || !ysdk.adv || !ysdk.adv.showFullscreenAdv) {
-      YG_Send(objectName, methodName, "fullscreen|done");
+      sendToUnity("fullscreen|done");
       return;
     }
+
     ysdk.adv.showFullscreenAdv({
       callbacks: {
-        onClose: function () { YG_Send(objectName, methodName, "fullscreen|done"); },
-        onError: function () { YG_Send(objectName, methodName, "fullscreen|done"); }
+        onClose: function () { sendToUnity("fullscreen|done"); },
+        onError: function () { sendToUnity("fullscreen|done"); }
       }
     });
   }

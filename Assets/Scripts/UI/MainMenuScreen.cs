@@ -149,11 +149,11 @@ namespace KANYE.UI
             border.rectTransform.sizeDelta = new Vector2(0f, 2f);
 
             // Left: Pilot dossier badge
-            rankText = CreateText(header.transform, "RankBadge", "🎖 ПИЛОТ // 0 СБИТО", new Vector2(0f, 0.5f), new Vector2(40f, 0f), new Vector2(450f, 36f), 20, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
+            rankText = CreateText(header.transform, "RankBadge", "ПИЛОТ  •  0 СБИТО", new Vector2(0f, 0.5f), new Vector2(40f, 0f), new Vector2(450f, 36f), 19, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
             rankText.alignment = TextAnchor.MiddleLeft;
 
             // Right: Credits / Currency badge
-            coinsText = CreateText(header.transform, "CoinsBadge", "🪙 0 МОНЕТ", new Vector2(1f, 0.5f), new Vector2(-40f, 0f), new Vector2(300f, 36f), 20, Color.white, FontStyle.Bold);
+            coinsText = CreateText(header.transform, "CoinsBadge", "0 КРЕДИТОВ", new Vector2(1f, 0.5f), new Vector2(-40f, 0f), new Vector2(300f, 36f), 19, Color.white, FontStyle.Bold);
             coinsText.alignment = TextAnchor.MiddleRight;
 
             playerNameText = CreateText(header.transform, "PlayerName", "ПИЛОТ: ГОСТЬ", new Vector2(0.5f, 0.5f), new Vector2(52f, 0f), new Vector2(360f, 32f), 18, new Color(0.65f, 0.95f, 1f), FontStyle.Bold);
@@ -247,27 +247,29 @@ namespace KANYE.UI
             rect.sizeDelta = new Vector2(520f, 540f);
 
             // Primary Hero Buttons - CAMPAIGN & ROGUELITE EXPEDITION
-            var campaignBtn = CreateSlicedButton(menuRoot.transform, "BtnPlay", "🎯  КАМПАНИЯ // СЮЖЕТ", PixelUiAtlas.ButtonPrimary, new Vector2(0f, 185f), new Vector2(480f, 62f), 24, new Color(1f, 0.98f, 0.85f));
+            var campaignBtn = CreateSlicedButton(menuRoot.transform, "BtnPlay", "БОЕВАЯ КАМПАНИЯ", PixelUiAtlas.ButtonPrimary, new Vector2(0f, 185f), new Vector2(480f, 62f), 22, new Color(1f, 0.98f, 0.85f));
             campaignBtn.onClick.AddListener(OnPlayClicked);
 
-            var rogueBtn = CreateSlicedButton(menuRoot.transform, "BtnRogue", "🌀  РОГАЛИК // ЭКСПЕДИЦИЯ", PixelUiAtlas.ButtonPrimary, new Vector2(0f, 115f), new Vector2(480f, 62f), 24, new Color(0.85f, 0.95f, 1f));
+            var rogueBtn = CreateSlicedButton(menuRoot.transform, "BtnRogue", "ЭКСПЕДИЦИЯ В БЕЗДНУ", PixelUiAtlas.ButtonPrimary, new Vector2(0f, 115f), new Vector2(480f, 62f), 22, new Color(0.85f, 0.95f, 1f));
             rogueBtn.onClick.AddListener(OnRogueClicked);
 
             // Secondary Navigation Buttons (Sliced cyber-blue arcade buttons)
-            var hangarBtn = CreateSlicedButton(menuRoot.transform, "BtnHangar", "🚀  АНГАР И АРСЕНАЛ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, 50f), new Vector2(480f, 52f), 19, Color.white);
+            var hangarBtn = CreateSlicedButton(menuRoot.transform, "BtnHangar", "АНГАР И АРСЕНАЛ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, 50f), new Vector2(480f, 52f), 18, Color.white);
             hangarBtn.onClick.AddListener(() => SceneLoader.LoadSceneByName(SceneLoader.ShopScene));
 
-            var loreBtn = CreateSlicedButton(menuRoot.transform, "BtnLore", "📖  БОРТОВОЙ ЖУРНАЛ // ЛОР", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -8f), new Vector2(480f, 50f), 19, new Color(0.9f, 0.95f, 1f));
+            var loreBtn = CreateSlicedButton(menuRoot.transform, "BtnLore", "БОРТОВОЙ ЖУРНАЛ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -8f), new Vector2(480f, 50f), 18, new Color(0.9f, 0.95f, 1f));
             loreBtn.onClick.AddListener(() => OpenModal(loreModal));
 
-            var achBtn = CreateSlicedButton(menuRoot.transform, "BtnAchievements", "🏆  ДОСТИЖЕНИЯ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -64f), new Vector2(480f, 50f), 19, Color.white);
+            var achBtn = CreateSlicedButton(menuRoot.transform, "BtnAchievements", "ДОСТИЖЕНИЯ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -64f), new Vector2(480f, 50f), 18, Color.white);
             achBtn.onClick.AddListener(() => OpenModal(achievementsModal));
 
-            var settingsBtn = CreateSlicedButton(menuRoot.transform, "BtnSettings", "⚙️  НАСТРОЙКИ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -120f), new Vector2(480f, 50f), 19, Color.white);
+            var settingsBtn = CreateSlicedButton(menuRoot.transform, "BtnSettings", "НАСТРОЙКИ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -120f), new Vector2(480f, 50f), 18, Color.white);
             settingsBtn.onClick.AddListener(() => OpenModal(settingsModal));
 
-            var quitBtn = CreateSlicedButton(menuRoot.transform, "BtnQuit", "🚪  ВЫХОД ИЗ ИГРЫ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -176f), new Vector2(480f, 48f), 18, new Color(0.95f, 0.75f, 0.8f));
+#if !UNITY_WEBGL || UNITY_EDITOR
+            var quitBtn = CreateSlicedButton(menuRoot.transform, "BtnQuit", "ВЫХОД ИЗ ИГРЫ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -176f), new Vector2(480f, 48f), 17, new Color(0.95f, 0.75f, 0.8f));
             quitBtn.onClick.AddListener(SceneLoader.Quit);
+#endif
         }
 
         #region Modals Implementation
@@ -413,7 +415,7 @@ namespace KANYE.UI
                 content.verticalOverflow = VerticalWrapMode.Overflow;
             }
 
-            var watchCutsceneBtn = CreateSlicedButton(card.transform, "BtnWatchPrologue", "🎬  СМОТРЕТЬ ПРОЛОГ (КАТСЦЕНА)", PixelUiAtlas.ButtonPrimary, new Vector2(-160f, -330f), new Vector2(380f, 54f), 17, Color.white);
+            var watchCutsceneBtn = CreateSlicedButton(card.transform, "BtnWatchPrologue", "СМОТРЕТЬ ПРОЛОГ", PixelUiAtlas.ButtonPrimary, new Vector2(-160f, -330f), new Vector2(380f, 54f), 17, Color.white);
             watchCutsceneBtn.onClick.AddListener(() =>
             {
                 CloseAllModals();
@@ -454,7 +456,10 @@ namespace KANYE.UI
         {
             CloseAllModals();
             if (modal != null)
+            {
                 modal.SetActive(true);
+                UITween.FadeInModal(this, modal);
+            }
         }
 
         private void CloseAllModals()
@@ -587,6 +592,7 @@ namespace KANYE.UI
         {
             var save = SaveManager.Instance;
             var coins = save != null ? save.Data.coins : 0;
+            var cores = save != null && save.Data != null ? save.Data.starCores : 0;
             var missionIndex = save != null ? save.CurrentMission : 0;
             var mission = MissionCatalog.All[Mathf.Clamp(missionIndex, 0, MissionCatalog.All.Length - 1)];
             var kills = save != null ? save.Data.totalKills : 0;
@@ -594,9 +600,9 @@ namespace KANYE.UI
             var equippedSkin = ShipSkinCatalog.Find(equippedSkinId);
 
             if (coinsText != null)
-                coinsText.text = $"🪙 {coins} МОНЕТ";
+                coinsText.text = $"{coins} КРЕДИТОВ   {cores} ЯДЕР";
             if (rankText != null)
-                rankText.text = $"🎖 {PilotRank.Title(kills).ToUpper()} // {kills} СБИТО";
+                rankText.text = $"{PilotRank.Title(kills).ToUpper()}  •  {kills} СБИТО";
             if (sectorTitleText != null)
                 sectorTitleText.text = mission.Title.ToUpper();
             if (sectorDescText != null)
@@ -753,7 +759,7 @@ namespace KANYE.UI
             rect.sizeDelta = size;
 
             var label = go.GetComponent<Text>();
-            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.font = UIFont.DefaultFont;
             label.fontSize = fontSize;
             label.fontStyle = style;
             label.alignment = TextAnchor.MiddleCenter;
@@ -806,6 +812,8 @@ namespace KANYE.UI
 
             var label = CreateText(go.transform, "Label", text, new Vector2(0.5f, 0.5f), Vector2.zero, size, fontSize, textColor, FontStyle.Bold);
             label.alignment = TextAnchor.MiddleCenter;
+
+            UITween.AttachButtonFeedback(btn);
             return btn;
         }
 

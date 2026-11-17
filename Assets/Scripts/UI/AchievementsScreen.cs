@@ -166,7 +166,7 @@ namespace KANYE.UI
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
             var text = textObject.GetComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = UIFont.DefaultFont;
             text.fontSize = fontSize;
             text.fontStyle = FontStyle.Bold;
             text.color = color;
@@ -200,7 +200,7 @@ namespace KANYE.UI
             textRect.offsetMin = Vector2.zero;
             textRect.offsetMax = Vector2.zero;
             var label = textObject.GetComponent<Text>();
-            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.font = UIFont.DefaultFont;
             label.fontSize = 19;
             label.fontStyle = FontStyle.Bold;
             label.alignment = TextAnchor.MiddleCenter;

@@ -17,12 +17,24 @@ namespace KANYE.Services
         public bool IsAuthorized { get; private set; }
         public string PlayerName { get; private set; } = "Гость";
         public string PlayerId { get; private set; } = "";
+        public string Language { get; private set; } = "ru";
         public string Status { get; private set; } = "SDK ещё не подключён";
 
         public event Action Changed;
 
         private Action pendingReward;
         private Action pendingInterstitial;
+        private float savedTimeScale = 1f;
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            AudioListener.pause = !hasFocus;
+        }
+
+        private void OnApplicationPause(bool pauseStatus)
+        {
+            AudioListener.pause = pauseStatus;
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
@@ -91,6 +103,9 @@ namespace KANYE.Services
                 return;
             }
             pendingReward = onRewarded;
+            savedTimeScale = Time.timeScale;
+            Time.timeScale = 0f;
+            AudioListener.pause = true;
             YandexGamesBridge.ShowRewarded(gameObject.name, nameof(OnAdMessage));
 #else
             Status = "В редакторе ролик пропускается, награда выдаётся сразу.";
@@ -108,6 +123,9 @@ namespace KANYE.Services
                 return;
             }
             pendingInterstitial = onFinished;
+            savedTimeScale = Time.timeScale;
+            Time.timeScale = 0f;
+            AudioListener.pause = true;
             YandexGamesBridge.ShowInterstitial(gameObject.name, nameof(OnAdMessage));
 #else
             onFinished?.Invoke();
@@ -116,6 +134,9 @@ namespace KANYE.Services
 
         public void OnAdMessage(string payload)
         {
+            Time.timeScale = savedTimeScale > 0f ? savedTimeScale : 1f;
+            AudioListener.pause = false;
+
             if (string.IsNullOrEmpty(payload))
                 return;
 
@@ -163,6 +184,8 @@ namespace KANYE.Services
             PlayerId = parts.Length > 2 ? parts[2] : "";
             IsAuthorized = parts.Length > 3 && parts[3] == "1";
             PlayerName = IsAuthorized && !string.IsNullOrEmpty(reportedName) ? reportedName : "Гость";
+            if (parts.Length > 4 && !string.IsNullOrEmpty(parts[4]))
+                Language = parts[4];
             IsReady = true;
             Status = IsAuthorized ? "Авторизация выполнена" : "SDK подключён";
             Changed?.Invoke();

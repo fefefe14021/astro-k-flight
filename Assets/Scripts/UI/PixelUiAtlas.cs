@@ -99,25 +99,71 @@ namespace KANYE.UI
 
         private static Sprite CreateProceduralPanel()
         {
-            const int size = 32;
+            const int size = 64;
+            const int border = 14;
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
-            tex.filterMode = FilterMode.Point;
+            tex.filterMode = FilterMode.Bilinear;
             tex.wrapMode = TextureWrapMode.Clamp;
 
-            var bg = new Color(0.04f, 0.07f, 0.12f, 0.94f);        // Deep dark navy
-            var border = new Color(0.22f, 0.88f, 1f, 1f);          // Neon cyber cyan
-            var inner = new Color(0.08f, 0.24f, 0.38f, 1f);        // Inner bevel
-            var corner = new Color(0.6f, 0.96f, 1f, 1f);           // Highlighted corner
+            var bgTop = new Color(0.04f, 0.08f, 0.15f, 0.96f);       // Deep dark cyber navy
+            var bgBot = new Color(0.02f, 0.04f, 0.08f, 0.98f);
+            var borderColor = new Color(0f, 0.9f, 1f, 1f);           // Neon cyber cyan
+            var innerBevel = new Color(0.08f, 0.24f, 0.4f, 0.8f);     // Bevel
 
             for (var y = 0; y < size; y++)
             {
+                var t = (float)y / size;
+                var rowBg = Color.Lerp(bgBot, bgTop, t);
+
                 for (var x = 0; x < size; x++)
                 {
-                    // Chamfer corners
-                    var isCorner = (x < 2 && y < 2 && x + y < 2) ||
-                                   (x >= size - 2 && y < 2 && (size - 1 - x) + y < 2) ||
-                                   (x < 2 && y >= size - 2 && x + (size - 1 - y) < 2) ||
-                                   (x >= size - 2 && y >= size - 2 && (size - 1 - x) + (size - 1 - y) < 2);
+                    // Chamfer corners (cut 5px)
+                    var isCorner = (x < 5 && y < 5 && (x + y < 5)) ||
+                                   (x >= size - 5 && y < 5 && ((size - 1 - x) + y < 5)) ||
+                                   (x < 5 && y >= size - 5 && (x + (size - 1 - y) < 5)) ||
+                                   (x >= size - 5 && y >= size - 5 && ((size - 1 - x) + (size - 1 - y) < 5));
+                    if (isCorner)
+                    {
+                        tex.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    if (x <= 1 || x >= size - 2 || y <= 1 || y >= size - 2)
+                        tex.SetPixel(x, y, borderColor);
+                    else if (x == 2 || x == size - 3 || y == 2 || y == size - 3)
+                        tex.SetPixel(x, y, innerBevel);
+                    else
+                        tex.SetPixel(x, y, rowBg);
+                }
+            }
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(border, border, border, border));
+        }
+
+        private static Sprite CreateProceduralSubPanel()
+        {
+            const int size = 48;
+            const int border = 12;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Bilinear;
+            tex.wrapMode = TextureWrapMode.Clamp;
+
+            var bgTop = new Color(0.05f, 0.09f, 0.16f, 0.92f);
+            var bgBot = new Color(0.03f, 0.05f, 0.10f, 0.95f);
+            var borderColor = new Color(0.12f, 0.26f, 0.42f, 1f);
+            var accentCyan = new Color(0f, 0.9f, 1f, 1f);
+
+            for (var y = 0; y < size; y++)
+            {
+                var t = (float)y / size;
+                var rowBg = Color.Lerp(bgBot, bgTop, t);
+
+                for (var x = 0; x < size; x++)
+                {
+                    var isCorner = (x < 4 && y < 4 && (x + y < 4)) ||
+                                   (x >= size - 4 && y < 4 && ((size - 1 - x) + y < 4)) ||
+                                   (x < 4 && y >= size - 4 && (x + (size - 1 - y) < 4)) ||
+                                   (x >= size - 4 && y >= size - 4 && ((size - 1 - x) + (size - 1 - y) < 4));
                     if (isCorner)
                     {
                         tex.SetPixel(x, y, Color.clear);
@@ -125,161 +171,144 @@ namespace KANYE.UI
                     }
 
                     if (x == 0 || x == size - 1 || y == 0 || y == size - 1)
-                        tex.SetPixel(x, y, border);
-                    else if ((x == 1 && y == 1) || (x == size - 2 && y == 1) || (x == 1 && y == size - 2) || (x == size - 2 && y == size - 2))
-                        tex.SetPixel(x, y, corner);
-                    else if (x == 1 || x == size - 2 || y == 1 || y == size - 2)
-                        tex.SetPixel(x, y, inner);
+                        tex.SetPixel(x, y, borderColor);
+                    else if (y == size - 2 && (x < 10 || x > size - 11))
+                        tex.SetPixel(x, y, accentCyan); // Tech corner highlight
                     else
-                        tex.SetPixel(x, y, bg);
+                        tex.SetPixel(x, y, rowBg);
                 }
             }
             tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(6, 6, 6, 6));
-        }
-
-        private static Sprite CreateProceduralSubPanel()
-        {
-            const int size = 16;
-            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
-            tex.filterMode = FilterMode.Point;
-            tex.wrapMode = TextureWrapMode.Clamp;
-
-            var bg = new Color(0.05f, 0.08f, 0.14f, 0.85f);
-            var border = new Color(0.18f, 0.35f, 0.52f, 0.75f);
-
-            for (var y = 0; y < size; y++)
-            {
-                for (var x = 0; x < size; x++)
-                {
-                    if (x == 0 || x == size - 1 || y == 0 || y == size - 1)
-                        tex.SetPixel(x, y, border);
-                    else
-                        tex.SetPixel(x, y, bg);
-                }
-            }
-            tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(4, 4, 4, 4));
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(border, border, border, border));
         }
 
         private static Sprite CreateProceduralButtonPrimary()
         {
-            const int size = 32;
+            const int size = 64;
+            const int border = 14;
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
-            tex.filterMode = FilterMode.Point;
+            tex.filterMode = FilterMode.Bilinear;
             tex.wrapMode = TextureWrapMode.Clamp;
 
-            var topHighlight = new Color(1f, 0.86f, 0.32f, 1f);
-            var fill = new Color(0.92f, 0.44f, 0.05f, 1f);
-            var bottomShadow = new Color(0.55f, 0.16f, 0.02f, 1f);
-            var border = new Color(1f, 0.58f, 0.08f, 1f);
+            var gradTop = new Color(1f, 0.62f, 0f, 1f);         // Vivid Amber
+            var gradBot = new Color(0.82f, 0.28f, 0f, 1f);       // Deep Orange
+            var topHighlight = new Color(1f, 0.88f, 0.5f, 1f);   // Gold Highlight
+            var bottomShadow = new Color(0.4f, 0.1f, 0f, 1f);
+            var borderCol = new Color(1f, 0.55f, 0.05f, 1f);
 
             for (var y = 0; y < size; y++)
             {
+                var t = (float)y / size;
+                var rowFill = Color.Lerp(gradBot, gradTop, t);
+
                 for (var x = 0; x < size; x++)
                 {
-                    if ((x == 0 || x == size - 1) && (y == 0 || y == size - 1))
+                    var isCorner = (x < 5 && y < 5 && (x + y < 5)) ||
+                                   (x >= size - 5 && y < 5 && ((size - 1 - x) + y < 5)) ||
+                                   (x < 5 && y >= size - 5 && (x + (size - 1 - y) < 5)) ||
+                                   (x >= size - 5 && y >= size - 5 && ((size - 1 - x) + (size - 1 - y) < 5));
+                    if (isCorner)
                     {
                         tex.SetPixel(x, y, Color.clear);
                         continue;
                     }
 
-                    if (y == size - 1)
+                    if (y >= size - 2)
                         tex.SetPixel(x, y, topHighlight);
-                    else if (y == 0)
+                    else if (y <= 1)
                         tex.SetPixel(x, y, bottomShadow);
-                    else if (x == 0 || x == size - 1)
-                        tex.SetPixel(x, y, border);
-                    else if (y == size - 2)
-                        tex.SetPixel(x, y, new Color(1f, 0.72f, 0.2f, 1f));
-                    else if (y == 1)
-                        tex.SetPixel(x, y, new Color(0.68f, 0.22f, 0.04f, 1f));
+                    else if (x <= 1 || x >= size - 2)
+                        tex.SetPixel(x, y, borderCol);
                     else
-                        tex.SetPixel(x, y, fill);
+                        tex.SetPixel(x, y, rowFill);
                 }
             }
             tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(6, 6, 6, 6));
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(border, border, border, border));
         }
 
         private static Sprite CreateProceduralButtonSecondary()
         {
-            const int size = 32;
+            const int size = 64;
+            const int border = 14;
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
-            tex.filterMode = FilterMode.Point;
+            tex.filterMode = FilterMode.Bilinear;
             tex.wrapMode = TextureWrapMode.Clamp;
 
-            var topHighlight = new Color(0.28f, 0.85f, 1f, 1f);
-            var fill = new Color(0.09f, 0.22f, 0.36f, 1f);
-            var bottomShadow = new Color(0.04f, 0.09f, 0.16f, 1f);
-            var border = new Color(0.18f, 0.5f, 0.75f, 1f);
+            var gradTop = new Color(0.06f, 0.12f, 0.22f, 0.96f);
+            var gradBot = new Color(0.02f, 0.05f, 0.10f, 0.98f);
+            var topHighlight = new Color(0.2f, 0.85f, 1f, 1f);
+            var borderCol = new Color(0f, 0.9f, 1f, 1f);
 
             for (var y = 0; y < size; y++)
             {
+                var t = (float)y / size;
+                var rowFill = Color.Lerp(gradBot, gradTop, t);
+
                 for (var x = 0; x < size; x++)
                 {
-                    if ((x == 0 || x == size - 1) && (y == 0 || y == size - 1))
+                    var isCorner = (x < 5 && y < 5 && (x + y < 5)) ||
+                                   (x >= size - 5 && y < 5 && ((size - 1 - x) + y < 5)) ||
+                                   (x < 5 && y >= size - 5 && (x + (size - 1 - y) < 5)) ||
+                                   (x >= size - 5 && y >= size - 5 && ((size - 1 - x) + (size - 1 - y) < 5));
+                    if (isCorner)
                     {
                         tex.SetPixel(x, y, Color.clear);
                         continue;
                     }
 
-                    if (y == size - 1)
+                    if (y >= size - 2)
                         tex.SetPixel(x, y, topHighlight);
-                    else if (y == 0)
-                        tex.SetPixel(x, y, bottomShadow);
-                    else if (x == 0 || x == size - 1)
-                        tex.SetPixel(x, y, border);
-                    else if (y == size - 2)
-                        tex.SetPixel(x, y, new Color(0.2f, 0.62f, 0.85f, 1f));
-                    else if (y == 1)
-                        tex.SetPixel(x, y, new Color(0.06f, 0.14f, 0.24f, 1f));
+                    else if (x <= 1 || x >= size - 2 || y <= 1)
+                        tex.SetPixel(x, y, borderCol);
                     else
-                        tex.SetPixel(x, y, fill);
+                        tex.SetPixel(x, y, rowFill);
                 }
             }
             tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(6, 6, 6, 6));
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(border, border, border, border));
         }
 
         private static Sprite CreateProceduralButtonDanger()
         {
-            const int size = 32;
+            const int size = 64;
+            const int border = 14;
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
-            tex.filterMode = FilterMode.Point;
+            tex.filterMode = FilterMode.Bilinear;
             tex.wrapMode = TextureWrapMode.Clamp;
 
-            var topHighlight = new Color(1f, 0.42f, 0.52f, 1f);
-            var fill = new Color(0.62f, 0.1f, 0.18f, 1f);
-            var bottomShadow = new Color(0.32f, 0.04f, 0.08f, 1f);
-            var border = new Color(0.85f, 0.18f, 0.28f, 1f);
+            var gradTop = new Color(0.22f, 0.05f, 0.08f, 0.96f);
+            var gradBot = new Color(0.08f, 0.02f, 0.03f, 0.98f);
+            var topHighlight = new Color(1f, 0.45f, 0.45f, 1f);
+            var borderCol = new Color(1f, 0.25f, 0.25f, 1f);
 
             for (var y = 0; y < size; y++)
             {
+                var t = (float)y / size;
+                var rowFill = Color.Lerp(gradBot, gradTop, t);
+
                 for (var x = 0; x < size; x++)
                 {
-                    if ((x == 0 || x == size - 1) && (y == 0 || y == size - 1))
+                    var isCorner = (x < 5 && y < 5 && (x + y < 5)) ||
+                                   (x >= size - 5 && y < 5 && ((size - 1 - x) + y < 5)) ||
+                                   (x < 5 && y >= size - 5 && (x + (size - 1 - y) < 5)) ||
+                                   (x >= size - 5 && y >= size - 5 && ((size - 1 - x) + (size - 1 - y) < 5));
+                    if (isCorner)
                     {
                         tex.SetPixel(x, y, Color.clear);
                         continue;
                     }
 
-                    if (y == size - 1)
+                    if (y >= size - 2)
                         tex.SetPixel(x, y, topHighlight);
-                    else if (y == 0)
-                        tex.SetPixel(x, y, bottomShadow);
-                    else if (x == 0 || x == size - 1)
-                        tex.SetPixel(x, y, border);
-                    else if (y == size - 2)
-                        tex.SetPixel(x, y, new Color(0.88f, 0.24f, 0.35f, 1f));
-                    else if (y == 1)
-                        tex.SetPixel(x, y, new Color(0.42f, 0.06f, 0.12f, 1f));
+                    else if (x <= 1 || x >= size - 2 || y <= 1)
+                        tex.SetPixel(x, y, borderCol);
                     else
-                        tex.SetPixel(x, y, fill);
+                        tex.SetPixel(x, y, rowFill);
                 }
             }
             tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(6, 6, 6, 6));
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(border, border, border, border));
         }
     }
 }

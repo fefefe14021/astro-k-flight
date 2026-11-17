@@ -60,7 +60,10 @@ namespace KANYE.UI
         private void DoShow(int missionIndex, int hp, int maxHp, int parries, int supersUsed, float clearTime, Action onNext)
         {
             if (modalRoot != null)
+            {
                 modalRoot.SetActive(true);
+                UITween.FadeInModal(this, modalRoot);
+            }
 
             AudioManager.PlayVictory();
 
@@ -77,16 +80,16 @@ namespace KANYE.UI
             var mins = Mathf.FloorToInt(clearTime / 60f);
             var secs = Mathf.FloorToInt(clearTime % 60f);
             if (timeText != null)
-                timeText.text = $"⏱ Время: {mins:00}:{secs:00}";
+                timeText.text = $"Время: {mins:00}:{secs:00}";
 
             if (hpText != null)
-                hpText.text = $"❤️ Прочность: {hp} / {maxHp}";
+                hpText.text = $"Прочность: {hp} / {maxHp}";
 
             if (parryText != null)
-                parryText.text = $"⚡ Парирования: {parries}";
+                parryText.text = $"Парирования: {parries}";
 
             if (superText != null)
-                superText.text = $"💥 Супервыстрелы: {supersUsed}";
+                superText.text = $"Супервыстрелы: {supersUsed}";
 
             // Cuphead Grade
             var grade = GameRules.CalculateGrade(hp, maxHp, parries, clearTime);
@@ -101,8 +104,13 @@ namespace KANYE.UI
             var reward = baseReward + gradeBonus;
             SaveManager.Instance?.AddCoins(reward);
 
+            if (grade == "S")
+                SaveManager.Instance?.AddStarCores(1);
+
             if (rewardText != null)
-                rewardText.text = $"🪙 Награда: +{reward} монет";
+                rewardText.text = (grade == "S")
+                    ? $"Награда: +{reward} кредитов   +1 Звёздное Ядро!"
+                    : $"Награда: +{reward} кредитов";
 
             var hasNext = (missionIndex + 1) < MissionCatalog.All.Length;
             if (nextButton != null)
@@ -169,13 +177,13 @@ namespace KANYE.UI
             hpText.rectTransform.pivot = new Vector2(0f, 0.5f);
             hpText.alignment = TextAnchor.MiddleLeft;
 
-            parryText = CreateLabel(subPanel.transform, "Parry", "⚡ Парирования: 0", 20, new Vector2(35f, -25f), Color.white);
+            parryText = CreateLabel(subPanel.transform, "Parry", "Парирования: 0", 20, new Vector2(35f, -25f), Color.white);
             parryText.rectTransform.anchorMin = new Vector2(0f, 0.5f);
             parryText.rectTransform.anchorMax = new Vector2(0f, 0.5f);
             parryText.rectTransform.pivot = new Vector2(0f, 0.5f);
             parryText.alignment = TextAnchor.MiddleLeft;
 
-            superText = CreateLabel(subPanel.transform, "Super", "💥 Супервыстрелы: 0", 20, new Vector2(35f, -60f), Color.white);
+            superText = CreateLabel(subPanel.transform, "Super", "Супервыстрелы: 0", 20, new Vector2(35f, -60f), Color.white);
             superText.rectTransform.anchorMin = new Vector2(0f, 0.5f);
             superText.rectTransform.anchorMax = new Vector2(0f, 0.5f);
             superText.rectTransform.pivot = new Vector2(0f, 0.5f);
@@ -191,7 +199,7 @@ namespace KANYE.UI
             gradeText = CreateLabel(gradeBox.transform, "Grade", "S", 58, new Vector2(0f, -8f), new Color(1f, 0.85f, 0.2f));
             gradeText.fontStyle = FontStyle.Bold;
 
-            rewardText = CreateLabel(panel.transform, "Reward", "🪙 Награда: +70 монет", 22, new Vector2(0f, -80f), new Color(1f, 0.85f, 0.35f));
+            rewardText = CreateLabel(panel.transform, "Reward", "Награда: +70 кредитов", 22, new Vector2(0f, -80f), new Color(1f, 0.85f, 0.35f));
             rewardText.fontStyle = FontStyle.Bold;
 
             // Action Buttons
@@ -240,7 +248,7 @@ namespace KANYE.UI
             rect.sizeDelta = new Vector2(400f, 40f);
 
             var label = obj.GetComponent<Text>();
-            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.font = UIFont.DefaultFont;
             label.fontSize = fontSize;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = color;
@@ -269,7 +277,9 @@ namespace KANYE.UI
             var label = CreateLabel(obj.transform, "Label", text, 18, Vector2.zero, Color.white);
             label.rectTransform.sizeDelta = size;
             label.fontStyle = FontStyle.Bold;
-            return obj.GetComponent<Button>();
+            var btn = obj.GetComponent<Button>();
+            UITween.AttachButtonFeedback(btn);
+            return btn;
         }
 
         private static void Stretch(RectTransform rect)

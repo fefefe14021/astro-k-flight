@@ -95,6 +95,58 @@ namespace KANYE.Systems
             return true;
         }
 
+        public void AddStarCores(int amount)
+        {
+            if (amount == 0 || Data == null)
+                return;
+
+            Data.starCores = Mathf.Max(0, Data.starCores + amount);
+            Save();
+        }
+
+        public bool TrySpendStarCores(int amount)
+        {
+            if (amount < 0 || Data == null || Data.starCores < amount)
+                return false;
+
+            Data.starCores -= amount;
+            Save();
+            return true;
+        }
+
+        public int GetMetaLevel(string metaId)
+        {
+            if (Data == null) return 1;
+            switch (metaId)
+            {
+                case "hull": return Mathf.Max(1, Data.hullMetaLevel);
+                case "hype": return Mathf.Max(1, Data.hypeMetaLevel);
+                case "magnet": return Mathf.Max(1, Data.magnetMetaLevel);
+                case "parry": return Mathf.Max(1, Data.parryMetaLevel);
+                default: return 1;
+            }
+        }
+
+        public bool UpgradeMeta(string metaId, int costCredits, int costCores = 0)
+        {
+            if (Data == null) return false;
+            if (Data.coins < costCredits || Data.starCores < costCores) return false;
+
+            Data.coins -= costCredits;
+            Data.starCores -= costCores;
+
+            switch (metaId)
+            {
+                case "hull": Data.hullMetaLevel = Mathf.Min(5, Data.hullMetaLevel + 1); break;
+                case "hype": Data.hypeMetaLevel = Mathf.Min(5, Data.hypeMetaLevel + 1); break;
+                case "magnet": Data.magnetMetaLevel = Mathf.Min(4, Data.magnetMetaLevel + 1); break;
+                case "parry": Data.parryMetaLevel = Mathf.Min(3, Data.parryMetaLevel + 1); break;
+            }
+
+            Save();
+            return true;
+        }
+
         public bool UnlockSkin(string skinId)
         {
             if (string.IsNullOrEmpty(skinId) || Data.unlockedSkinIds.Contains(skinId))

@@ -511,7 +511,7 @@ namespace KANYE.UI
             rect.sizeDelta = new Vector2(-32f, height);
 
             var label = go.GetComponent<Text>();
-            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.font = UIFont.DefaultFont;
             label.fontSize = fontSize;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = color;

@@ -76,15 +76,16 @@ namespace KANYE.Gameplay
             ActivePerkTitles.Clear();
         }
 
+        public static float CurrentWaveMultiplier => 1.0f + 0.15f * Mathf.Max(0, CurrentWave - 1);
+
         public static void AddRogueCoins(int amount)
         {
-            if (amount <= 0 || CoinsEarnedThisRun >= MaxCoinsPerRun)
+            if (amount <= 0)
                 return;
 
-            var remaining = MaxCoinsPerRun - CoinsEarnedThisRun;
-            var toAdd = Mathf.Clamp(amount, 0, remaining);
-            CoinsEarnedThisRun += toAdd;
-            SaveManager.Instance?.AddCoins(toAdd);
+            var multiplied = Mathf.RoundToInt(amount * CurrentWaveMultiplier);
+            CoinsEarnedThisRun += multiplied;
+            SaveManager.Instance?.AddCoins(multiplied);
         }
 
         private void Awake()
@@ -206,12 +207,13 @@ namespace KANYE.Gameplay
 
             if (CurrentWave % 5 == 0)
             {
-                // Boss defeated!
-                ShowBanner("👑 БОСС ПОВЕРЖЕН!", $"+{waveReward} монет! Подготовка к выбору перка...");
+                // Boss defeated! Award Star Core!
+                SaveManager.Instance?.AddStarCores(1);
+                ShowBanner("БОСС ПОЛНОСТЬЮ ПОВЕРЖЕН!", $"+{waveReward} кредитов и +1 ЗВЁЗДНОЕ ЯДРО!");
             }
             else
             {
-                ShowBanner($"ВОЛНА {CurrentWave} ПРОЙДЕНА!", $"+{waveReward} монет! Выберите перк...");
+                ShowBanner($"ВОЛНА {CurrentWave} ЗАВЕРШЕНА", $"+{waveReward} кредитов! Выберите улучшение...");
             }
 
             StartCoroutine(OpenPerkAfterDelay());
@@ -317,7 +319,7 @@ namespace KANYE.Gameplay
             var textObj = new GameObject("WaveText", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             textObj.transform.SetParent(badgeObj.transform, false);
             waveHudText = textObj.GetComponent<Text>();
-            waveHudText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            waveHudText.font = UIFont.DefaultFont;
             waveHudText.fontSize = 18;
             waveHudText.alignment = TextAnchor.MiddleCenter;
             waveHudText.color = new Color(0.4f, 0.95f, 1f);
@@ -334,7 +336,7 @@ namespace KANYE.Gameplay
             bannerRect.anchoredPosition = new Vector2(0f, 120f);
             bannerRect.sizeDelta = new Vector2(900f, 120f);
             bannerText = bannerObj.GetComponent<Text>();
-            bannerText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            bannerText.font = UIFont.DefaultFont;
             bannerText.fontSize = 32;
             bannerText.alignment = TextAnchor.MiddleCenter;
             bannerText.fontStyle = FontStyle.Bold;
@@ -357,8 +359,9 @@ namespace KANYE.Gameplay
         private void UpdateHud()
         {
             if (waveHudText == null) return;
-            var capStr = CoinsEarnedThisRun >= MaxCoinsPerRun ? "<color=#ff5555>[ЛИМИТ]</color>" : "";
-            waveHudText.text = $"🌀 ЭКСПЕДИЦИЯ // ВОЛНА: {CurrentWave}   |   🪙 {CoinsEarnedThisRun}/{MaxCoinsPerRun} {capStr}";
+            var mult = CurrentWaveMultiplier;
+            var cores = SaveManager.Instance != null && SaveManager.Instance.Data != null ? SaveManager.Instance.Data.starCores : 0;
+            waveHudText.text = $"ЭКСПЕДИЦИЯ  •  ВОЛНА: {CurrentWave} (x{mult:0.0} ЛУТ)   |   КРЕДИТЫ: {CoinsEarnedThisRun}   |   ЯДРА: {cores}";
         }
 
         private void BuildPerkModalRoot(Transform parent)
@@ -384,7 +387,7 @@ namespace KANYE.Gameplay
             var titleObj = new GameObject("Title", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             titleObj.transform.SetParent(panelObj.transform, false);
             var tText = titleObj.GetComponent<Text>();
-            tText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            tText.font = UIFont.DefaultFont;
             tText.fontSize = 28;
             tText.text = "⚡ ВЫБЕРИТЕ УЛУЧШЕНИЕ ЭКСПЕДИЦИИ ⚡";
             tText.fontStyle = FontStyle.Bold;
@@ -396,7 +399,7 @@ namespace KANYE.Gameplay
             var subObj = new GameObject("Subtitle", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             subObj.transform.SetParent(panelObj.transform, false);
             var sText = subObj.GetComponent<Text>();
-            sText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            sText.font = UIFont.DefaultFont;
             sText.fontSize = 17;
             sText.text = $"Волна {CurrentWave} зачищена. Установите квантовый апгрейд на тарелку Зигги:";
             sText.alignment = TextAnchor.MiddleCenter;
@@ -489,6 +492,7 @@ namespace KANYE.Gameplay
         {
             if (perkModalObj == null) return;
             perkModalObj.SetActive(true);
+            UITween.FadeInModal(this, perkModalObj);
 
             var panel = perkModalObj.transform.Find("PerkPanel");
             if (panel == null) return;
@@ -537,23 +541,21 @@ namespace KANYE.Gameplay
             img.color = new Color(0.08f, 0.14f, 0.22f, 0.98f);
 
             var btn = cardObj.GetComponent<Button>();
+            UITween.AttachButtonFeedback(btn);
             btn.onClick.AddListener(() =>
             {
                 AudioManager.PlayClick();
                 ApplyPerk(perk);
             });
 
-            // Icon Emoji
-            CreateLabel(cardObj.transform, "Icon", perk.IconEmoji, 44, new Vector2(0f, 95f), new Vector2(220f, 60f), perk.ThemeColor, FontStyle.Bold);
+            // Category Badge Header (Clean vector pill instead of emoji)
+            CreateLabel(cardObj.transform, "Badge", $"[ {perk.Subtitle} ]", 13, new Vector2(0f, 105f), new Vector2(230f, 30f), perk.ThemeColor, FontStyle.Bold);
 
             // Title
-            CreateLabel(cardObj.transform, "Title", perk.Title, 19, new Vector2(0f, 40f), new Vector2(230f, 44f), perk.ThemeColor, FontStyle.Bold);
+            CreateLabel(cardObj.transform, "Title", perk.Title, 20, new Vector2(0f, 60f), new Vector2(230f, 44f), Color.white, FontStyle.Bold);
 
-            // Subtitle
-            CreateLabel(cardObj.transform, "Sub", perk.Subtitle, 13, new Vector2(0f, 10f), new Vector2(230f, 24f), new Color(0.6f, 0.85f, 1f), FontStyle.Normal);
-
-            // Description
-            CreateLabel(cardObj.transform, "Desc", perk.Description, 14, new Vector2(0f, -50f), new Vector2(220f, 80f), new Color(0.9f, 0.95f, 1f), FontStyle.Normal);
+            // Subtitle / Stat modifier
+            CreateLabel(cardObj.transform, "Sub", perk.Description, 14, new Vector2(0f, -10f), new Vector2(220f, 80f), new Color(0.85f, 0.95f, 1f), FontStyle.Normal);
 
             // Select Button inside card
             var pickBtnObj = new GameObject("PickBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
@@ -601,7 +603,7 @@ namespace KANYE.Gameplay
             rect.anchoredPosition = pos;
             rect.sizeDelta = sizeDelta;
             var t = go.GetComponent<Text>();
-            t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            t.font = UIFont.DefaultFont;
             t.text = text;
             t.fontSize = size;
             t.fontStyle = style;

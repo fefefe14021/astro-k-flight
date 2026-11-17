@@ -289,7 +289,7 @@ namespace KANYE.UI
             rect.sizeDelta = size;
 
             var label = obj.GetComponent<Text>();
-            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.font = UIFont.DefaultFont;
             label.fontSize = fontSize;
             label.fontStyle = fontStyle;
             label.alignment = TextAnchor.MiddleCenter;

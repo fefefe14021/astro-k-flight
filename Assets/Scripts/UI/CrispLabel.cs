@@ -18,6 +18,9 @@ namespace KANYE.UI
             if (label == null)
                 return;
 
+            if (label.font == null)
+                label.font = UIFont.DefaultFont;
+
             label.fontSize = designSize;
             transform.localScale = Vector3.one;
             label.horizontalOverflow = HorizontalWrapMode.Wrap;

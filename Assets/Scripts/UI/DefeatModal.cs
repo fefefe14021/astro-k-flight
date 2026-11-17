@@ -54,7 +54,10 @@ namespace KANYE.UI
         {
             onReviveCallback = onRevive;
             if (modalRoot != null)
+            {
                 modalRoot.SetActive(true);
+                UITween.FadeInModal(this, modalRoot);
+            }
 
             if (reviveButton != null)
                 reviveButton.gameObject.SetActive(canRevive);
@@ -64,7 +67,7 @@ namespace KANYE.UI
                 if (titleText != null)
                     titleText.text = "ЭКСПЕДИЦИЯ ЗАВЕРШЕНА";
                 if (statusText != null)
-                    statusText.text = $"Пройдено волн: {Gameplay.RogueExpeditionController.CurrentWave}\n🪙 Собрано ресурсов: +{Gameplay.RogueExpeditionController.CoinsEarnedThisRun} / 150 (сохранено в ангар)";
+                    statusText.text = $"Пройдено волн: {Gameplay.RogueExpeditionController.CurrentWave}\nСобрано ресурсов: +{Gameplay.RogueExpeditionController.CoinsEarnedThisRun} кредитов (сохранено в ангар)";
             }
             else
             {
@@ -165,7 +168,7 @@ namespace KANYE.UI
             rect.sizeDelta = new Vector2(580f, 40f);
 
             var label = obj.GetComponent<Text>();
-            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.font = UIFont.DefaultFont;
             label.fontSize = fontSize;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = color;
@@ -193,7 +196,9 @@ namespace KANYE.UI
 
             var label = CreateLabel(obj.transform, "Label", text, 20, Vector2.zero, Color.white);
             label.fontStyle = FontStyle.Bold;
-            return obj.GetComponent<Button>();
+            var btn = obj.GetComponent<Button>();
+            UITween.AttachButtonFeedback(btn);
+            return btn;
         }
 
         private static void Stretch(RectTransform rect)
