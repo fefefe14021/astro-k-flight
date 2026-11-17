@@ -50,7 +50,7 @@ namespace KANYE.Gameplay
 
             hoverOffset = Random.Range(0f, 10f);
             initialY = transform.position.y;
-            shootCooldown = Random.Range(1.6f, 3.0f);
+            shootCooldown = Random.Range(0.6f, 1.4f);
         }
 
         public void Configure(bool heavy, int hp, float moveSpeed)
@@ -90,9 +90,10 @@ namespace KANYE.Gameplay
 
         private void FixedUpdate()
         {
-            // Hover bobbing motion
+            // Smooth fast entry dive until inside the visible combat zone
+            var currentSpeed = body.position.x > 8.2f ? speed * 1.55f : speed;
             var bob = Mathf.Sin((Time.time + hoverOffset) * (isHeavy ? 2.5f : 4f)) * (isHeavy ? 0.35f : 0.25f);
-            var targetPos = new Vector2(body.position.x - speed * Time.fixedDeltaTime, initialY + bob);
+            var targetPos = new Vector2(body.position.x - currentSpeed * Time.fixedDeltaTime, initialY + bob);
             body.MovePosition(targetPos);
 
             if (thrusterTransform != null)
@@ -116,7 +117,7 @@ namespace KANYE.Gameplay
             if (UI.TutorialHints.IsTutorialActive)
                 return;
 
-            if (transform.position.x > 8.5f || transform.position.x < -6.5f)
+            if (transform.position.x > 8.3f || transform.position.x < -6.5f)
                 return;
 
             if (isTelegraphing)
@@ -141,7 +142,7 @@ namespace KANYE.Gameplay
             shootCooldown -= Time.deltaTime;
             if (shootCooldown <= 0f)
             {
-                shootCooldown = isHeavy ? Random.Range(2.2f, 3.5f) : Random.Range(2.0f, 3.8f);
+                shootCooldown = isHeavy ? Random.Range(1.8f, 2.8f) : Random.Range(1.5f, 2.5f);
                 StartTelegraph();
             }
         }
@@ -149,7 +150,7 @@ namespace KANYE.Gameplay
         private void StartTelegraph()
         {
             isTelegraphing = true;
-            telegraphTimer = isHeavy ? 0.5f : 0.4f;
+            telegraphTimer = isHeavy ? 0.45f : 0.35f;
             EffectsManager.PlayImpact(transform.position + new Vector3(-0.6f, 0f, 0f), Vector2.left, Color.yellow);
         }
 
@@ -157,23 +158,50 @@ namespace KANYE.Gameplay
         {
             var spawnPos = transform.position + new Vector3(isHeavy ? -0.75f : -0.6f, 0f, 0f);
 
+            // Targeted aiming at player's ship!
+            var player = FindAnyObjectByType<PlayerHealth>();
+            Vector2 fireDir = Vector2.left;
+            if (player != null && !player.IsDead)
+            {
+                var diff = (Vector2)player.transform.position - (Vector2)spawnPos;
+                if (diff.x < -0.2f)
+                {
+                    fireDir = diff.normalized;
+                    if (fireDir.x > -0.65f)
+                        fireDir = new Vector2(-0.75f, Mathf.Sign(fireDir.y) * 0.5f).normalized;
+                }
+            }
+
             // Heavy gunship occasionally fires parry hazard if unlocked
-            if (isHeavy && GameRules.IsParryUnlocked && Random.value < 0.35f)
+            if (isHeavy && GameRules.IsParryUnlocked && Random.value < 0.40f)
             {
                 var hazardObj = new GameObject("EnemyParryOrb", typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(Rigidbody2D));
                 hazardObj.transform.position = spawnPos;
                 var hazard = hazardObj.AddComponent<ParryHazard>();
-                hazard.Launch(Vector2.left, 4.2f);
+                hazard.Launch(fireDir, 4.4f);
                 return;
             }
 
-            // Normal laser fire
-            var laserObj = new GameObject("EnemyLaser", typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(Rigidbody2D));
-            laserObj.transform.position = spawnPos;
-            var proj = laserObj.AddComponent<EnemyProjectile>();
-            proj.Launch(Vector2.left, isHeavy ? 7.0f : 6.2f);
+            // Targeted laser fire
+            if (isHeavy)
+            {
+                SpawnLaser(spawnPos + Vector3.up * 0.16f, fireDir, 7.5f);
+                SpawnLaser(spawnPos - Vector3.up * 0.16f, fireDir, 7.5f);
+            }
+            else
+            {
+                SpawnLaser(spawnPos, fireDir, 6.8f);
+            }
 
             EffectsManager.PlayMuzzleFlash(spawnPos);
+        }
+
+        private static void SpawnLaser(Vector3 pos, Vector2 dir, float laserSpeed)
+        {
+            var laserObj = new GameObject("EnemyLaser", typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(Rigidbody2D));
+            laserObj.transform.position = pos;
+            var proj = laserObj.AddComponent<EnemyProjectile>();
+            proj.Launch(dir, laserSpeed);
         }
 
         private void OnCollisionEnter2D(Collision2D collision)
@@ -190,6 +218,10 @@ namespace KANYE.Gameplay
 
         private void OnTriggerEnter2D(Collider2D other)
         {
+            // Off-screen protection: cannot be spawn-killed before entering visible combat arena
+            if (transform.position.x > 8.5f)
+                return;
+
             if (other.TryGetComponent<SuperProjectile>(out _))
                 return;
 

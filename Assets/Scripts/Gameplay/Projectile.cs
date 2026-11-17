@@ -182,7 +182,7 @@ namespace KANYE.Gameplay
             body.MovePosition(body.position + direction * speed * Time.fixedDeltaTime);
             lifetime -= Time.fixedDeltaTime;
 
-            if (lifetime <= 0f || body.position.x > 15f || body.position.x < -14f || Mathf.Abs(body.position.y) > 7f)
+            if (lifetime <= 0f || body.position.x > 9.6f || body.position.x < -14f || Mathf.Abs(body.position.y) > 7f)
                 Destroy(gameObject);
         }
 

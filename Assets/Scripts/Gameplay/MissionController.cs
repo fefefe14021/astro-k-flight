@@ -66,7 +66,7 @@ namespace KANYE.Gameplay
             if (player != null && player.IsDead)
                 return;
 
-            hype?.AdvanceRoute(1.05f * Time.deltaTime);
+            hype?.AdvanceRoute(1.15f * Time.deltaTime);
 
             // Spawning phase before boss or before mission completion
             if (!bossSpawned)
