@@ -7,6 +7,25 @@ using UnityEngine;
 
 namespace KANYE.Systems
 {
+    [Serializable]
+    public struct TechCost
+    {
+        public int credits;
+        public int cores;
+
+        public TechCost(int credits, int cores)
+        {
+            this.credits = credits;
+            this.cores = cores;
+        }
+
+        public void Deconstruct(out int credits, out int cores)
+        {
+            credits = this.credits;
+            cores = this.cores;
+        }
+    }
+
     public class MetaTechDefinition
     {
         public string Id;
@@ -28,45 +47,45 @@ namespace KANYE.Systems
             ThemeColor = themeColor;
         }
 
-        public (int credits, int cores) GetCost(int currentLevel)
+        public TechCost GetCost(int currentLevel)
         {
             switch (Id)
             {
                 case "hull":
                     switch (currentLevel)
                     {
-                        case 1: return (150, 0);
-                        case 2: return (350, 1);
-                        case 3: return (700, 2);
-                        case 4: return (1200, 3);
-                        default: return (0, 0);
+                        case 1: return new TechCost(150, 0);
+                        case 2: return new TechCost(350, 1);
+                        case 3: return new TechCost(700, 2);
+                        case 4: return new TechCost(1200, 3);
+                        default: return new TechCost(0, 0);
                     }
                 case "hype":
                     switch (currentLevel)
                     {
-                        case 1: return (120, 0);
-                        case 2: return (280, 1);
-                        case 3: return (600, 2);
-                        case 4: return (1000, 3);
-                        default: return (0, 0);
+                        case 1: return new TechCost(120, 0);
+                        case 2: return new TechCost(280, 1);
+                        case 3: return new TechCost(600, 2);
+                        case 4: return new TechCost(1000, 3);
+                        default: return new TechCost(0, 0);
                     }
                 case "magnet":
                     switch (currentLevel)
                     {
-                        case 1: return (100, 0);
-                        case 2: return (250, 0);
-                        case 3: return (550, 1);
-                        default: return (0, 0);
+                        case 1: return new TechCost(100, 0);
+                        case 2: return new TechCost(250, 0);
+                        case 3: return new TechCost(550, 1);
+                        default: return new TechCost(0, 0);
                     }
                 case "parry":
                     switch (currentLevel)
                     {
-                        case 1: return (200, 1);
-                        case 2: return (500, 2);
-                        default: return (0, 0);
+                        case 1: return new TechCost(200, 1);
+                        case 2: return new TechCost(500, 2);
+                        default: return new TechCost(0, 0);
                     }
                 default:
-                    return (100, 0);
+                    return new TechCost(100, 0);
             }
         }
 

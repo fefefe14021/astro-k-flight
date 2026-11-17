@@ -523,7 +523,7 @@ namespace KANYE.UI
             for (var d = 1; d <= 7; d++)
             {
                 var dayNum = d;
-                var reward = save != null ? save.GetDailyRewardValues(dayNum) : (50, 0);
+                var reward = save != null ? save.GetDailyRewardValues(dayNum) : new SaveManager.DailyRewardEntry(50, 0);
                 var isCurrent = dayNum == currentDay;
                 var isPast = dayNum < currentDay && !isAvailable;
 

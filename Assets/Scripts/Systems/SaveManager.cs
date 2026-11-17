@@ -168,6 +168,25 @@ namespace KANYE.Systems
 
         #region Daily Login Retention Loop
 
+        [Serializable]
+        public struct DailyRewardEntry
+        {
+            public int credits;
+            public int cores;
+
+            public DailyRewardEntry(int credits, int cores)
+            {
+                this.credits = credits;
+                this.cores = cores;
+            }
+
+            public void Deconstruct(out int credits, out int cores)
+            {
+                credits = this.credits;
+                cores = this.cores;
+            }
+        }
+
         public bool IsDailyRewardAvailable()
         {
             if (Data == null) return true;
@@ -181,18 +200,18 @@ namespace KANYE.Systems
             return Mathf.Clamp(Data.dailyLoginDay, 1, 7);
         }
 
-        public (int credits, int cores) GetDailyRewardValues(int day)
+        public DailyRewardEntry GetDailyRewardValues(int day)
         {
             switch (day)
             {
-                case 1: return (50, 0);
-                case 2: return (75, 0);
-                case 3: return (100, 1);
-                case 4: return (150, 0);
-                case 5: return (200, 1);
-                case 6: return (250, 0);
-                case 7: return (500, 3);
-                default: return (50, 0);
+                case 1: return new DailyRewardEntry(50, 0);
+                case 2: return new DailyRewardEntry(75, 0);
+                case 3: return new DailyRewardEntry(100, 1);
+                case 4: return new DailyRewardEntry(150, 0);
+                case 5: return new DailyRewardEntry(200, 1);
+                case 6: return new DailyRewardEntry(250, 0);
+                case 7: return new DailyRewardEntry(500, 3);
+                default: return new DailyRewardEntry(50, 0);
             }
         }
 
@@ -333,6 +352,8 @@ namespace KANYE.Systems
             Data.introCutsceneSeen = seen;
             Save();
         }
+
+        public void SetIntroSeen(bool seen = true) => MarkIntroSeen(seen);
 
         public void RememberMission(int index)
         {

@@ -95,7 +95,7 @@ namespace KANYE.UI
         public static void Play(Action onFinish)
         {
             if (SaveManager.Instance != null)
-                SaveManager.Instance.SetIntroSeen(true);
+                SaveManager.Instance.MarkIntroSeen(true);
 
             onFinish?.Invoke();
         }
