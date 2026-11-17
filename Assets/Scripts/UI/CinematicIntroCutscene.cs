@@ -94,13 +94,10 @@ namespace KANYE.UI
 
         public static void Play(Action onFinish)
         {
-            if (Instance == null)
-            {
-                var go = new GameObject("CinematicIntroCutscene");
-                Instance = go.AddComponent<CinematicIntroCutscene>();
-            }
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.SetIntroSeen(true);
 
-            Instance.StartCutscene(onFinish);
+            onFinish?.Invoke();
         }
 
         private void Awake()

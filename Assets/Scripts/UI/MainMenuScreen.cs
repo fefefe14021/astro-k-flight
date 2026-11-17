@@ -369,14 +369,47 @@ namespace KANYE.UI
             resetBox.rectTransform.anchorMin = new Vector2(0.5f, 1f);
             resetBox.rectTransform.anchorMax = new Vector2(0.5f, 1f);
             resetBox.rectTransform.pivot = new Vector2(0.5f, 1f);
-            resetBox.rectTransform.anchoredPosition = new Vector2(0f, -395f);
-            resetBox.rectTransform.sizeDelta = new Vector2(780f, 140f);
+            resetBox.rectTransform.anchoredPosition = new Vector2(0f, -495f);
+            resetBox.rectTransform.sizeDelta = new Vector2(780f, 115f);
 
-            CreateText(resetBox.transform, "Warn", "СБРОС ПРОГРЕССА И ПОВТОР ОБУЧЕНИЯ", new Vector2(0.5f, 1f), new Vector2(0f, -16f), new Vector2(700f, 26f), 19, new Color(1f, 0.45f, 0.45f), FontStyle.Bold);
-            CreateText(resetBox.transform, "WarnDesc", "Очистит сохранения, открытые скины и рекорды,\nи сразу же запустит стартовое обучение пилота в Секторе 1.", new Vector2(0.5f, 1f), new Vector2(0f, -48f), new Vector2(720f, 36f), 15, new Color(0.9f, 0.8f, 0.85f), FontStyle.Normal);
+            CreateText(resetBox.transform, "Warn", "СБРОС ПРОГРЕССА И ПОВТОР ОБУЧЕНИЯ", new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(700f, 24f), 17, new Color(1f, 0.45f, 0.45f), FontStyle.Bold);
+            CreateText(resetBox.transform, "WarnDesc", "Очистит сохранения, открытые скины и рекорды, и запустит стартовое обучение пилота.", new Vector2(0.5f, 1f), new Vector2(0f, -40f), new Vector2(720f, 26f), 14, new Color(0.9f, 0.8f, 0.85f), FontStyle.Normal);
 
-            var resetBtn = CreateSlicedButton(resetBox.transform, "BtnReset", "СБРОСИТЬ И НАЧАТЬ ОБУЧЕНИЕ", PixelUiAtlas.ButtonDanger, new Vector2(0f, -98f), new Vector2(420f, 46f), 18, Color.white);
+            var resetBtn = CreateSlicedButton(resetBox.transform, "BtnReset", "СБРОСИТЬ И НАЧАТЬ ОБУЧЕНИЕ", PixelUiAtlas.ButtonDanger, new Vector2(0f, -78f), new Vector2(400f, 40f), 16, Color.white);
             resetBtn.onClick.AddListener(ResetProgressAndStartTutorial);
+
+            // Yandex Ads Testing Section
+            var adBox = CreateImage("AdTestBox", card.transform, PixelUiAtlas.SubPanel, Color.white);
+            adBox.type = Image.Type.Sliced;
+            adBox.rectTransform.anchorMin = new Vector2(0.5f, 1f);
+            adBox.rectTransform.anchorMax = new Vector2(0.5f, 1f);
+            adBox.rectTransform.pivot = new Vector2(0.5f, 1f);
+            adBox.rectTransform.anchoredPosition = new Vector2(0f, -390f);
+            adBox.rectTransform.sizeDelta = new Vector2(780f, 95f);
+
+            CreateText(adBox.transform, "AdCaption", "ПРОВЕРКА РЕКЛАМЫ (SDK ЯНДЕКС ИГРЫ)", new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(700f, 24f), 17, new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
+
+            var testInterBtn = CreateSlicedButton(adBox.transform, "BtnTestInter", "МЕЖСТРАНИЧНАЯ РЕКЛАМА", PixelUiAtlas.ButtonPrimary, new Vector2(-190f, -54f), new Vector2(350f, 40f), 15, Color.white);
+            testInterBtn.onClick.AddListener(() =>
+            {
+                AudioManager.PlayClick();
+                YandexGamesService.Instance?.ShowInterstitial(() =>
+                {
+                    Debug.Log("[AdTest] Interstitial completed successfully.");
+                });
+            });
+
+            var testRewardBtn = CreateSlicedButton(adBox.transform, "BtnTestReward", "ВИДЕО ЗА НАГРАДУ (+100¢)", PixelUiAtlas.ButtonPrimary, new Vector2(190f, -54f), new Vector2(350f, 40f), 15, Color.white);
+            testRewardBtn.onClick.AddListener(() =>
+            {
+                AudioManager.PlayClick();
+                YandexGamesService.Instance?.ShowRewarded(() =>
+                {
+                    SaveManager.Instance?.AddCoins(100);
+                    RefreshHeader();
+                    Debug.Log("[AdTest] Rewarded ad watched: +100 coins granted.");
+                });
+            });
 
             var closeBtn = CreateSlicedButton(card.transform, "BtnClose", "ЗАКРЫТЬ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -330f), new Vector2(300f, 54f), 20, Color.white);
             closeBtn.onClick.AddListener(CloseAllModals);
@@ -415,14 +448,7 @@ namespace KANYE.UI
                 content.verticalOverflow = VerticalWrapMode.Overflow;
             }
 
-            var watchCutsceneBtn = CreateSlicedButton(card.transform, "BtnWatchPrologue", "СМОТРЕТЬ ПРОЛОГ", PixelUiAtlas.ButtonPrimary, new Vector2(-160f, -330f), new Vector2(380f, 54f), 17, Color.white);
-            watchCutsceneBtn.onClick.AddListener(() =>
-            {
-                CloseAllModals();
-                CinematicIntroCutscene.Play(null);
-            });
-
-            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", "ЗАКРЫТЬ", PixelUiAtlas.ButtonSecondary, new Vector2(230f, -330f), new Vector2(240f, 54f), 19, Color.white);
+            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", "ЗАКРЫТЬ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -330f), new Vector2(280f, 54f), 19, Color.white);
             closeBtn.onClick.AddListener(CloseAllModals);
         }
 
@@ -542,16 +568,6 @@ namespace KANYE.UI
             GameRules.CurrentMode = GameMode.Campaign;
             var index = SaveManager.Instance != null ? SaveManager.Instance.CurrentMission : 0;
             MissionCatalog.Select(index);
-
-            // Cold Open: Launch cinematic intro cutscene if first time entering campaign
-            if (SaveManager.Instance != null && !SaveManager.Instance.HasSeenIntro)
-            {
-                CinematicIntroCutscene.Play(() =>
-                {
-                    SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
-                });
-                return;
-            }
 
             SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
         }

@@ -4,11 +4,22 @@ mergeInto(LibraryManager.library, {
     var methodName = UTF8ToString(methodNamePtr);
 
     function sendToUnity(payload) {
-      var inst = window.unityInstance || window.gameInstance;
-      if (inst && typeof inst.SendMessage === "function") {
-        inst.SendMessage(objectName, methodName, payload);
-      } else {
-        console.log("[YG_Init] SendMessage before Unity instance: " + payload);
+      function trySend() {
+        var inst = window.unityInstance || window.gameInstance;
+        if (inst && typeof inst.SendMessage === "function") {
+          inst.SendMessage(objectName, methodName, payload);
+          return true;
+        }
+        return false;
+      }
+      if (!trySend()) {
+        var retries = 0;
+        var interval = setInterval(function () {
+          retries++;
+          if (trySend() || retries > 100) {
+            clearInterval(interval);
+          }
+        }, 50);
       }
     }
 
@@ -68,9 +79,22 @@ mergeInto(LibraryManager.library, {
     var methodName = UTF8ToString(methodNamePtr);
 
     function sendToUnity(payload) {
-      var inst = window.unityInstance || window.gameInstance;
-      if (inst && typeof inst.SendMessage === "function") {
-        inst.SendMessage(objectName, methodName, payload);
+      function trySend() {
+        var inst = window.unityInstance || window.gameInstance;
+        if (inst && typeof inst.SendMessage === "function") {
+          inst.SendMessage(objectName, methodName, payload);
+          return true;
+        }
+        return false;
+      }
+      if (!trySend()) {
+        var retries = 0;
+        var interval = setInterval(function () {
+          retries++;
+          if (trySend() || retries > 100) {
+            clearInterval(interval);
+          }
+        }, 50);
       }
     }
 
@@ -124,13 +148,30 @@ mergeInto(LibraryManager.library, {
     }
 
     var granted = false;
-    ysdk.adv.showRewardedVideo({
-      callbacks: {
-        onRewarded: function () { granted = true; },
-        onClose: function () { sendToUnity(granted ? "rewarded|1" : "rewarded|0"); },
-        onError: function () { sendToUnity("rewarded|error"); }
-      }
-    });
+    try {
+      ysdk.adv.showRewardedVideo({
+        callbacks: {
+          onOpen: function () {
+            console.log("[YG_ShowRewarded] onOpen");
+          },
+          onRewarded: function () {
+            console.log("[YG_ShowRewarded] onRewarded");
+            granted = true;
+          },
+          onClose: function () {
+            console.log("[YG_ShowRewarded] onClose, granted: " + granted);
+            sendToUnity(granted ? "rewarded|1" : "rewarded|0");
+          },
+          onError: function (err) {
+            console.warn("[YG_ShowRewarded] onError: ", err);
+            sendToUnity("rewarded|error");
+          }
+        }
+      });
+    } catch (e) {
+      console.warn("[YG_ShowRewarded] exception: ", e);
+      sendToUnity("rewarded|error");
+    }
   },
 
   YG_ShowInterstitial: function (objectNamePtr, methodNamePtr) {
@@ -150,11 +191,25 @@ mergeInto(LibraryManager.library, {
       return;
     }
 
-    ysdk.adv.showFullscreenAdv({
-      callbacks: {
-        onClose: function () { sendToUnity("fullscreen|done"); },
-        onError: function () { sendToUnity("fullscreen|done"); }
-      }
-    });
+    try {
+      ysdk.adv.showFullscreenAdv({
+        callbacks: {
+          onOpen: function () {
+            console.log("[YG_ShowInterstitial] onOpen");
+          },
+          onClose: function (wasShown) {
+            console.log("[YG_ShowInterstitial] onClose, wasShown: " + wasShown);
+            sendToUnity("fullscreen|done");
+          },
+          onError: function (err) {
+            console.warn("[YG_ShowInterstitial] onError: ", err);
+            sendToUnity("fullscreen|done");
+          }
+        }
+      });
+    } catch (e) {
+      console.warn("[YG_ShowInterstitial] exception: ", e);
+      sendToUnity("fullscreen|done");
+    }
   }
 });

@@ -77,9 +77,29 @@ namespace KANYE.Gameplay
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            // Do not hit player
-            if (other.GetComponent<PlayerHealth>() != null)
+            // Do not hit player or friendly projectiles / special attacks
+            if (other.GetComponent<PlayerHealth>() != null ||
+                other.GetComponentInParent<PlayerHealth>() != null ||
+                other.GetComponent<PlayerController>() != null ||
+                other.GetComponent<Projectile>() != null ||
+                other.GetComponent<EXMissile>() != null ||
+                other.GetComponent<SuperProjectile>() != null)
+            {
                 return;
+            }
+
+            // Only detonate on actual hostile targets
+            bool isHostile = other.GetComponent<Enemy>() != null ||
+                             other.GetComponent<BossController>() != null ||
+                             other.GetComponent<Asteroid>() != null ||
+                             other.GetComponent<Missile>() != null ||
+                             other.GetComponent<EnemyProjectile>() != null ||
+                             other.GetComponent<ParryHazard>() != null;
+
+            if (!isHostile)
+            {
+                return;
+            }
 
             Detonate();
         }
