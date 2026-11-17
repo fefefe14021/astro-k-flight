@@ -27,6 +27,8 @@ namespace KANYE.Systems
         public int hypeMetaLevel = 1;
         public int magnetMetaLevel = 1;
         public int parryMetaLevel = 1;
+        public int dailyLoginDay = 1;
+        public string lastDailyClaimDate = "";
         public int totalKills;
         public int currentMission;
         public bool introCutsceneSeen;

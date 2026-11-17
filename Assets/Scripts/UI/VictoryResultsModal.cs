@@ -26,6 +26,7 @@ namespace KANYE.UI
         private Text gradeText;
         private Text rewardText;
         private Button nextButton;
+        private Button doubleRewardBtn;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AutoCreate()
@@ -112,6 +113,26 @@ namespace KANYE.UI
                     ? $"Награда: +{reward} кредитов   +1 Звёздное Ядро!"
                     : $"Награда: +{reward} кредитов";
 
+            if (doubleRewardBtn != null)
+            {
+                doubleRewardBtn.gameObject.SetActive(true);
+                doubleRewardBtn.interactable = true;
+                doubleRewardBtn.onClick.RemoveAllListeners();
+                doubleRewardBtn.onClick.AddListener(() =>
+                {
+                    AudioManager.PlayClick();
+                    YandexGamesService.Instance?.ShowRewarded(() =>
+                    {
+                        SaveManager.Instance?.AddCoins(reward);
+                        doubleRewardBtn.gameObject.SetActive(false);
+                        rewardText.text = (grade == "S")
+                            ? $"Награда: +{reward * 2} кредитов (УДВОЕНО!)   +1 Звёздное Ядро!"
+                            : $"Награда: +{reward * 2} кредитов (УДВОЕНО!)";
+                        AudioManager.PlayPowerup();
+                    });
+                });
+            }
+
             var hasNext = (missionIndex + 1) < MissionCatalog.All.Length;
             if (nextButton != null)
             {
@@ -151,19 +172,19 @@ namespace KANYE.UI
             // Center Panel
             var panel = CreateImage("Panel", modalRoot.transform, PixelUiAtlas.Panel, Color.white);
             panel.type = Image.Type.Sliced;
-            panel.rectTransform.sizeDelta = new Vector2(720f, 560f);
+            panel.rectTransform.sizeDelta = new Vector2(740f, 620f);
 
             // Banner Title
-            titleText = CreateLabel(panel.transform, "Title", "СЕКТОР ЗАЧИЩЕН!", 34, new Vector2(0f, 215f), new Color(1f, 0.85f, 0.25f, 1f));
+            titleText = CreateLabel(panel.transform, "Title", "СЕКТОР ЗАЧИЩЕН!", 34, new Vector2(0f, 245f), new Color(1f, 0.85f, 0.25f, 1f));
             titleText.fontStyle = FontStyle.Bold;
 
-            sectorText = CreateLabel(panel.transform, "Sector", "Сектор 1", 20, new Vector2(0f, 168f), new Color(0.75f, 0.88f, 1f, 1f));
+            sectorText = CreateLabel(panel.transform, "Sector", "Сектор 1", 20, new Vector2(0f, 198f), new Color(0.75f, 0.88f, 1f, 1f));
 
             // Stats Sub-Panel
             var subPanel = CreateImage("StatsPanel", panel.transform, PixelUiAtlas.SubPanel, Color.white);
             subPanel.type = Image.Type.Sliced;
-            subPanel.rectTransform.anchoredPosition = new Vector2(0f, 40f);
-            subPanel.rectTransform.sizeDelta = new Vector2(620f, 180f);
+            subPanel.rectTransform.anchoredPosition = new Vector2(0f, 65f);
+            subPanel.rectTransform.sizeDelta = new Vector2(640f, 180f);
 
             timeText = CreateLabel(subPanel.transform, "Time", "⏱ Время: 00:00", 20, new Vector2(35f, 45f), Color.white);
             timeText.rectTransform.anchorMin = new Vector2(0f, 0.5f);
@@ -199,13 +220,15 @@ namespace KANYE.UI
             gradeText = CreateLabel(gradeBox.transform, "Grade", "S", 58, new Vector2(0f, -8f), new Color(1f, 0.85f, 0.2f));
             gradeText.fontStyle = FontStyle.Bold;
 
-            rewardText = CreateLabel(panel.transform, "Reward", "Награда: +70 кредитов", 22, new Vector2(0f, -80f), new Color(1f, 0.85f, 0.35f));
+            rewardText = CreateLabel(panel.transform, "Reward", "Награда: +70 кредитов", 22, new Vector2(0f, -70f), new Color(1f, 0.85f, 0.35f));
             rewardText.fontStyle = FontStyle.Bold;
 
             // Action Buttons
-            nextButton = CreateButton(panel.transform, "NextButton", "СЛЕДУЮЩИЙ СЕКТОР  ▶", new Vector2(0f, -140f), new Vector2(480f, 54f), PixelUiAtlas.ButtonPrimary);
+            doubleRewardBtn = CreateButton(panel.transform, "DoubleRewardBtn", "⚡ УДВОИТЬ КРЕДИТЫ (РЕКЛАМА x2)", new Vector2(0f, -125f), new Vector2(480f, 48f), PixelUiAtlas.ButtonPrimary);
 
-            var retryButton = CreateButton(panel.transform, "RetryButton", "ПЕРЕИГРАТЬ СЕКТОР", new Vector2(-135f, -205f), new Vector2(230f, 48f), PixelUiAtlas.ButtonSecondary);
+            nextButton = CreateButton(panel.transform, "NextButton", "СЛЕДУЮЩИЙ СЕКТОР  ▶", new Vector2(0f, -185f), new Vector2(480f, 52f), PixelUiAtlas.ButtonPrimary);
+
+            var retryButton = CreateButton(panel.transform, "RetryButton", "ПЕРЕИГРАТЬ СЕКТОР", new Vector2(-135f, -248f), new Vector2(230f, 46f), PixelUiAtlas.ButtonSecondary);
             retryButton.onClick.AddListener(() =>
             {
                 AudioManager.PlayClick();
@@ -213,7 +236,7 @@ namespace KANYE.UI
                 SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
             });
 
-            var menuButton = CreateButton(panel.transform, "MenuButton", "В ГЛАВНОЕ МЕНЮ", new Vector2(135f, -205f), new Vector2(230f, 48f), PixelUiAtlas.ButtonDanger);
+            var menuButton = CreateButton(panel.transform, "MenuButton", "В ГЛАВНОЕ МЕНЮ", new Vector2(135f, -248f), new Vector2(230f, 46f), PixelUiAtlas.ButtonDanger);
             menuButton.onClick.AddListener(() =>
             {
                 AudioManager.PlayClick();

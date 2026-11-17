@@ -127,6 +127,25 @@ namespace KANYE.Systems
             }
         }
 
+        public bool CanUpgradeMeta(string metaId)
+        {
+            if (Data == null) return false;
+            var def = MetaTechCatalog.Find(metaId);
+            var currentLvl = GetMetaLevel(metaId);
+            if (currentLvl >= def.MaxLevel) return false;
+            var (costCredits, costCores) = def.GetCost(currentLvl);
+            return Data.coins >= costCredits && Data.starCores >= costCores;
+        }
+
+        public bool TryUpgradeMeta(string metaId)
+        {
+            if (!CanUpgradeMeta(metaId)) return false;
+            var def = MetaTechCatalog.Find(metaId);
+            var currentLvl = GetMetaLevel(metaId);
+            var (costCredits, costCores) = def.GetCost(currentLvl);
+            return UpgradeMeta(metaId, costCredits, costCores);
+        }
+
         public bool UpgradeMeta(string metaId, int costCredits, int costCores = 0)
         {
             if (Data == null) return false;
@@ -146,6 +165,58 @@ namespace KANYE.Systems
             Save();
             return true;
         }
+
+        #region Daily Login Retention Loop
+
+        public bool IsDailyRewardAvailable()
+        {
+            if (Data == null) return true;
+            var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            return string.IsNullOrEmpty(Data.lastDailyClaimDate) || Data.lastDailyClaimDate != today;
+        }
+
+        public int GetCurrentDailyDay()
+        {
+            if (Data == null) return 1;
+            return Mathf.Clamp(Data.dailyLoginDay, 1, 7);
+        }
+
+        public (int credits, int cores) GetDailyRewardValues(int day)
+        {
+            switch (day)
+            {
+                case 1: return (50, 0);
+                case 2: return (75, 0);
+                case 3: return (100, 1);
+                case 4: return (150, 0);
+                case 5: return (200, 1);
+                case 6: return (250, 0);
+                case 7: return (500, 3);
+                default: return (50, 0);
+            }
+        }
+
+        public bool ClaimDailyReward(out int credits, out int cores)
+        {
+            credits = 0;
+            cores = 0;
+            if (!IsDailyRewardAvailable()) return false;
+
+            var day = GetCurrentDailyDay();
+            var reward = GetDailyRewardValues(day);
+            credits = reward.credits;
+            cores = reward.cores;
+
+            Data.coins += credits;
+            Data.starCores += cores;
+            Data.lastDailyClaimDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            Data.dailyLoginDay = (day % 7) + 1;
+
+            Save();
+            return true;
+        }
+
+        #endregion
 
         public bool UnlockSkin(string skinId)
         {

@@ -37,6 +37,7 @@ namespace KANYE.UI
         private GameObject achievementsModal;
         private GameObject settingsModal;
         private GameObject loreModal;
+        private GameObject dailyRewardModal;
         private RectTransform achievementScrollContent;
         private readonly List<Button> skinActionButtons = new List<Button>();
         private readonly List<Text> skinActionLabels = new List<Text>();
@@ -121,11 +122,12 @@ namespace KANYE.UI
             // 4. Right Section - Main Command Buttons
             BuildCommandConsole(canvas.transform);
 
-            // 5. Modals (Shop, Achievements, Settings, Lore)
+            // 5. Modals (Shop, Achievements, Settings, Lore, Daily Reward)
             BuildShopModal(canvas.transform);
             BuildAchievementsModal(canvas.transform);
             BuildSettingsModal(canvas.transform);
             BuildLoreModal(canvas.transform);
+            BuildDailyRewardModal(canvas.transform);
             BuildFirstLaunch(canvas.transform);
 
             CloseAllModals();
@@ -155,6 +157,14 @@ namespace KANYE.UI
             // Right: Credits / Currency badge
             coinsText = CreateText(header.transform, "CoinsBadge", "0 КРЕДИТОВ", new Vector2(1f, 0.5f), new Vector2(-40f, 0f), new Vector2(300f, 36f), 19, Color.white, FontStyle.Bold);
             coinsText.alignment = TextAnchor.MiddleRight;
+
+            var dailyBtn = CreateSlicedButton(header.transform, "BtnDaily", "🎁 НАГРАДА ДНЯ", PixelUiAtlas.ButtonPrimary, new Vector2(0f, 0f), new Vector2(210f, 38f), 15, new Color(1f, 0.92f, 0.35f));
+            var dailyRect = dailyBtn.GetComponent<RectTransform>();
+            dailyRect.anchorMin = new Vector2(1f, 0.5f);
+            dailyRect.anchorMax = new Vector2(1f, 0.5f);
+            dailyRect.pivot = new Vector2(1f, 0.5f);
+            dailyRect.anchoredPosition = new Vector2(-360f, 0f);
+            dailyBtn.onClick.AddListener(() => OpenModal(dailyRewardModal));
 
             playerNameText = CreateText(header.transform, "PlayerName", "ПИЛОТ: ГОСТЬ", new Vector2(0.5f, 0.5f), new Vector2(52f, 0f), new Vector2(360f, 32f), 18, new Color(0.65f, 0.95f, 1f), FontStyle.Bold);
             var nameRect = playerNameText.rectTransform;
@@ -406,7 +416,7 @@ namespace KANYE.UI
                 YandexGamesService.Instance?.ShowRewarded(() =>
                 {
                     SaveManager.Instance?.AddCoins(100);
-                    RefreshHeader();
+                    RefreshData();
                     Debug.Log("[AdTest] Rewarded ad watched: +100 coins granted.");
                 });
             });
@@ -488,12 +498,91 @@ namespace KANYE.UI
             }
         }
 
+        private void BuildDailyRewardModal(Transform parent)
+        {
+            dailyRewardModal = CreateModalContainer(parent, "DailyRewardModal", out var card);
+            CreateText(card.transform, "Title", "🎁 ЕЖЕДНЕВНЫЙ БОНУС ПИЛОТА 🎁", new Vector2(0.5f, 1f), new Vector2(0f, -36f), new Vector2(740f, 38f), 30, new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
+            CreateText(card.transform, "Sub", "Заходи в игру каждый день, чтобы получать кредиты и редкие Звёздные Ядра!", new Vector2(0.5f, 1f), new Vector2(0f, -74f), new Vector2(740f, 26f), 16, new Color(0.7f, 0.85f, 0.95f), FontStyle.Normal);
+
+            var save = SaveManager.Instance;
+            var currentDay = save != null ? save.GetCurrentDailyDay() : 1;
+            var isAvailable = save != null && save.IsDailyRewardAvailable();
+
+            var cardsContainer = new GameObject("CardsGrid", typeof(RectTransform));
+            cardsContainer.transform.SetParent(card.transform, false);
+            var gridRect = cardsContainer.GetComponent<RectTransform>();
+            gridRect.anchorMin = new Vector2(0.5f, 1f);
+            gridRect.anchorMax = new Vector2(0.5f, 1f);
+            gridRect.pivot = new Vector2(0.5f, 1f);
+            gridRect.anchoredPosition = new Vector2(0f, -120f);
+            gridRect.sizeDelta = new Vector2(800f, 220f);
+
+            var startX = -345f;
+            var gapX = 115f;
+
+            for (var d = 1; d <= 7; d++)
+            {
+                var dayNum = d;
+                var reward = save != null ? save.GetDailyRewardValues(dayNum) : (50, 0);
+                var isCurrent = dayNum == currentDay;
+                var isPast = dayNum < currentDay && !isAvailable;
+
+                var cardBox = CreateImage($"DayCard_{dayNum}", cardsContainer.transform, PixelUiAtlas.SubPanel, Color.white);
+                cardBox.type = Image.Type.Sliced;
+                var cRect = cardBox.rectTransform;
+                cRect.anchorMin = new Vector2(0.5f, 0.5f);
+                cRect.anchorMax = new Vector2(0.5f, 0.5f);
+                cRect.pivot = new Vector2(0.5f, 0.5f);
+                cRect.anchoredPosition = new Vector2(startX + (dayNum - 1) * gapX, 0f);
+                cRect.sizeDelta = new Vector2(106f, 190f);
+
+                if (isCurrent && isAvailable)
+                    cardBox.color = new Color(0.18f, 0.32f, 0.5f, 1f);
+                else if (isPast)
+                    cardBox.color = new Color(0.08f, 0.12f, 0.18f, 0.6f);
+                else
+                    cardBox.color = new Color(0.08f, 0.14f, 0.22f, 0.95f);
+
+                CreateText(cardBox.transform, "DayHeader", $"ДЕНЬ {dayNum}", new Vector2(0.5f, 1f), new Vector2(0f, -16f), new Vector2(100f, 22f), 15, isCurrent ? new Color(1f, 0.85f, 0.3f) : new Color(0.65f, 0.85f, 1f), FontStyle.Bold);
+
+                string iconStr = reward.cores > 0 ? "🌟" : "💰";
+                CreateText(cardBox.transform, "Icon", iconStr, new Vector2(0.5f, 0.5f), new Vector2(0f, 10f), new Vector2(80f, 40f), 30, Color.white, FontStyle.Normal);
+
+                string rewardStr = reward.cores > 0 ? $"+{reward.credits}¢\n+{reward.cores}🌟" : $"+{reward.credits}¢";
+                CreateText(cardBox.transform, "Val", rewardStr, new Vector2(0.5f, 0f), new Vector2(0f, 28f), new Vector2(100f, 42f), 15, new Color(1f, 0.9f, 0.45f), FontStyle.Bold);
+
+                if (isPast)
+                {
+                    CreateText(cardBox.transform, "Check", "✓", new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(60f, 60f), 36, new Color(0.3f, 1f, 0.4f), FontStyle.Bold);
+                }
+            }
+
+            // Claim Button
+            var claimBtn = CreateSlicedButton(card.transform, "BtnClaimDaily", isAvailable ? "ЗАБРАТЬ НАГРАДУ" : "НАГРАДА УЖЕ ПОЛУЧЕНА", isAvailable ? PixelUiAtlas.ButtonPrimary : PixelUiAtlas.ButtonSecondary, new Vector2(0f, -380f), new Vector2(440f, 54f), 19, Color.white);
+            claimBtn.interactable = isAvailable;
+            claimBtn.onClick.AddListener(() =>
+            {
+                if (SaveManager.Instance != null && SaveManager.Instance.ClaimDailyReward(out var c, out var cr))
+                {
+                    AudioManager.PlayVictory();
+                    claimBtn.interactable = false;
+                    claimBtn.GetComponentInChildren<Text>().text = "НАГРАДА ПОЛУЧЕНА!";
+                    RefreshData();
+                    CloseAllModals();
+                }
+            });
+
+            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", "ЗАКРЫТЬ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -445f), new Vector2(240f, 44f), 17, Color.white);
+            closeBtn.onClick.AddListener(CloseAllModals);
+        }
+
         private void CloseAllModals()
         {
             if (shopModal != null) shopModal.SetActive(false);
             if (achievementsModal != null) achievementsModal.SetActive(false);
             if (settingsModal != null) settingsModal.SetActive(false);
             if (loreModal != null) loreModal.SetActive(false);
+            if (dailyRewardModal != null) dailyRewardModal.SetActive(false);
             if (firstLaunchModal != null) firstLaunchModal.SetActive(false);
         }
 

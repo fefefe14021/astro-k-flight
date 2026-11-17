@@ -37,11 +37,12 @@ namespace KANYE.Gameplay
 
     public class RogueExpeditionController : MonoBehaviour
     {
-        public const int MaxCoinsPerRun = 150;
+        public const int MaxCoinsPerRun = 999999;
 
         public static RogueExpeditionController Instance { get; private set; }
         public static int CurrentWave { get; private set; } = 1;
         public static int CoinsEarnedThisRun { get; private set; } = 0;
+        public static int CoresEarnedThisRun { get; private set; } = 0;
 
         // Modifiers active for current run
         public static int BonusDamage { get; private set; } = 0;
@@ -58,6 +59,8 @@ namespace KANYE.Gameplay
         private BossController activeBoss;
 
         private GameObject perkModalObj;
+        private GameObject extractionModalObj;
+        private Text extractionStatsText;
         private GameObject pauseRoot;
         private Text waveHudText;
         private Text bannerText;
@@ -68,6 +71,7 @@ namespace KANYE.Gameplay
         {
             CurrentWave = 1;
             CoinsEarnedThisRun = 0;
+            CoresEarnedThisRun = 0;
             BonusDamage = 0;
             FireRateMultiplier = 1f;
             MoveSpeedMultiplier = 1f;
@@ -196,9 +200,9 @@ namespace KANYE.Gameplay
             if (isWaveTransitioning) return;
             isWaveTransitioning = true;
 
-            // Award wave coins (respecting 150 cap)
-            var waveReward = Mathf.Min(16, 6 + CurrentWave * 2);
-            AddRogueCoins(waveReward);
+            // Award dynamic wave coins with scaling multiplier
+            var baseWaveReward = 8 + CurrentWave * 3;
+            AddRogueCoins(baseWaveReward);
 
             // Audio & Screen Juice
             AudioManager.PlayVictory();
@@ -208,15 +212,43 @@ namespace KANYE.Gameplay
             if (CurrentWave % 5 == 0)
             {
                 // Boss defeated! Award Star Core!
+                CoresEarnedThisRun++;
                 SaveManager.Instance?.AddStarCores(1);
-                ShowBanner("БОСС ПОЛНОСТЬЮ ПОВЕРЖЕН!", $"+{waveReward} кредитов и +1 ЗВЁЗДНОЕ ЯДРО!");
+                ShowBanner("БОСС ПОЛНОСТЬЮ ПОВЕРЖЕН!", $"+{baseWaveReward} кредитов и +1 ЗВЁЗДНОЕ ЯДРО!");
+                StartCoroutine(OpenExtractionModalAfterDelay());
             }
             else
             {
-                ShowBanner($"ВОЛНА {CurrentWave} ЗАВЕРШЕНА", $"+{waveReward} кредитов! Выберите улучшение...");
+                ShowBanner($"ВОЛНА {CurrentWave} ЗАВЕРШЕНА", $"+{baseWaveReward} кредитов! Выберите улучшение...");
+                StartCoroutine(OpenPerkAfterDelay());
             }
+        }
 
-            StartCoroutine(OpenPerkAfterDelay());
+        private IEnumerator OpenExtractionModalAfterDelay()
+        {
+            yield return new WaitForSecondsRealtime(1.2f);
+            ShowExtractionModal();
+        }
+
+        private void ShowExtractionModal()
+        {
+            pausedByPlayer = false;
+            if (pauseRoot != null) pauseRoot.SetActive(false);
+            GamePause.Lock();
+
+            if (extractionModalObj != null)
+            {
+                var bonus = Mathf.RoundToInt(CoinsEarnedThisRun * 0.25f);
+                if (extractionStatsText != null)
+                {
+                    extractionStatsText.text =
+                        $"Пройдено волн: {CurrentWave}   |   Уничтожено боссов: {CurrentWave / 5}\n" +
+                        $"Собрано в экспедиции: +{CoinsEarnedThisRun} кредитов   |   +{CoresEarnedThisRun} Звёздных Ядер\n" +
+                        $"Бонус эвакуации через Гипер-Врата: +{bonus} кредитов (+25% к банку)!";
+                }
+                extractionModalObj.SetActive(true);
+                UITween.FadeInModal(this, extractionModalObj);
+            }
         }
 
         private IEnumerator OpenPerkAfterDelay()
@@ -236,7 +268,7 @@ namespace KANYE.Gameplay
 
         private void TryTogglePause()
         {
-            if (perkModalObj != null && perkModalObj.activeSelf)
+            if ((perkModalObj != null && perkModalObj.activeSelf) || (extractionModalObj != null && extractionModalObj.activeSelf))
                 return;
 
             var player = FindAnyObjectByType<PlayerHealth>();
@@ -254,7 +286,7 @@ namespace KANYE.Gameplay
 
             if (paused)
                 GamePause.Lock();
-            else if (perkModalObj == null || !perkModalObj.activeSelf)
+            else if ((perkModalObj == null || !perkModalObj.activeSelf) && (extractionModalObj == null || !extractionModalObj.activeSelf))
                 GamePause.Release();
         }
 
@@ -344,6 +376,7 @@ namespace KANYE.Gameplay
             bannerText.gameObject.SetActive(false);
 
             BuildPerkModalRoot(canvasObj.transform);
+            BuildExtractionModalRoot(canvasObj.transform);
             BuildPauseOverlay(canvasObj.transform);
             BuildPauseButton(canvasObj.transform);
         }
@@ -419,6 +452,89 @@ namespace KANYE.Gameplay
             leaveObj.GetComponent<Button>().onClick.AddListener(ExitToMenu);
 
             perkModalObj.SetActive(false);
+        }
+
+        private void BuildExtractionModalRoot(Transform parent)
+        {
+            extractionModalObj = new GameObject("ExtractionModalRoot", typeof(RectTransform));
+            extractionModalObj.transform.SetParent(parent, false);
+            Stretch(extractionModalObj.GetComponent<RectTransform>());
+
+            var dim = new GameObject("Dim", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            dim.transform.SetParent(extractionModalObj.transform, false);
+            Stretch(dim.GetComponent<RectTransform>());
+            dim.GetComponent<Image>().color = new Color(0.02f, 0.04f, 0.08f, 0.88f);
+
+            var panelObj = new GameObject("ExtractionPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            panelObj.transform.SetParent(extractionModalObj.transform, false);
+            var pRect = panelObj.GetComponent<RectTransform>();
+            pRect.sizeDelta = new Vector2(780f, 480f);
+            var pImg = panelObj.GetComponent<Image>();
+            pImg.sprite = PixelUiAtlas.Panel;
+            pImg.type = Image.Type.Sliced;
+            pImg.color = Color.white;
+
+            CreateLabel(panelObj.transform, "Title", "🌀 ГИПЕР-ВРАТА СИНДИКАТА 🌀", 28, new Vector2(0f, 180f), new Vector2(740f, 44f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
+            CreateLabel(panelObj.transform, "Subtitle", "Сектор зачищен! Босс уничтожен. Выберите дальнейшую тактику:", 17, new Vector2(0f, 138f), new Vector2(740f, 32f), new Color(0.8f, 0.92f, 1f), FontStyle.Normal);
+
+            // Stats Sub-Panel
+            var subPanel = new GameObject("StatsBox", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            subPanel.transform.SetParent(panelObj.transform, false);
+            var spRect = subPanel.GetComponent<RectTransform>();
+            spRect.anchoredPosition = new Vector2(0f, 35f);
+            spRect.sizeDelta = new Vector2(700f, 140f);
+            var spImg = subPanel.GetComponent<Image>();
+            spImg.sprite = PixelUiAtlas.SubPanel;
+            spImg.type = Image.Type.Sliced;
+            spImg.color = new Color(0.06f, 0.12f, 0.2f, 0.95f);
+
+            var stObj = new GameObject("StatsText", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            stObj.transform.SetParent(subPanel.transform, false);
+            extractionStatsText = stObj.GetComponent<Text>();
+            extractionStatsText.font = UIFont.DefaultFont;
+            extractionStatsText.fontSize = 17;
+            extractionStatsText.alignment = TextAnchor.MiddleCenter;
+            extractionStatsText.color = Color.white;
+            extractionStatsText.lineSpacing = 1.25f;
+            Stretch(extractionStatsText.rectTransform);
+
+            // Evacuate Button
+            var evacObj = new GameObject("EvacuateBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            evacObj.transform.SetParent(panelObj.transform, false);
+            var evacRect = evacObj.GetComponent<RectTransform>();
+            evacRect.anchoredPosition = new Vector2(0f, -80f);
+            evacRect.sizeDelta = new Vector2(520f, 52f);
+            var evacImg = evacObj.GetComponent<Image>();
+            evacImg.sprite = PixelUiAtlas.ButtonPrimary;
+            evacImg.type = Image.Type.Sliced;
+            CreateLabel(evacObj.transform, "Label", "🚪 ЭВАКУАЦИЯ В АНГАР (+25% БОНУС КРЕДИТОВ)", 17, Vector2.zero, new Vector2(500f, 40f), Color.white, FontStyle.Bold);
+            evacObj.GetComponent<Button>().onClick.AddListener(() =>
+            {
+                var bonus = Mathf.RoundToInt(CoinsEarnedThisRun * 0.25f);
+                SaveManager.Instance?.AddCoins(bonus);
+                AudioManager.PlayVictory();
+                GamePause.Release();
+                SceneLoader.ReturnToMainMenu();
+            });
+
+            // Continue Button
+            var contObj = new GameObject("ContinueBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            contObj.transform.SetParent(panelObj.transform, false);
+            var contRect = contObj.GetComponent<RectTransform>();
+            contRect.anchoredPosition = new Vector2(0f, -145f);
+            contRect.sizeDelta = new Vector2(520f, 48f);
+            var contImg = contObj.GetComponent<Image>();
+            contImg.sprite = PixelUiAtlas.ButtonSecondary;
+            contImg.type = Image.Type.Sliced;
+            CreateLabel(contObj.transform, "Label", "⚔️ ПРОДОЛЖИТЬ ЭКСПЕДИЦИЮ В ГЛУБЬ КОСМОСА", 16, Vector2.zero, new Vector2(500f, 40f), Color.white, FontStyle.Bold);
+            contObj.GetComponent<Button>().onClick.AddListener(() =>
+            {
+                AudioManager.PlayClick();
+                extractionModalObj.SetActive(false);
+                OpenPerkSelection();
+            });
+
+            extractionModalObj.SetActive(false);
         }
 
         private void BuildPauseButton(Transform parent)

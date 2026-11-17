@@ -113,12 +113,24 @@ namespace KANYE.Gameplay
             CameraShake.HitStop(0.08f); // 80ms freeze frame
 
             // 2. Grant Hype meter (+30 Hype!)
+            var hypeBonus = 30f;
+            var invulnDuration = 0.75f;
+            if (SaveManager.Instance != null && SaveManager.Instance.Data != null)
+            {
+                var parryLvl = SaveManager.Instance.Data.parryMetaLevel;
+                if (parryLvl > 1)
+                {
+                    hypeBonus += (parryLvl - 1) * 10f;
+                    invulnDuration += (parryLvl - 1) * 0.25f;
+                }
+            }
+
             var hype = Object.FindAnyObjectByType<HypeState>();
-            hype?.AddHype(30f);
+            hype?.AddHype(hypeBonus);
 
             // 3. Register stats & brief shield
             GameRules.NotifyParry();
-            health?.GrantParryInvulnerability(0.75f);
+            health?.GrantParryInvulnerability(invulnDuration);
 
             // 4. Destroy hazard
             Destroy(gameObject);

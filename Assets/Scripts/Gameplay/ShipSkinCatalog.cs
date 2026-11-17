@@ -13,6 +13,7 @@ namespace KANYE.Gameplay
         public string Title;
         public string Subtitle;
         public int Price;
+        public int CoresPrice;
         public string SpriteName;
         public string Description;
         public Color ThemeColor;
@@ -39,12 +40,14 @@ namespace KANYE.Gameplay
             Color? antiGravColor = null,
             Color? particleColor = null,
             string particleType = "ion",
-            int requiredMissionIndex = 0)
+            int requiredMissionIndex = 0,
+            int coresPrice = 0)
         {
             Id = id;
             Title = title;
             Subtitle = subtitle;
             Price = price;
+            CoresPrice = coresPrice;
             SpriteName = spriteName;
             Description = description;
             ThemeColor = themeColor;
@@ -94,7 +97,7 @@ namespace KANYE.Gameplay
                 "gold",
                 "Solar Flare VIP",
                 "Золотой VIP-шаттл",
-                420,
+                400,
                 "Sprites/ship_gold",
                 "Роскошная тарелка из 24-каратного сплава со сверкающим янтарным куполом и пилотом в стильных темных очках.",
                 new Color(1f, 0.85f, 0.2f, 1f),
@@ -103,13 +106,14 @@ namespace KANYE.Gameplay
                 new Color(1f, 0.75f, 0.15f, 0.8f),
                 new Color(1f, 0.95f, 0.45f, 0.95f),
                 "solar",
-                6),
+                6,
+                1),
 
             new ShipSkin(
                 "bio",
                 "Bio-Alien Symbiote",
                 "Биоморфный симбиот",
-                750,
+                700,
                 "Sprites/ship_bio",
                 "Живой органический экзоскелет из изумрудного хитина и пульсирующих био-жил. В кабине управляет инопланетный симбиот.",
                 new Color(0.3f, 1f, 0.45f, 1f),
@@ -118,13 +122,14 @@ namespace KANYE.Gameplay
                 new Color(0.25f, 0.95f, 0.35f, 0.8f),
                 new Color(0.45f, 1f, 0.55f, 0.95f),
                 "bio",
-                8),
+                8,
+                2),
 
             new ShipSkin(
                 "void",
                 "Void Obsidian Reaper",
                 "Обсидиановый жнец",
-                1100,
+                1000,
                 "Sprites/ship_void",
                 "Сверхсекретная стелс-тарелка из матового обсидиана с багровым антигравитационным полем и светящимися алыми глазами пилота.",
                 new Color(1f, 0.22f, 0.28f, 1f),
@@ -133,13 +138,14 @@ namespace KANYE.Gameplay
                 new Color(0.95f, 0.1f, 0.22f, 0.85f),
                 new Color(1f, 0.35f, 0.35f, 0.95f),
                 "void",
-                10),
+                10,
+                3),
 
             new ShipSkin(
                 "steampunk",
                 "Brass Aeronaut 1899",
                 "Латунный аэронавт",
-                1600,
+                1500,
                 "Sprites/ship_steampunk",
                 "Винтажный викторианский аппарат на паро-ионной тяге с медными заклепками, янтарным стеклом и пилотом в авиаторских очках.",
                 new Color(0.95f, 0.65f, 0.3f, 1f),
@@ -148,7 +154,8 @@ namespace KANYE.Gameplay
                 new Color(0.95f, 0.7f, 0.3f, 0.75f),
                 new Color(0.95f, 0.92f, 0.85f, 0.9f),
                 "steam",
-                11)
+                11,
+                5)
         };
 
         public static ShipSkin Find(string id)

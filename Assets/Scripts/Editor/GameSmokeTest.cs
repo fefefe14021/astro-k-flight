@@ -245,7 +245,7 @@ namespace KANYE.EditorTools
                     throw new Exception("Missing barney_portrait sprite in Resources/Sprites");
             }, ref passed, ref failed);
 
-            Test("14. Economy Balance, Progression Tiers & Nanite Repair", () =>
+            Test("14. Economy Balance, Progression Tiers & Meta Tech", () =>
             {
                 var upg1 = WeaponCatalog.GetUpgradeCost("twin_blaster", 1);
                 var upg2 = WeaponCatalog.GetUpgradeCost("twin_blaster", 2);
@@ -260,6 +260,14 @@ namespace KANYE.EditorTools
                 if (mortar == null || mortar.Price != 1050 || mortar.RequiredMissionIndex != 11)
                     throw new Exception("Plasma mortar endgame tier definition invalid");
 
+                // Test MetaTechCatalog
+                if (MetaTechCatalog.All.Length != 4)
+                    throw new Exception("Expected 4 meta tech upgrades in catalog");
+                var hullTech = MetaTechCatalog.Find("hull");
+                if (hullTech.MaxLevel != 5) throw new Exception("Expected Hull max level 5");
+                var (hCostCredits, hCostCores) = hullTech.GetCost(1);
+                if (hCostCredits != 150) throw new Exception("Expected Hull lvl 1->2 cost 150 credits");
+
                 // Test player healing via Nanite
                 var playerGo = new GameObject("PlayerHealthTest");
                 var ph = playerGo.AddComponent<PlayerHealth>();
@@ -270,19 +278,19 @@ namespace KANYE.EditorTools
                 UnityEngine.Object.DestroyImmediate(playerGo);
             }, ref passed, ref failed);
 
-            Test("15. Rogue-Lite Expedition Mode & Anti-Overfarm 150-Coin Cap", () =>
+            Test("15. Rogue-Lite Expedition Mode & Dynamic Uncapped Economy", () =>
             {
                 RogueExpeditionController.ResetRunModifiers();
                 if (RogueExpeditionController.CurrentWave != 1) throw new Exception("Expected wave 1 after reset");
 
-                // Test anti-overfarm coin cap
+                // Test uncapped dynamic wave rewards
                 RogueExpeditionController.AddRogueCoins(80);
                 if (RogueExpeditionController.CoinsEarnedThisRun != 80)
                     throw new Exception($"Expected 80 coins earned, got {RogueExpeditionController.CoinsEarnedThisRun}");
 
-                RogueExpeditionController.AddRogueCoins(120); // 80 + 120 = 200, but cap is 150!
-                if (RogueExpeditionController.CoinsEarnedThisRun != 150)
-                    throw new Exception($"Expected capped 150 coins, got {RogueExpeditionController.CoinsEarnedThisRun}");
+                RogueExpeditionController.AddRogueCoins(120); // 80 + 120 = 200, dynamic uncapped!
+                if (RogueExpeditionController.CoinsEarnedThisRun != 200)
+                    throw new Exception($"Expected 200 coins, got {RogueExpeditionController.CoinsEarnedThisRun}");
 
                 // Validate detailed enemy sprite size
                 var enemySprite = Resources.Load<Sprite>("Sprites/enemy");
@@ -292,7 +300,7 @@ namespace KANYE.EditorTools
                     throw new Exception($"Expected enemy PPU 48, got {enemySprite.pixelsPerUnit}");
             }, ref passed, ref failed);
 
-            Test("16. TikTok-Style Cinematic Intro Cutscene & Save State", () =>
+            Test("16. Save State & Daily Login Retention", () =>
             {
                 var go = new GameObject("SaveCutsceneTest");
                 var sm = go.AddComponent<SaveManager>();
@@ -301,6 +309,13 @@ namespace KANYE.EditorTools
                 if (sm.HasSeenIntro) throw new Exception("Expected HasSeenIntro to be false");
                 sm.MarkIntroSeen(true);
                 if (!sm.HasSeenIntro) throw new Exception("Expected HasSeenIntro to be true");
+
+                // Test Daily Login methods
+                var day = sm.GetCurrentDailyDay();
+                if (day < 1 || day > 7) throw new Exception("Invalid daily day");
+                var (cr, co) = sm.GetDailyRewardValues(1);
+                if (cr != 50) throw new Exception("Expected Day 1 reward 50 credits");
+
                 UnityEngine.Object.DestroyImmediate(go);
             }, ref passed, ref failed);
 

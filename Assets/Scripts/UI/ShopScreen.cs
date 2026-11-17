@@ -20,12 +20,14 @@ namespace KANYE.UI
         private enum ShopTab
         {
             Weapons,
-            Skins
+            Skins,
+            Tech
         }
 
         private ShopTab currentTab = ShopTab.Weapons;
         private int selectedWeaponIndex = 0;
         private int selectedSkinIndex = 0;
+        private int selectedTechIndex = 0;
 
         private Text coinsLabel;
         private Text hintLabel;
@@ -47,6 +49,7 @@ namespace KANYE.UI
         private Text upgradeButtonText;
         private Button tabWeaponsBtn;
         private Button tabSkinsBtn;
+        private Button tabTechBtn;
 
         private void Start()
         {
@@ -112,8 +115,9 @@ namespace KANYE.UI
             hintLabel = CreateText(mainPanel.transform, "HintLabel", "Выбери корпус или оружие справа от списка.", 16, new Vector2(0f, 272f), new Vector2(980f, 24f), new Color(0.75f, 0.9f, 1f), FontStyle.Normal);
 
             // Tab Buttons
-            tabWeaponsBtn = CreateTabButton(mainPanel.transform, "TabWeapons", "🚀 ОРУЖЕЙНЫЙ АРСЕНАЛ", new Vector2(-220f, 240f), () => SetTab(ShopTab.Weapons));
-            tabSkinsBtn = CreateTabButton(mainPanel.transform, "TabSkins", "🛸 КОРПУСА ТАРЕЛКИ", new Vector2(220f, 240f), () => SetTab(ShopTab.Skins));
+            tabWeaponsBtn = CreateTabButton(mainPanel.transform, "TabWeapons", "🚀 АРСЕНАЛ", new Vector2(-330f, 240f), () => SetTab(ShopTab.Weapons));
+            tabSkinsBtn = CreateTabButton(mainPanel.transform, "TabSkins", "🛸 КОРПУСА ТАРЕЛКИ", new Vector2(0f, 240f), () => SetTab(ShopTab.Skins));
+            tabTechBtn = CreateTabButton(mainPanel.transform, "TabTech", "⚡ МОДЕРНИЗАЦИЯ", new Vector2(330f, 240f), () => SetTab(ShopTab.Tech));
 
             // Left Side: Scrollable List Viewport
             var listPanel = new GameObject("ListPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(RectMask2D));
@@ -300,6 +304,8 @@ namespace KANYE.UI
                 tabWeaponsBtn.GetComponent<Image>().color = currentTab == ShopTab.Weapons ? new Color(1f, 0.85f, 0.3f) : new Color(0.3f, 0.4f, 0.55f);
             if (tabSkinsBtn != null)
                 tabSkinsBtn.GetComponent<Image>().color = currentTab == ShopTab.Skins ? new Color(1f, 0.85f, 0.3f) : new Color(0.3f, 0.4f, 0.55f);
+            if (tabTechBtn != null)
+                tabTechBtn.GetComponent<Image>().color = currentTab == ShopTab.Tech ? new Color(1f, 0.85f, 0.3f) : new Color(0.3f, 0.4f, 0.55f);
 
             // Clear old buttons
             for (var i = 0; i < activeListButtons.Count; i++)
@@ -342,7 +348,7 @@ namespace KANYE.UI
 
                 DisplayWeaponDetails(weapons[selectedWeaponIndex]);
             }
-            else
+            else if (currentTab == ShopTab.Skins)
             {
                 var skins = ShipSkinCatalog.All;
                 selectedSkinIndex = Mathf.Clamp(selectedSkinIndex, 0, skins.Length - 1);
@@ -358,15 +364,55 @@ namespace KANYE.UI
                     var isLocked = !isOwned && save != null && !save.IsSkinAccessible(s.Id);
                     var lockBadge = isLocked ? $"🔒 СЕК.{(s.RequiredMissionIndex / 3) + 1}" : null;
 
+                    string priceBadge = null;
+                    if (!isOwned && !isLocked)
+                    {
+                        priceBadge = s.CoresPrice > 0 ? $"{s.Price}¢+{s.CoresPrice}🌟" : $"{s.Price}¢";
+                    }
+
                     var btn = CreateListItem(listContainer, s.Title, s.Subtitle, s.Price, isOwned, isEquipped, isSelected, () =>
                     {
                         selectedSkinIndex = index;
                         Refresh();
-                    }, isLocked, lockBadge);
+                    }, isLocked, lockBadge, priceBadge);
                     activeListButtons.Add(btn);
                 }
 
                 DisplaySkinDetails(skins[selectedSkinIndex]);
+            }
+            else
+            {
+                var techs = MetaTechCatalog.All;
+                selectedTechIndex = Mathf.Clamp(selectedTechIndex, 0, techs.Length - 1);
+
+                for (var i = 0; i < techs.Length; i++)
+                {
+                    var index = i;
+                    var t = techs[i];
+                    var lvl = save != null ? save.GetMetaLevel(t.Id) : 1;
+                    var isMax = lvl >= t.MaxLevel;
+                    var isSelected = index == selectedTechIndex;
+                    var (costCredits, costCores) = t.GetCost(lvl);
+
+                    string badgeStr;
+                    if (isMax)
+                        badgeStr = "★ МАКС";
+                    else if (costCores > 0)
+                        badgeStr = $"{costCredits}¢+{costCores}🌟";
+                    else
+                        badgeStr = $"{costCredits}¢";
+
+                    var itemTitle = $"{t.Title} [Ур.{lvl}/{t.MaxLevel}]";
+
+                    var btn = CreateListItem(listContainer, itemTitle, t.Subtitle, costCredits, isMax, false, isSelected, () =>
+                    {
+                        selectedTechIndex = index;
+                        Refresh();
+                    }, false, null, badgeStr);
+                    activeListButtons.Add(btn);
+                }
+
+                DisplayTechDetails(techs[selectedTechIndex]);
             }
         }
 
@@ -557,13 +603,81 @@ namespace KANYE.UI
                 else
                 {
                     var coins = save != null ? save.Data.coins : 0;
-                    var canAfford = coins >= skin.Price;
-                    actionButtonText.text = canAfford ? $"КУПИТЬ ЗА {skin.Price} КРЕДИТОВ" : $"НЕ ХВАТАЕТ {skin.Price - coins} КРЕДИТОВ";
-                    actionButton.interactable = true;
+                    var cores = save != null && save.Data != null ? save.Data.starCores : 0;
+                    var canAfford = coins >= skin.Price && cores >= skin.CoresPrice;
+                    string priceText = skin.CoresPrice > 0 ? $"{skin.Price} КРЕДИТОВ + {skin.CoresPrice} ЯДЕР" : $"{skin.Price} КРЕДИТОВ";
+                    actionButtonText.text = canAfford ? $"КУПИТЬ ЗА {priceText}" : $"НЕ ХВАТАЕТ РЕСУРСОВ ({priceText})";
+                    actionButton.interactable = canAfford;
                     actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.6f, 0.15f) : new Color(0.55f, 0.28f, 0.28f);
                     ShowHint(canAfford
                         ? "После покупки корпус сразу активируется."
-                        : $"На счету {coins}. До корпуса ещё {skin.Price - coins} кредитов.");
+                        : $"Требуется {priceText}. Баланс: {coins} кредитов, {cores} ядер.");
+                }
+            }
+        }
+
+        private void DisplayTechDetails(MetaTechDefinition tech)
+        {
+            if (tech == null) return;
+
+            var save = SaveManager.Instance;
+            var lvl = save != null ? save.GetMetaLevel(tech.Id) : 1;
+            var isMax = lvl >= tech.MaxLevel;
+
+            if (previewThruster != null) previewThruster.gameObject.SetActive(false);
+            if (previewGlow != null) previewGlow.gameObject.SetActive(false);
+
+            if (previewImage != null)
+            {
+                previewImage.rectTransform.anchoredPosition = Vector2.zero;
+                previewImage.rectTransform.sizeDelta = new Vector2(120f, 120f);
+                var sprite = Resources.Load<Sprite>(tech.SpriteName);
+                if (sprite == null) sprite = Resources.Load<Sprite>("Sprites/spark");
+                previewImage.sprite = sprite;
+                previewImage.color = tech.ThemeColor;
+            }
+
+            if (previewTitle != null)
+                previewTitle.text = $"{tech.Title}  [Ур. {lvl}/{tech.MaxLevel}]";
+
+            if (previewSubtitle != null)
+                previewSubtitle.text = tech.Subtitle;
+
+            if (previewStats != null)
+            {
+                if (isMax)
+                    previewStats.text = $"ТЕКУЩИЙ ЭФФЕКТ: {tech.GetStatDescription(lvl)} (МАКСИМУМ)";
+                else
+                    previewStats.text = $"ТЕКУЩИЙ: {tech.GetStatDescription(lvl)}\nСЛЕДУЮЩИЙ: {tech.GetStatDescription(lvl + 1)}";
+            }
+
+            if (previewDescription != null)
+                previewDescription.text = tech.Description;
+
+            if (upgradeButton != null)
+                upgradeButton.gameObject.SetActive(false);
+
+            if (actionButton != null)
+            {
+                if (isMax)
+                {
+                    actionButtonText.text = "★ МАКСИМАЛЬНЫЙ УРОВЕНЬ ★";
+                    actionButton.interactable = false;
+                    actionButton.GetComponent<Image>().color = new Color(0.22f, 0.42f, 0.32f);
+                    ShowHint("Эта модернизация исследована на максимум мощности.");
+                }
+                else
+                {
+                    var (costCredits, costCores) = tech.GetCost(lvl);
+                    var canAfford = save != null && save.Data.coins >= costCredits && save.Data.starCores >= costCores;
+                    string costStr = costCores > 0 ? $"{costCredits} КРЕДИТОВ + {costCores} ЯДЕР" : $"{costCredits} КРЕДИТОВ";
+
+                    actionButtonText.text = canAfford ? $"МОДЕРНИЗИРОВАТЬ ДО УР. {lvl + 1} ({costStr})" : $"НЕ ХВАТАЕТ РЕСУРСОВ ({costStr})";
+                    actionButton.interactable = canAfford;
+                    actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.65f, 0.15f) : new Color(0.55f, 0.3f, 0.25f);
+                    ShowHint(canAfford
+                        ? "Улучшение действует перманентно во всех режимах игры."
+                        : $"Для модернизации требуется {costStr}.");
                 }
             }
         }
@@ -593,6 +707,23 @@ namespace KANYE.UI
         {
             var save = SaveManager.Instance;
             if (save == null) return;
+
+            if (currentTab == ShopTab.Tech)
+            {
+                var tech = MetaTechCatalog.All[selectedTechIndex];
+                if (save.TryUpgradeMeta(tech.Id))
+                {
+                    AudioManager.PlayPowerup();
+                    ShowHint($"{tech.Title} улучшен до уровня {save.GetMetaLevel(tech.Id)}!");
+                    Refresh();
+                }
+                else
+                {
+                    AudioManager.PlayHit();
+                    ShowHint("Недостаточно кредитов или Звёздных Ядер для модернизации.");
+                }
+                return;
+            }
 
             if (currentTab == ShopTab.Weapons)
             {
@@ -641,16 +772,26 @@ namespace KANYE.UI
                         return;
                     }
 
-                    if (save.TrySpendCoins(s.Price))
+                    if (s.CoresPrice > 0 && save.Data.starCores < s.CoresPrice)
                     {
+                        ShowHint($"Не хватает {s.CoresPrice - save.Data.starCores} Звёздных Ядер.");
+                        AudioManager.PlayHit();
+                        return;
+                    }
+
+                    if (save.Data.coins >= s.Price && save.Data.starCores >= s.CoresPrice)
+                    {
+                        save.Data.coins -= s.Price;
+                        save.Data.starCores -= s.CoresPrice;
                         save.UnlockSkin(s.Id);
                         save.EquipSkin(s.Id);
-                        ShowHint($"{s.Title} куплен и надет. Осталось {save.Data.coins} монет.");
+                        save.Save();
+                        ShowHint($"{s.Title} куплен и надет. Баланс: {save.Data.coins} кредитов, {save.Data.starCores} ядер.");
                         AudioManager.PlayPowerup();
                     }
                     else
                     {
-                        ShowHint($"Не хватает {s.Price - save.Data.coins} монет.");
+                        ShowHint($"Не хватает {s.Price - save.Data.coins} кредитов.");
                         AudioManager.PlayHit();
                         return;
                     }
@@ -666,7 +807,7 @@ namespace KANYE.UI
             Refresh();
         }
 
-        private GameObject CreateListItem(Transform parent, string title, string sub, int price, bool isOwned, bool isEquipped, bool isSelected, System.Action onClick, bool isLocked = false, string lockBadge = null)
+        private GameObject CreateListItem(Transform parent, string title, string sub, int price, bool isOwned, bool isEquipped, bool isSelected, System.Action onClick, bool isLocked = false, string lockBadge = null, string customBadge = null)
         {
             var btnObj = new GameObject("ItemBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(LayoutElement));
             btnObj.transform.SetParent(parent, false);
@@ -719,6 +860,11 @@ namespace KANYE.UI
             {
                 statusStr = lockBadge ?? "🔒 БЛОК";
                 statusCol = new Color(0.95f, 0.45f, 0.45f);
+            }
+            else if (!string.IsNullOrEmpty(customBadge))
+            {
+                statusStr = customBadge;
+                statusCol = new Color(1f, 0.85f, 0.3f);
             }
             else
             {

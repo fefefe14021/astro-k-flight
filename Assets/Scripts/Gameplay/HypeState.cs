@@ -46,6 +46,19 @@ namespace KANYE.Gameplay
             Changed?.Invoke();
         }
 
+        private float MetaHypeMultiplier
+        {
+            get
+            {
+                if (SaveManager.Instance != null && SaveManager.Instance.Data != null)
+                {
+                    var lvl = SaveManager.Instance.Data.hypeMetaLevel;
+                    if (lvl > 1) return 1f + (lvl - 1) * 0.15f;
+                }
+                return 1f;
+            }
+        }
+
         public void AddAlbum(int count, bool grantHype = true)
         {
             if (count <= 0)
@@ -54,7 +67,7 @@ namespace KANYE.Gameplay
             Albums += count;
             if (grantHype && RageCanCharge)
             {
-                var gain = count * hypePerKill;
+                var gain = count * hypePerKill * MetaHypeMultiplier;
                 if (GameRules.CurrentMode == GameMode.RogueExpedition)
                     gain *= RogueExpeditionController.HypeMultiplier;
 
@@ -67,6 +80,7 @@ namespace KANYE.Gameplay
         public void AddHype(float amount)
         {
             if (amount <= 0f || !RageCanCharge) return;
+            amount *= MetaHypeMultiplier;
             if (GameRules.CurrentMode == GameMode.RogueExpedition)
                 amount *= RogueExpeditionController.HypeMultiplier;
 

@@ -69,6 +69,11 @@ namespace KANYE.Gameplay
             transform.localScale = new Vector3(scale, scale, 1f);
 
             var effectiveRange = magnetRange + (GameRules.CurrentMode == GameMode.RogueExpedition ? RogueExpeditionController.MagnetRangeBonus : 0f);
+            if (SaveManager.Instance != null && SaveManager.Instance.Data != null)
+            {
+                var magLvl = SaveManager.Instance.Data.magnetMetaLevel;
+                if (magLvl > 1) effectiveRange += (magLvl - 1) * 1.5f;
+            }
             if (playerTransform != null)
             {
                 var distSq = (playerTransform.position - transform.position).sqrMagnitude;
