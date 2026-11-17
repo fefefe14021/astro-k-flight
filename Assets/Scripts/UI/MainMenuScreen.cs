@@ -526,6 +526,7 @@ namespace KANYE.UI
                 var reward = save != null ? save.GetDailyRewardValues(dayNum) : new SaveManager.DailyRewardEntry(50, 0);
                 var isCurrent = dayNum == currentDay;
                 var isPast = dayNum < currentDay && !isAvailable;
+                var isJackpot = dayNum == 7;
 
                 var cardBox = CreateImage($"DayCard_{dayNum}", cardsContainer.transform, PixelUiAtlas.SubPanel, Color.white);
                 cardBox.type = Image.Type.Sliced;
@@ -537,23 +538,46 @@ namespace KANYE.UI
                 cRect.sizeDelta = new Vector2(106f, 190f);
 
                 if (isCurrent && isAvailable)
-                    cardBox.color = new Color(0.18f, 0.32f, 0.5f, 1f);
+                    cardBox.color = isJackpot ? new Color(0.35f, 0.30f, 0.12f, 1f) : new Color(0.18f, 0.32f, 0.5f, 1f);
                 else if (isPast)
                     cardBox.color = new Color(0.08f, 0.12f, 0.18f, 0.6f);
                 else
-                    cardBox.color = new Color(0.08f, 0.14f, 0.22f, 0.95f);
+                    cardBox.color = isJackpot ? new Color(0.20f, 0.16f, 0.08f, 0.95f) : new Color(0.08f, 0.14f, 0.22f, 0.95f);
 
-                CreateText(cardBox.transform, "DayHeader", $"ДЕНЬ {dayNum}", new Vector2(0.5f, 1f), new Vector2(0f, -16f), new Vector2(100f, 22f), 15, isCurrent ? new Color(1f, 0.85f, 0.3f) : new Color(0.65f, 0.85f, 1f), FontStyle.Bold);
+                CreateText(cardBox.transform, "DayHeader", $"ДЕНЬ {dayNum}", new Vector2(0.5f, 1f), new Vector2(0f, -16f), new Vector2(100f, 22f), 15, isCurrent ? new Color(1f, 0.85f, 0.3f) : (isJackpot ? new Color(1f, 0.8f, 0.4f) : new Color(0.65f, 0.85f, 1f)), FontStyle.Bold);
 
-                string iconStr = reward.cores > 0 ? "🌟" : "💰";
-                CreateText(cardBox.transform, "Icon", iconStr, new Vector2(0.5f, 0.5f), new Vector2(0f, 10f), new Vector2(80f, 40f), 30, Color.white, FontStyle.Normal);
+                if (isJackpot)
+                {
+                    CreateText(cardBox.transform, "JackpotLabel", "★ ДЖЕКПОТ ★", new Vector2(0.5f, 1f), new Vector2(0f, -34f), new Vector2(104f, 14f), 10, new Color(1f, 0.85f, 0.25f), FontStyle.Bold);
+                }
 
-                string rewardStr = reward.cores > 0 ? $"+{reward.credits}¢\n+{reward.cores}🌟" : $"+{reward.credits}¢";
-                CreateText(cardBox.transform, "Val", rewardStr, new Vector2(0.5f, 0f), new Vector2(0f, 28f), new Vector2(100f, 42f), 15, new Color(1f, 0.9f, 0.45f), FontStyle.Bold);
+                // Sprite icon for reward
+                var iconSprite = isJackpot ? PixelUiAtlas.IconChestEpic : (reward.cores > 0 ? PixelUiAtlas.IconStarCore : PixelUiAtlas.IconCredit);
+                var iconImg = CreateImage($"DayIcon_{dayNum}", cardBox.transform, iconSprite, Color.white);
+                var iconRect = iconImg.rectTransform;
+                iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+                iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+                iconRect.pivot = new Vector2(0.5f, 0.5f);
+                iconRect.anchoredPosition = new Vector2(0f, isJackpot ? 6f : 10f);
+                iconRect.sizeDelta = isJackpot ? new Vector2(50f, 50f) : new Vector2(40f, 40f);
+                iconImg.preserveAspect = true;
+
+                // Value description
+                string rewardStr;
+                if (isJackpot)
+                    rewardStr = $"+{reward.credits} ¢\n+{reward.cores} ЯДРА";
+                else if (reward.cores > 0)
+                    rewardStr = $"+{reward.credits} ¢\n+{reward.cores} ЯДРО";
+                else
+                    rewardStr = $"+{reward.credits} ¢";
+
+                CreateText(cardBox.transform, "Val", rewardStr, new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(100f, 38f), 13, isJackpot ? new Color(1f, 0.88f, 0.35f) : new Color(1f, 0.95f, 0.65f), FontStyle.Bold);
 
                 if (isPast)
                 {
-                    CreateText(cardBox.transform, "Check", "✓", new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(60f, 60f), 36, new Color(0.3f, 1f, 0.4f), FontStyle.Bold);
+                    var overlay = CreateImage("PastOverlay", cardBox.transform, PixelUiAtlas.White, new Color(0f, 0f, 0f, 0.55f));
+                    Stretch(overlay.rectTransform);
+                    CreateText(cardBox.transform, "Check", "✓", new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(60f, 60f), 38, new Color(0.3f, 1f, 0.45f), FontStyle.Bold);
                 }
             }
 
@@ -705,7 +729,7 @@ namespace KANYE.UI
             var equippedSkin = ShipSkinCatalog.Find(equippedSkinId);
 
             if (coinsText != null)
-                coinsText.text = $"{coins} КРЕДИТОВ   {cores} ЯДЕР";
+                coinsText.text = $"{coins} ¢   •   {cores} ЯДЕР";
             if (rankText != null)
                 rankText.text = $"{PilotRank.Title(kills).ToUpper()}  •  {kills} СБИТО";
             if (sectorTitleText != null)

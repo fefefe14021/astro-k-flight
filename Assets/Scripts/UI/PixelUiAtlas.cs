@@ -17,6 +17,10 @@ namespace KANYE.UI
         private static Sprite buttonSecondarySprite;
         private static Sprite buttonDangerSprite;
         private static Sprite whitePixel;
+        private static Sprite iconCreditSprite;
+        private static Sprite iconStarCoreSprite;
+        private static Sprite iconChestStdSprite;
+        private static Sprite iconChestEpicSprite;
 
         public static Sprite Panel
         {
@@ -96,6 +100,50 @@ namespace KANYE.UI
         public static Sprite Logo => Resources.Load<Sprite>("Sprites/UI/menu_logo");
         public static Sprite Background => Resources.Load<Sprite>("Sprites/UI/menu_background");
         public static Sprite Ship => Resources.Load<Sprite>("Sprites/ship");
+
+        public static Sprite IconCredit
+        {
+            get
+            {
+                if (iconCreditSprite != null) return iconCreditSprite;
+                var res = Resources.Load<Sprite>("Sprites/UI/icon_credit");
+                if (res != null) return iconCreditSprite = res;
+                return iconCreditSprite = CreateProceduralIconCredit();
+            }
+        }
+
+        public static Sprite IconStarCore
+        {
+            get
+            {
+                if (iconStarCoreSprite != null) return iconStarCoreSprite;
+                var res = Resources.Load<Sprite>("Sprites/UI/icon_star_core");
+                if (res != null) return iconStarCoreSprite = res;
+                return iconStarCoreSprite = CreateProceduralIconStarCore();
+            }
+        }
+
+        public static Sprite IconChestStandard
+        {
+            get
+            {
+                if (iconChestStdSprite != null) return iconChestStdSprite;
+                var res = Resources.Load<Sprite>("Sprites/UI/icon_chest_std");
+                if (res != null) return iconChestStdSprite = res;
+                return iconChestStdSprite = CreateProceduralIconChestStd();
+            }
+        }
+
+        public static Sprite IconChestEpic
+        {
+            get
+            {
+                if (iconChestEpicSprite != null) return iconChestEpicSprite;
+                var res = Resources.Load<Sprite>("Sprites/UI/icon_chest_epic");
+                if (res != null) return iconChestEpicSprite = res;
+                return iconChestEpicSprite = CreateProceduralIconChestEpic();
+            }
+        }
 
         private static Sprite CreateProceduralPanel()
         {
@@ -309,6 +357,114 @@ namespace KANYE.UI
             }
             tex.Apply();
             return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(border, border, border, border));
+        }
+
+        private static Sprite CreateProceduralIconCredit()
+        {
+            const int s = 32;
+            var tex = new Texture2D(s, s, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Point;
+            for (var y = 0; y < s; y++)
+            {
+                for (var x = 0; x < s; x++)
+                {
+                    var dist = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(16f, 16f));
+                    if (dist > 14f) tex.SetPixel(x, y, Color.clear);
+                    else if (dist > 12.5f) tex.SetPixel(x, y, new Color(0.4f, 0.28f, 0.05f, 1f));
+                    else if (dist > 10.5f) tex.SetPixel(x, y, new Color(1f, 0.85f, 0.2f, 1f));
+                    else if (dist > 8f) tex.SetPixel(x, y, new Color(0.95f, 0.72f, 0.12f, 1f));
+                    else
+                    {
+                        var isC = (x >= 12 && x <= 14 && y >= 11 && y <= 21) ||
+                                  (x >= 14 && x <= 19 && (y >= 19 && y <= 21 || y >= 11 && y <= 13)) ||
+                                  (x == 16 && (y == 9 || y == 10 || y == 22 || y == 23));
+                        tex.SetPixel(x, y, isC ? new Color(1f, 0.95f, 0.7f, 1f) : new Color(0.85f, 0.6f, 0.08f, 1f));
+                    }
+                }
+            }
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, s, s), new Vector2(0.5f, 0.5f), 32f);
+        }
+
+        private static Sprite CreateProceduralIconStarCore()
+        {
+            const int s = 32;
+            var tex = new Texture2D(s, s, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Point;
+            var cx = 15.5f; var cy = 15.5f;
+            for (var y = 0; y < s; y++)
+            {
+                for (var x = 0; x < s; x++)
+                {
+                    var dx = Mathf.Abs(x + 0.5f - cx);
+                    var dy = Mathf.Abs(y + 0.5f - cy);
+                    var starDist = dx + dy * 2.5f;
+                    var starDist2 = dx * 2.5f + dy;
+                    var minDist = Mathf.Min(starDist, starDist2);
+                    var euclid = Mathf.Sqrt(dx * dx + dy * dy);
+
+                    if (euclid <= 3f)
+                        tex.SetPixel(x, y, Color.white);
+                    else if (minDist <= 11f)
+                        tex.SetPixel(x, y, Color.Lerp(new Color(0f, 0.95f, 1f, 1f), new Color(0.85f, 0.3f, 1f, 1f), minDist / 11f));
+                    else if (euclid <= 12f)
+                        tex.SetPixel(x, y, new Color(0.5f, 0.15f, 0.85f, Mathf.Clamp01(1f - (euclid / 12f))));
+                    else
+                        tex.SetPixel(x, y, Color.clear);
+                }
+            }
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, s, s), new Vector2(0.5f, 0.5f), 32f);
+        }
+
+        private static Sprite CreateProceduralIconChestStd()
+        {
+            const int s = 32;
+            var tex = new Texture2D(s, s, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Point;
+            for (var y = 0; y < s; y++)
+            {
+                for (var x = 0; x < s; x++)
+                {
+                    if (x < 3 || x > 28 || y < 5 || y > 26)
+                        tex.SetPixel(x, y, Color.clear);
+                    else if (x == 3 || x == 28 || y == 5 || y == 26)
+                        tex.SetPixel(x, y, new Color(0.08f, 0.14f, 0.22f, 1f));
+                    else if (y >= 14 && y <= 17)
+                        tex.SetPixel(x, y, (x >= 14 && x <= 17) ? new Color(0f, 1f, 0.95f, 1f) : new Color(0.12f, 0.22f, 0.35f, 1f));
+                    else if (x <= 7 || x >= 24)
+                        tex.SetPixel(x, y, new Color(0.28f, 0.42f, 0.58f, 1f));
+                    else
+                        tex.SetPixel(x, y, new Color(0.16f, 0.26f, 0.38f, 1f));
+                }
+            }
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, s, s), new Vector2(0.5f, 0.5f), 32f);
+        }
+
+        private static Sprite CreateProceduralIconChestEpic()
+        {
+            const int s = 32;
+            var tex = new Texture2D(s, s, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Point;
+            for (var y = 0; y < s; y++)
+            {
+                for (var x = 0; x < s; x++)
+                {
+                    if (x < 2 || x > 29 || y < 4 || y > 27)
+                        tex.SetPixel(x, y, Color.clear);
+                    else if (x == 2 || x == 29 || y == 4 || y == 27)
+                        tex.SetPixel(x, y, new Color(0.35f, 0.2f, 0.05f, 1f));
+                    else if (y >= 13 && y <= 18)
+                        tex.SetPixel(x, y, (x >= 13 && x <= 18) ? new Color(1f, 0.4f, 0.9f, 1f) : new Color(0.6f, 0.4f, 0.1f, 1f));
+                    else if (x <= 7 || x >= 24 || y >= 22)
+                        tex.SetPixel(x, y, new Color(1f, 0.85f, 0.3f, 1f));
+                    else
+                        tex.SetPixel(x, y, new Color(0.85f, 0.65f, 0.18f, 1f));
+                }
+            }
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, s, s), new Vector2(0.5f, 0.5f), 32f);
         }
     }
 }
