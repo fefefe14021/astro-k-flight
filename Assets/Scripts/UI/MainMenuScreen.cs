@@ -31,6 +31,10 @@ namespace KANYE.UI
         private Image shipDisplayImage;
         private Transform shipDisplayTransform;
         private Transform thrusterFlameTransform;
+        private RectTransform holoRingTransform;
+        private RectTransform holoScannerTransform;
+        private RectTransform jackpotAuraTransform;
+        private readonly List<RectTransform> pulsingRewardIcons = new List<RectTransform>();
 
         // Modals
         private GameObject shopModal;
@@ -76,18 +80,57 @@ namespace KANYE.UI
 
         private void Update()
         {
-            // Floating hover animation for the ship in the hangar bay
+            var time = Time.unscaledTime;
+
+            // Floating hover + smooth banking pitch tilt in the hangar bay
             if (shipDisplayTransform != null)
             {
-                var hover = Mathf.Sin(Time.unscaledTime * 2.8f) * 10f;
+                var hover = Mathf.Sin(time * 2.2f) * 8f;
+                var tilt = Mathf.Sin(time * 1.8f) * 3.2f;
                 shipDisplayTransform.localPosition = new Vector3(-350f, -30f + hover, 0f);
+                shipDisplayTransform.localEulerAngles = new Vector3(0f, 0f, tilt);
             }
 
-            // Engine thruster flame flicker
+            // Engine thruster flame flicker & spark particle trail
             if (thrusterFlameTransform != null)
             {
-                var flicker = 0.9f + 0.35f * Mathf.Sin(Time.unscaledTime * 24f);
-                thrusterFlameTransform.localScale = new Vector3(flicker * 1.3f, flicker * 0.9f, 1f);
+                var flicker = 0.9f + 0.35f * Mathf.Sin(time * 24f);
+                thrusterFlameTransform.localScale = new Vector3(flicker * 1.35f, flicker * 0.92f, 1f);
+
+                // Periodic thruster spark emission
+                if (MenuParticleSystem.Instance != null && Time.frameCount % 5 == 0)
+                {
+                    var yOffset = Mathf.Sin(time * 2.2f) * 8f;
+                    MenuParticleSystem.Instance.EmitThrusterEmber(new Vector2(-410f, -30f + yOffset), new Color(0.25f, 0.85f, 1f, 0.85f));
+                }
+            }
+
+            // Holographic platform pulsating
+            if (holoRingTransform != null)
+            {
+                var p = 1f + 0.05f * Mathf.Sin(time * 3f);
+                holoRingTransform.localScale = new Vector3(p, p, 1f);
+            }
+
+            // Hologram scanner beam moving vertically across the ship
+            if (holoScannerTransform != null)
+            {
+                var scanY = Mathf.PingPong(time * 65f, 70f) - 35f;
+                holoScannerTransform.anchoredPosition = new Vector2(0f, scanY);
+            }
+
+            // Daily reward modal jackpot rotating aura and pulses
+            if (dailyRewardModal != null && dailyRewardModal.activeInHierarchy)
+            {
+                if (jackpotAuraTransform != null)
+                    jackpotAuraTransform.Rotate(0f, 0f, -40f * Time.unscaledDeltaTime);
+
+                var pulse = 1f + 0.07f * Mathf.Sin(time * 4f);
+                for (var i = 0; i < pulsingRewardIcons.Count; i++)
+                {
+                    if (pulsingRewardIcons[i] != null)
+                        pulsingRewardIcons[i].localScale = Vector3.one * pulse;
+                }
             }
         }
 
@@ -112,6 +155,9 @@ namespace KANYE.UI
             // Subtle dark overlay to ensure maximum text readability
             var dimObj = CreateImage("AtmosphereDim", canvas.transform, PixelUiAtlas.White, new Color(0.02f, 0.04f, 0.07f, 0.40f));
             Stretch(dimObj.rectTransform);
+
+            // Ambient Space Dust & Interactive UI Particle System
+            MenuParticleSystem.Create(canvas);
 
             // 2. Top Header Navigation Bar (Pilot dossier & Currency)
             BuildTopHeader(canvas.transform);
@@ -208,6 +254,7 @@ namespace KANYE.UI
             holoRing.type = Image.Type.Sliced;
             holoRing.rectTransform.anchoredPosition = new Vector2(0f, -65f);
             holoRing.rectTransform.sizeDelta = new Vector2(280f, 22f);
+            holoRingTransform = holoRing.rectTransform;
 
             // Floating Ship Sprite (Original sleek saucer facing right)
             var shipObj = CreateImage("ShipVisual", shipContainer.transform, shipSprite, Color.white);
@@ -216,6 +263,15 @@ namespace KANYE.UI
             shipObj.rectTransform.localEulerAngles = Vector3.zero;
             shipObj.preserveAspect = true;
             shipDisplayImage = shipObj;
+
+            // Hologram laser scanline sweeping vertically across the ship
+            var scannerLine = CreateImage("HoloScanner", shipObj.transform, PixelUiAtlas.White, new Color(0f, 0.95f, 1f, 0.45f));
+            var scRect = scannerLine.rectTransform;
+            scRect.anchorMin = new Vector2(0.5f, 0.5f);
+            scRect.anchorMax = new Vector2(0.5f, 0.5f);
+            scRect.pivot = new Vector2(0.5f, 0.5f);
+            scRect.sizeDelta = new Vector2(180f, 2.5f);
+            holoScannerTransform = scRect;
 
             // Dynamic Thruster Flame (Attached to engine exhaust at the rear left)
             var flameObj = CreateImage("ThrusterFlame", shipObj.transform, thrusterSprite, new Color(0.3f, 0.85f, 1f, 0.95f));
@@ -507,6 +563,7 @@ namespace KANYE.UI
             var save = SaveManager.Instance;
             var currentDay = save != null ? save.GetCurrentDailyDay() : 1;
             var isAvailable = save != null && save.IsDailyRewardAvailable();
+            pulsingRewardIcons.Clear();
 
             var cardsContainer = new GameObject("CardsGrid", typeof(RectTransform));
             cardsContainer.transform.SetParent(card.transform, false);
@@ -549,6 +606,16 @@ namespace KANYE.UI
                 if (isJackpot)
                 {
                     CreateText(cardBox.transform, "JackpotLabel", "★ ДЖЕКПОТ ★", new Vector2(0.5f, 1f), new Vector2(0f, -34f), new Vector2(104f, 14f), 10, new Color(1f, 0.85f, 0.25f), FontStyle.Bold);
+
+                    // Rotating golden energy starburst aura behind the Jackpot chest
+                    var aura = CreateImage("JackpotAura", cardBox.transform, PixelUiAtlas.IconStarCore, new Color(1f, 0.75f, 0.15f, 0.35f));
+                    var aRect = aura.rectTransform;
+                    aRect.anchorMin = new Vector2(0.5f, 0.5f);
+                    aRect.anchorMax = new Vector2(0.5f, 0.5f);
+                    aRect.pivot = new Vector2(0.5f, 0.5f);
+                    aRect.anchoredPosition = new Vector2(0f, 6f);
+                    aRect.sizeDelta = new Vector2(68f, 68f);
+                    jackpotAuraTransform = aRect;
                 }
 
                 // Sprite icon for reward
@@ -561,6 +628,11 @@ namespace KANYE.UI
                 iconRect.anchoredPosition = new Vector2(0f, isJackpot ? 6f : 10f);
                 iconRect.sizeDelta = isJackpot ? new Vector2(50f, 50f) : new Vector2(40f, 40f);
                 iconImg.preserveAspect = true;
+
+                if (isJackpot || reward.cores > 0 || (isCurrent && isAvailable))
+                {
+                    pulsingRewardIcons.Add(iconRect);
+                }
 
                 // Value description
                 string rewardStr;
@@ -589,10 +661,18 @@ namespace KANYE.UI
                 if (SaveManager.Instance != null && SaveManager.Instance.ClaimDailyReward(out var c, out var cr))
                 {
                     AudioManager.PlayVictory();
+
+                    // Explosive victory particle bursts
+                    if (MenuParticleSystem.Instance != null)
+                    {
+                        MenuParticleSystem.Instance.EmitBurst(Vector2.zero, new Color(1f, 0.88f, 0.25f, 1f), 36, PixelUiAtlas.IconCredit);
+                        MenuParticleSystem.Instance.EmitBurst(Vector2.zero, new Color(0.2f, 0.95f, 1f, 1f), 28, PixelUiAtlas.IconStarCore);
+                    }
+
+                    UITween.PunchScale(this, claimBtn.GetComponent<RectTransform>(), 1.18f, 0.25f);
                     claimBtn.interactable = false;
                     claimBtn.GetComponentInChildren<Text>().text = "НАГРАДА ПОЛУЧЕНА!";
                     RefreshData();
-                    CloseAllModals();
                 }
             });
 
