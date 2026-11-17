@@ -321,7 +321,7 @@ namespace KANYE.UI
 
             // Secondary Navigation Buttons (Sliced cyber-blue arcade buttons)
             var hangarBtn = CreateSlicedButton(menuRoot.transform, "BtnHangar", "АНГАР И АРСЕНАЛ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, 50f), new Vector2(480f, 52f), 18, Color.white);
-            hangarBtn.onClick.AddListener(() => SceneLoader.LoadSceneByName(SceneLoader.ShopScene));
+            hangarBtn.onClick.AddListener(OpenShop);
 
             var loreBtn = CreateSlicedButton(menuRoot.transform, "BtnLore", "БОРТОВОЙ ЖУРНАЛ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -8f), new Vector2(480f, 50f), 18, new Color(0.9f, 0.95f, 1f));
             loreBtn.onClick.AddListener(() => OpenModal(loreModal));
@@ -770,6 +770,26 @@ namespace KANYE.UI
             AudioManager.PlayClick();
             GameRules.CurrentMode = GameMode.RogueExpedition;
             SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
+        }
+
+        private void OpenShop()
+        {
+            AudioManager.PlayClick();
+            var existing = FindAnyObjectByType<ShopScreen>();
+            if (existing != null)
+            {
+                existing.gameObject.SetActive(true);
+                return;
+            }
+
+            var shopObj = new GameObject("ShopScreenManager");
+            var shop = shopObj.AddComponent<ShopScreen>();
+            shop.OnCloseRequested = () =>
+            {
+                if (shopObj != null)
+                    Destroy(shopObj);
+                RefreshData();
+            };
         }
 
         private void ResetProgressAndStartTutorial()

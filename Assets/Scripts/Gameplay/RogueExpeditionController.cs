@@ -643,13 +643,27 @@ namespace KANYE.Gameplay
             }
         }
 
+        private static Sprite GetPerkSprite(string perkId)
+        {
+            switch (perkId)
+            {
+                case "dmg": return Resources.Load<Sprite>("Sprites/bolt") ?? PixelUiAtlas.IconCredit;
+                case "rate": return Resources.Load<Sprite>("Sprites/proj_spread") ?? PixelUiAtlas.IconCredit;
+                case "armor": return Resources.Load<Sprite>("Sprites/nanite_repair") ?? PixelUiAtlas.White;
+                case "speed": return Resources.Load<Sprite>("Sprites/thruster_ion") ?? Resources.Load<Sprite>("Sprites/thruster");
+                case "hype": return PixelUiAtlas.IconStarCore;
+                case "magnet": return Resources.Load<Sprite>("Sprites/parry_orb") ?? PixelUiAtlas.IconCredit;
+                default: return PixelUiAtlas.IconCredit;
+            }
+        }
+
         private void CreatePerkCard(Transform parent, RoguePerk perk, Vector2 pos)
         {
             var cardObj = new GameObject($"PerkCard_{perk.Id}", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             cardObj.transform.SetParent(parent, false);
             var rect = cardObj.GetComponent<RectTransform>();
             rect.anchoredPosition = pos;
-            rect.sizeDelta = new Vector2(260f, 320f);
+            rect.sizeDelta = new Vector2(260f, 330f);
 
             var img = cardObj.GetComponent<Image>();
             img.sprite = PixelUiAtlas.SubPanel;
@@ -664,14 +678,25 @@ namespace KANYE.Gameplay
                 ApplyPerk(perk);
             });
 
-            // Category Badge Header (Clean vector pill instead of emoji)
-            CreateLabel(cardObj.transform, "Badge", $"[ {perk.Subtitle} ]", 13, new Vector2(0f, 105f), new Vector2(230f, 30f), perk.ThemeColor, FontStyle.Bold);
+            // Category Badge Header
+            CreateLabel(cardObj.transform, "Badge", $"[ {perk.Subtitle} ]", 13, new Vector2(0f, 130f), new Vector2(230f, 26f), perk.ThemeColor, FontStyle.Bold);
+
+            // Icon Image
+            var iconBox = new GameObject("PerkIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            iconBox.transform.SetParent(cardObj.transform, false);
+            var iconRect = iconBox.GetComponent<RectTransform>();
+            iconRect.anchoredPosition = new Vector2(0f, 75f);
+            iconRect.sizeDelta = new Vector2(56f, 56f);
+            var iconImg = iconBox.GetComponent<Image>();
+            iconImg.sprite = GetPerkSprite(perk.Id);
+            iconImg.color = (perk.Id == "hype" || perk.Id == "armor") ? Color.white : perk.ThemeColor;
+            iconImg.preserveAspect = true;
 
             // Title
-            CreateLabel(cardObj.transform, "Title", perk.Title, 20, new Vector2(0f, 60f), new Vector2(230f, 44f), Color.white, FontStyle.Bold);
+            CreateLabel(cardObj.transform, "Title", perk.Title, 19, new Vector2(0f, 22f), new Vector2(230f, 36f), Color.white, FontStyle.Bold);
 
-            // Subtitle / Stat modifier
-            CreateLabel(cardObj.transform, "Sub", perk.Description, 14, new Vector2(0f, -10f), new Vector2(220f, 80f), new Color(0.85f, 0.95f, 1f), FontStyle.Normal);
+            // Description
+            CreateLabel(cardObj.transform, "Sub", perk.Description, 14, new Vector2(0f, -34f), new Vector2(220f, 60f), new Color(0.85f, 0.95f, 1f), FontStyle.Normal);
 
             // Select Button inside card
             var pickBtnObj = new GameObject("PickBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));

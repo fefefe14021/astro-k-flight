@@ -54,24 +54,34 @@ mergeInto(LibraryManager.library, {
       });
     }
 
-    if (window.__ysdk) {
-      readPlayer(window.__ysdk, "ready");
-      return;
+    var attempts = 0;
+    function checkAndInit() {
+      if (window.__ysdk) {
+        readPlayer(window.__ysdk, "ready");
+        return;
+      }
+
+      if (typeof YaGames !== "undefined") {
+        YaGames.init().then(function (ysdk) {
+          window.__ysdk = ysdk;
+          window.ysdk = ysdk;
+          readPlayer(ysdk, "ready");
+        }).catch(function (err) {
+          var message = err && err.message ? err.message : "Не удалось инициализировать SDK";
+          sendToUnity("error|" + String(message).replace(/\|/g, " "));
+        });
+        return;
+      }
+
+      attempts++;
+      if (attempts < 20) {
+        setTimeout(checkAndInit, 100);
+      } else {
+        sendToUnity("error|SDK Яндекс Игр не найден. Игра запущена вне площадки.");
+      }
     }
 
-    if (typeof YaGames === "undefined") {
-      sendToUnity("error|SDK Яндекс Игр не найден. Игра запущена вне площадки.");
-      return;
-    }
-
-    YaGames.init().then(function (ysdk) {
-      window.__ysdk = ysdk;
-      window.ysdk = ysdk;
-      readPlayer(ysdk, "ready");
-    }).catch(function (err) {
-      var message = err && err.message ? err.message : "Не удалось инициализировать SDK";
-      sendToUnity("error|" + String(message).replace(/\|/g, " "));
-    });
+    checkAndInit();
   },
 
   YG_Authorize: function (objectNamePtr, methodNamePtr) {

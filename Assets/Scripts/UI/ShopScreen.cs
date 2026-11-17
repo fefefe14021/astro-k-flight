@@ -17,6 +17,8 @@ namespace KANYE.UI
 {
     public class ShopScreen : MonoBehaviour
     {
+        public System.Action OnCloseRequested;
+
         private enum ShopTab
         {
             Weapons,
@@ -283,9 +285,24 @@ namespace KANYE.UI
             backImg.sprite = PixelUiAtlas.ButtonSecondary;
             backImg.type = Image.Type.Sliced;
             var backButton = backBtn.GetComponent<Button>();
-            backButton.onClick.AddListener(SceneLoader.ReturnToMainMenu);
+            backButton.onClick.AddListener(OnBackClicked);
             CreateText(backBtn.transform, "BackText", "← В ГЛАВНОЕ МЕНЮ", 17, Vector2.zero, new Vector2(260f, 36f), Color.white, FontStyle.Bold);
             UITween.AttachButtonFeedback(backButton);
+        }
+
+        private void OnBackClicked()
+        {
+            if (OnCloseRequested != null)
+            {
+                var canvas = GameObject.Find("ShopCanvas");
+                if (canvas != null)
+                    Destroy(canvas);
+                OnCloseRequested.Invoke();
+            }
+            else
+            {
+                SceneLoader.ReturnToMainMenu();
+            }
         }
 
         private void SetTab(ShopTab tab)
@@ -431,10 +448,11 @@ namespace KANYE.UI
             if (previewImage != null)
             {
                 previewImage.rectTransform.anchoredPosition = Vector2.zero;
-                previewImage.rectTransform.sizeDelta = new Vector2(160f, 100f);
+                previewImage.rectTransform.sizeDelta = new Vector2(90f, 90f);
                 var sprite = Resources.Load<Sprite>(weapon.ProjectileSprite);
-                previewImage.sprite = sprite;
-                previewImage.color = Color.white;
+                previewImage.sprite = sprite != null ? sprite : PixelUiAtlas.White;
+                previewImage.color = weapon.ThemeColor;
+                previewImage.preserveAspect = true;
             }
 
             var currentDamage = WeaponCatalog.GetDamage(weapon.Id, level);
@@ -630,11 +648,22 @@ namespace KANYE.UI
             if (previewImage != null)
             {
                 previewImage.rectTransform.anchoredPosition = Vector2.zero;
-                previewImage.rectTransform.sizeDelta = new Vector2(120f, 120f);
+                previewImage.rectTransform.sizeDelta = new Vector2(90f, 90f);
                 var sprite = Resources.Load<Sprite>(tech.SpriteName);
-                if (sprite == null) sprite = Resources.Load<Sprite>("Sprites/spark");
-                previewImage.sprite = sprite;
+                if (sprite == null)
+                {
+                    switch (tech.Id)
+                    {
+                        case "hull": sprite = Resources.Load<Sprite>("Sprites/nanite_repair"); break;
+                        case "hype": sprite = PixelUiAtlas.IconStarCore; break;
+                        case "magnet": sprite = PixelUiAtlas.IconCredit; break;
+                        case "parry": sprite = Resources.Load<Sprite>("Sprites/parry_orb"); break;
+                        default: sprite = PixelUiAtlas.White; break;
+                    }
+                }
+                previewImage.sprite = sprite != null ? sprite : PixelUiAtlas.White;
                 previewImage.color = tech.ThemeColor;
+                previewImage.preserveAspect = true;
             }
 
             if (previewTitle != null)
@@ -868,7 +897,7 @@ namespace KANYE.UI
             }
             else
             {
-                statusStr = $"{price} 💰";
+                statusStr = $"{price} ¢";
                 statusCol = new Color(1f, 0.85f, 0.3f);
             }
 
