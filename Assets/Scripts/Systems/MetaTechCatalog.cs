@@ -103,7 +103,7 @@ namespace KANYE.Systems
                     return $"Радиус притяжения нанитов: {range:F1} м";
                 case "parry":
                     var invuln = 0.75f + (level - 1) * 0.25f;
-                    var hypeGain = 30 + (level - 1) * 10;
+                    var hypeGain = 12 + (level - 1) * 3;
                     return $"Щит парирования: {invuln:F2}с неуязвимости | +{hypeGain} Ярости";
                 default:
                     return $"Уровень {level}";

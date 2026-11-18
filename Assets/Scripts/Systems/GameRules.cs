@@ -24,9 +24,9 @@ namespace KANYE.Systems
 
         public static bool TutorialArsenal { get; set; }
 
-        public static bool IsParryUnlocked => CurrentMode == GameMode.RogueExpedition || ActiveMissionProgress >= 1;
-        public static bool IsEXUnlocked => CurrentMode == GameMode.RogueExpedition || ActiveMissionProgress >= 3;
-        public static bool IsSuperUnlocked => CurrentMode == GameMode.RogueExpedition || ActiveMissionProgress >= 6;
+        public static bool IsParryUnlocked => true;
+        public static bool IsEXUnlocked => true;
+        public static bool IsSuperUnlocked => true;
 
         public static void ResetMissionStats()
         {

@@ -29,6 +29,7 @@ namespace KANYE.UI
         private Text sectorDescText;
         private Text shipSkinTitleText;
         private Image shipDisplayImage;
+        private Image nozzleDisplayImage;
         private Transform shipDisplayTransform;
         private Transform thrusterFlameTransform;
         private RectTransform holoRingTransform;
@@ -273,13 +274,25 @@ namespace KANYE.UI
             scRect.sizeDelta = new Vector2(180f, 2.5f);
             holoScannerTransform = scRect;
 
-            // Dynamic Thruster Flame (Attached to engine exhaust at the rear left)
-            var flameObj = CreateImage("ThrusterFlame", shipObj.transform, thrusterSprite, new Color(0.3f, 0.85f, 1f, 0.95f));
+            // Mechanical Engine Nozzle on Main Menu ship preview
+            var nozzleSprite = Resources.Load<Sprite>("Sprites/engine_nozzle");
+            var nozzleObj = CreateImage("EngineNozzle", shipObj.transform, nozzleSprite, Color.white);
+            var nRect = nozzleObj.rectTransform;
+            nRect.anchorMin = new Vector2(0f, 0.5f);
+            nRect.anchorMax = new Vector2(0f, 0.5f);
+            nRect.pivot = new Vector2(1f, 0.5f);
+            nRect.anchoredPosition = new Vector2(10f, -10f);
+            nRect.sizeDelta = new Vector2(45f, 40f);
+            nRect.localEulerAngles = Vector3.zero;
+            nozzleDisplayImage = nozzleObj;
+
+            // Dynamic Thruster Flame (Attached to engine nozzle mouth at the rear left)
+            var flameObj = CreateImage("ThrusterFlame", nozzleObj.transform, thrusterSprite, new Color(0.3f, 0.85f, 1f, 0.95f));
             var flameRect = flameObj.rectTransform;
             flameRect.anchorMin = new Vector2(0f, 0.5f);
             flameRect.anchorMax = new Vector2(0f, 0.5f);
             flameRect.pivot = new Vector2(1f, 0.5f);
-            flameRect.anchoredPosition = new Vector2(-4f, 0f);
+            flameRect.anchoredPosition = new Vector2(10f, 0f);
             flameRect.sizeDelta = new Vector2(55f, 32f);
             flameRect.localEulerAngles = Vector3.zero;
             thrusterFlameTransform = flameRect;
@@ -851,6 +864,13 @@ namespace KANYE.UI
                 if (sprite != null)
                     shipDisplayImage.sprite = sprite;
                 shipDisplayImage.color = Color.white;
+            }
+
+            if (nozzleDisplayImage != null)
+            {
+                var nSpr = Resources.Load<Sprite>(equippedSkin.NozzleSprite);
+                if (nSpr != null)
+                    nozzleDisplayImage.sprite = nSpr;
             }
 
             if (thrusterFlameTransform != null)

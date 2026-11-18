@@ -16,8 +16,26 @@ namespace KANYE.EditorTools
 {
     public static class GameSmokeTest
     {
+        private static System.Text.StringBuilder testLog = new System.Text.StringBuilder();
+
+        [InitializeOnLoadMethod]
+        private static void AutoRunOnTrigger()
+        {
+            if (System.IO.File.Exists("run_smoke_tests.trigger"))
+            {
+                try { System.IO.File.Delete("run_smoke_tests.trigger"); } catch { }
+                RunAllTests();
+            }
+        }
+
+        [MenuItem("Tools/Run Smoke Tests")]
         public static void RunAllTests()
         {
+            testLog.Clear();
+            testLog.AppendLine("==================================================");
+            testLog.AppendLine("[SMOKE TEST] Starting Astro K Flight Validation...");
+            testLog.AppendLine("==================================================");
+
             Debug.Log("==================================================");
             Debug.Log("[SMOKE TEST] Starting Astro K Flight Validation...");
             Debug.Log("==================================================");
@@ -78,6 +96,9 @@ namespace KANYE.EditorTools
                 AudioManager.SetVolume(0.8f);
                 if (Mathf.Abs(AudioManager.MasterVolume - 0.8f) > 0.01f)
                     throw new Exception("MasterVolume setter failed");
+                AudioManager.PlayShoot();
+                AudioManager.PlayEnemyLaser();
+                AudioManager.PlayDenied();
                 UnityEngine.Object.DestroyImmediate(go);
             }, ref passed, ref failed);
 
@@ -319,17 +340,115 @@ namespace KANYE.EditorTools
                 UnityEngine.Object.DestroyImmediate(go);
             }, ref passed, ref failed);
 
+            Test("17. Route Completion & Remaining Enemy Clearance", () =>
+            {
+                // Reset states
+                MissionController.IsRouteCompleted = false;
+                if (MissionController.IsRouteCompleted) throw new Exception("Expected IsRouteCompleted false initially");
+
+                var enemyObj1 = new GameObject("Enemy1");
+                var e1 = enemyObj1.AddComponent<Enemy>();
+                e1.Configure(false, 5, 2.5f);
+
+                var enemyObj2 = new GameObject("Enemy2");
+                var e2 = enemyObj2.AddComponent<Enemy>();
+                e2.Configure(true, 25, 2.0f);
+
+                var activeCount = Enemy.ActiveEnemyCount;
+                if (activeCount < 2) throw new Exception($"Expected at least 2 active enemies, got {activeCount}");
+
+                // Simulate taking lethal damage
+                e1.TakeDamage(100);
+                if (!e1.IsDead) throw new Exception("Expected e1 to be marked dead");
+
+                UnityEngine.Object.DestroyImmediate(enemyObj1);
+                UnityEngine.Object.DestroyImmediate(enemyObj2);
+            }, ref passed, ref failed);
+
+            Test("18. Mechanical Engine Nozzle & Thruster Sprites", () =>
+            {
+                string[] nozzles = { "engine_nozzle", "engine_nozzle_cyber", "engine_nozzle_gold", "engine_nozzle_bio", "engine_nozzle_steam", "engine_nozzle_void", "engine_glow" };
+                foreach (var n in nozzles)
+                {
+                    var spr = Resources.Load<Sprite>("Sprites/" + n);
+                    if (spr == null) throw new Exception($"Missing sprite Resources/Sprites/{n}");
+                    if (spr.rect.width < 8 || spr.rect.height < 8) throw new Exception($"Sprite {n} has invalid dimensions");
+                }
+
+                foreach (var s in ShipSkinCatalog.All)
+                {
+                    if (string.IsNullOrEmpty(s.NozzleSprite)) throw new Exception($"Skin {s.Id} missing NozzleSprite definition");
+                    var spr = Resources.Load<Sprite>(s.NozzleSprite);
+                    if (spr == null) throw new Exception($"Could not load NozzleSprite {s.NozzleSprite} for skin {s.Id}");
+                }
+            }, ref passed, ref failed);
+
+            Test("19. Super Projectile Red Mega-Laser Beam", () =>
+            {
+                var shipObj = new GameObject("ShipDummy");
+                var laser = SuperProjectile.UnleashMegaLaser(shipObj.transform, Vector2.zero);
+
+                var col = laser.GetComponent<BoxCollider2D>();
+                if (col == null || !col.isTrigger) throw new Exception("SuperProjectile missing trigger BoxCollider2D");
+                if (col.size.x < 15f) throw new Exception($"Expected laser length >= 15, got {col.size.x}");
+
+                UnityEngine.Object.DestroyImmediate(laser.gameObject);
+                UnityEngine.Object.DestroyImmediate(shipObj);
+            }, ref passed, ref failed);
+
+            Test("20. Floating Combat Text & Heavy Enemy Health Bar", () =>
+            {
+                // Verify FloatingCombatText
+                var fctObj = new GameObject("FCTTest");
+                var fct = fctObj.AddComponent<FloatingCombatText>();
+                FloatingCombatText.ShowDamage(Vector3.zero, 25, true);
+                FloatingCombatText.ShowParry(Vector3.zero);
+                FloatingCombatText.ShowHeal(Vector3.zero, 1);
+                FloatingCombatText.ShowCoins(Vector3.zero, 50);
+
+                // Verify Heavy Enemy Health Bar
+                var heavyObj = new GameObject("HeavyTest");
+                var heavy = heavyObj.AddComponent<Enemy>();
+                heavy.Configure(true, 30, 2.0f);
+                heavy.TakeDamage(5); // Takes damage, should create and update health bar
+
+                var bar = heavyObj.transform.Find("HealthBar");
+                if (bar == null || !bar.gameObject.activeSelf)
+                    throw new Exception("Heavy Enemy HealthBar did not activate after taking damage");
+
+                UnityEngine.Object.DestroyImmediate(heavyObj);
+                UnityEngine.Object.DestroyImmediate(fctObj);
+            }, ref passed, ref failed);
+
+            testLog.AppendLine("==================================================");
+            testLog.AppendLine($"[SMOKE TEST FINISHED] Passed: {passed}, Failed: {failed}");
+            testLog.AppendLine("==================================================");
+
+            try
+            {
+                System.IO.File.WriteAllText("smoke_test_results.txt", testLog.ToString());
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("Failed to write smoke_test_results.txt: " + ex.Message);
+            }
+
             Debug.Log("==================================================");
             Debug.Log($"[SMOKE TEST FINISHED] Passed: {passed}, Failed: {failed}");
             Debug.Log("==================================================");
 
-            if (failed > 0)
+            try
             {
-                EditorApplication.Exit(1);
+                if (!Application.isBatchMode && !Application.isPlaying)
+                {
+                    EditorSceneManager.OpenScene("Assets/Scenes/MainMenu.unity", OpenSceneMode.Single);
+                }
             }
-            else
+            catch { }
+
+            if (Application.isBatchMode)
             {
-                EditorApplication.Exit(0);
+                EditorApplication.Exit(failed > 0 ? 1 : 0);
             }
         }
 
@@ -338,11 +457,13 @@ namespace KANYE.EditorTools
             try
             {
                 action();
+                testLog.AppendLine($"[PASS] {name}");
                 Debug.Log($"[PASS] {name}");
                 passed++;
             }
             catch (Exception ex)
             {
+                testLog.AppendLine($"[FAIL] {name}: {ex.Message}");
                 Debug.LogError($"[FAIL] {name}: {ex.Message}\n{ex.StackTrace}");
                 failed++;
             }

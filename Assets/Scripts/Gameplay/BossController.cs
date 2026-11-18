@@ -37,6 +37,7 @@ namespace KANYE.Gameplay
         private float attackTimer = 1.4f;
         private int attackCycle;
         private bool isEntering = true;
+        private bool enragedAlertTriggered;
 
         public static BossController SpawnBoss(int sectorIndex)
         {
@@ -262,6 +263,7 @@ namespace KANYE.Gameplay
             var proj = laserObj.AddComponent<EnemyProjectile>();
             proj.Launch(direction, 6.8f);
             EffectsManager.PlayMuzzleFlash(spawnPos);
+            AudioManager.PlayEnemyLaser();
         }
 
         public void TakeDamage(int amount)
@@ -270,6 +272,20 @@ namespace KANYE.Gameplay
 
             CurrentHealth = Mathf.Max(0, CurrentHealth - amount);
             HealthChanged?.Invoke(CurrentHealth, MaxHealth);
+
+            var scatter = (Vector3)(UnityEngine.Random.insideUnitCircle * 0.8f);
+            FloatingCombatText.ShowDamage(transform.position + scatter, amount, amount >= 10);
+
+            // Phase 2 Overdrive Transition
+            if (IsEnraged && !enragedAlertTriggered && !IsDead)
+            {
+                enragedAlertTriggered = true;
+                HypeHud.Instance?.ShowBanner("⚠️ ФАЗА 2: ПЕРЕГРУЗКА!", $"{BossName} входит в режим максимальной ярости!", 2.2f, new Color(1f, 0.25f, 0.25f));
+                CameraShake.HitStop(0.08f);
+                CameraShake.Shake(0.5f, 0.5f);
+                AudioManager.PlayBossWarning();
+                EffectsManager.PlayExplosion(transform.position, new Color(1f, 0.35f, 0.15f), isMechanical: true);
+            }
 
             // Cuphead boss hit flash
             StartCoroutine(HitFlashRoutine());
@@ -303,7 +319,9 @@ namespace KANYE.Gameplay
             AudioManager.PlayExplosion(true);
 
             // Broforce style explosion cascade across the boss hull
-            HypeHud.Instance?.ShowBanner("A KNOCKOUT!", "БОСС ПОВЕРЖЕН!", 2.2f, new Color(1f, 0.85f, 0.2f));
+            SaveManager.Instance?.AddCoins(250);
+            FloatingCombatText.ShowCoins(transform.position, 250);
+            HypeHud.Instance?.ShowBanner("A KNOCKOUT!", "БОСС ПОВЕРЖЕН! +250 ¢", 2.2f, new Color(1f, 0.85f, 0.2f));
 
             var elapsed = 0f;
             while (elapsed < 2.0f)

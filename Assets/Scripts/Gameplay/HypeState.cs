@@ -8,7 +8,7 @@ namespace KANYE.Gameplay
     public class HypeState : MonoBehaviour
     {
         [SerializeField] private float hypeMax = 100f;
-        [SerializeField] private float hypePerKill = 25f;
+        [SerializeField] private float hypePerKill = 4.5f;
 
         public int Albums { get; private set; }
         public int AlbumsRequired { get; private set; }

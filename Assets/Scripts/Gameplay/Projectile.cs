@@ -232,10 +232,11 @@ namespace KANYE.Gameplay
                 var enemies = FindObjectsByType<Enemy>();
                 for (var i = 0; i < enemies.Length; i++)
                 {
-                    if (Vector2.Distance(impactPos, enemies[i].transform.position) < 2.2f)
+                    var d = Vector2.Distance(impactPos, enemies[i].transform.position);
+                    if (d < 2.2f)
                     {
-                        GameRules.NotifyAsteroidDestroyed(1);
-                        Destroy(enemies[i].gameObject);
+                        var aoeDmg = Mathf.Max(2, Mathf.RoundToInt(damage * Mathf.Clamp01(1f - d / 2.2f)));
+                        enemies[i].TakeDamage(aoeDmg, impactPos);
                     }
                 }
                 Destroy(gameObject);

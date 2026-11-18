@@ -111,6 +111,7 @@ namespace KANYE.Gameplay
             CurrentWave = wave;
             albumsRequiredForWave = 10 + wave * 2;
             isWaveTransitioning = false;
+            MissionController.IsRouteCompleted = false;
 
             var hype = FindAnyObjectByType<HypeState>();
             if (hype != null)
@@ -186,12 +187,24 @@ namespace KANYE.Gameplay
                 }
             }
 
-            // Check if wave albums collected
+            // Check if wave route completed
             var currentHype = FindAnyObjectByType<HypeState>();
             currentHype?.AdvanceRoute(1.05f * Time.deltaTime);
-            if (currentHype != null && currentHype.Route + 0.05f >= currentHype.RouteRequired)
+            if (currentHype != null && currentHype.Route >= currentHype.RouteRequired)
             {
-                CompleteWave();
+                if (!MissionController.IsRouteCompleted)
+                {
+                    MissionController.IsRouteCompleted = true;
+                    if (Enemy.ActiveEnemyCount > 0)
+                    {
+                        HypeHud.Instance?.ShowBanner("ДИСТАНЦИЯ ПРОЙДЕНА!", "Уничтожьте всех оставшихся врагов!", 2.2f, new Color(1f, 0.45f, 0.2f));
+                    }
+                }
+
+                if (Enemy.ActiveEnemyCount == 0)
+                {
+                    CompleteWave();
+                }
             }
         }
 

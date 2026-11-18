@@ -12,7 +12,7 @@ namespace KANYE.Gameplay
         [SerializeField] protected int maxLives = 3;
         [SerializeField] protected float invulnerableSeconds = 1.35f;
 
-        public int Lives { get; protected set; }
+        public int Lives { get; protected set; } = 3;
         public int MaxLives => maxLives;
         public bool IsDefeated { get; protected set; }
         public bool IsInvulnerable => invulnerableUntil > Time.time;

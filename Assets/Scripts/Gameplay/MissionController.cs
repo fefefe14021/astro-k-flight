@@ -22,12 +22,15 @@ namespace KANYE.Gameplay
         private float parryTimer;
         private bool bossSpawned;
         private bool missionCompleted;
+        private bool routeCompleteBannerShown;
 
         public static bool IsMissionFinished { get; private set; }
+        public static bool IsRouteCompleted { get; set; }
 
         private void Awake()
         {
             IsMissionFinished = false;
+            IsRouteCompleted = false;
             if (GameRules.CurrentMode == GameMode.RogueExpedition)
             {
                 gameObject.AddComponent<RogueExpeditionController>();
@@ -68,7 +71,37 @@ namespace KANYE.Gameplay
 
             hype?.AdvanceRoute(1.15f * Time.deltaTime);
 
+            if (!IsRouteCompleted && hype != null && hype.Route >= hype.RouteRequired)
+            {
+                IsRouteCompleted = true;
+                var remaining = Enemy.ActiveEnemyCount;
+                if (remaining > 0 && !routeCompleteBannerShown)
+                {
+                    routeCompleteBannerShown = true;
+                    HypeHud.Instance?.ShowBanner("ДИСТАНЦИЯ ПРОЙДЕНА!", "Уничтожьте всех оставшихся врагов!", 2.2f, new Color(1f, 0.45f, 0.2f));
+                }
+            }
+
+            // Sector clearance check: only advance or summon boss when all remaining enemies are destroyed!
+            if (IsRouteCompleted && !missionCompleted)
+            {
+                var remainingEnemies = Enemy.ActiveEnemyCount;
+                if (remainingEnemies == 0)
+                {
+                    if (mission.HasBoss)
+                    {
+                        if (!bossSpawned)
+                            SummonBoss();
+                    }
+                    else
+                    {
+                        CompleteMission();
+                    }
+                }
+            }
+
             // Spawning phase before boss or before mission completion
+            // Note: Asteroids (meteorites) CONTINUE flying and spawning even after route is completed!
             if (!bossSpawned)
             {
                 spawnTimer += Time.deltaTime;
@@ -110,16 +143,14 @@ namespace KANYE.Gameplay
             if (missionCompleted || hype == null || mission == null)
                 return;
 
-            if (hype.Route + 0.05f >= hype.RouteRequired)
+            if (hype.Route >= hype.RouteRequired && !IsRouteCompleted)
             {
-                if (mission.HasBoss)
+                IsRouteCompleted = true;
+                var remaining = Enemy.ActiveEnemyCount;
+                if (remaining > 0 && !routeCompleteBannerShown)
                 {
-                    if (!bossSpawned)
-                        SummonBoss();
-                }
-                else
-                {
-                    CompleteMission();
+                    routeCompleteBannerShown = true;
+                    HypeHud.Instance?.ShowBanner("ДИСТАНЦИЯ ПРОЙДЕНА!", "Уничтожьте всех оставшихся врагов!", 2.2f, new Color(1f, 0.45f, 0.2f));
                 }
             }
         }

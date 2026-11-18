@@ -135,6 +135,7 @@ namespace KANYE.Gameplay
 
             var dmg = Mathf.Max(1, projectile.Damage);
             currentHealth -= dmg;
+            FloatingCombatText.ShowDamage(transform.position, dmg, false);
 
             EffectsManager.PlayImpact(projectile.transform.position, Vector2.left, new Color(1f, 0.85f, 0.3f));
             projectile.HandleImpact(transform.position);

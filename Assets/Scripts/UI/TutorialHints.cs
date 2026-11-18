@@ -49,7 +49,6 @@ namespace KANYE.UI
         }
 
         private bool moved;
-        private bool shot;
         private Lesson step = Lesson.Move;
         private HypeState hype;
         private Asteroid activeTrainingAsteroid;
@@ -228,7 +227,6 @@ namespace KANYE.UI
 
         private void HandleShot()
         {
-            shot = true;
         }
 
         private void HandleEx()

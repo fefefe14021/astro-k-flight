@@ -21,6 +21,7 @@ namespace KANYE.Gameplay
 
         // Custom Thruster Flame & Particle System parameters
         public string ThrusterSprite;
+        public string NozzleSprite;
         public Color ThrusterColor;
         public Color AntiGravColor;
         public Color ParticleColor;
@@ -41,7 +42,8 @@ namespace KANYE.Gameplay
             Color? particleColor = null,
             string particleType = "ion",
             int requiredMissionIndex = 0,
-            int coresPrice = 0)
+            int coresPrice = 0,
+            string nozzleSprite = null)
         {
             Id = id;
             Title = title;
@@ -57,6 +59,23 @@ namespace KANYE.Gameplay
             ParticleColor = particleColor ?? themeColor;
             ParticleType = particleType;
             RequiredMissionIndex = requiredMissionIndex;
+
+            if (!string.IsNullOrEmpty(nozzleSprite))
+            {
+                NozzleSprite = nozzleSprite;
+            }
+            else
+            {
+                switch (id)
+                {
+                    case "cyberpunk": NozzleSprite = "Sprites/engine_nozzle_cyber"; break;
+                    case "gold": NozzleSprite = "Sprites/engine_nozzle_gold"; break;
+                    case "bio": NozzleSprite = "Sprites/engine_nozzle_bio"; break;
+                    case "steampunk": NozzleSprite = "Sprites/engine_nozzle_steam"; break;
+                    case "void": NozzleSprite = "Sprites/engine_nozzle_void"; break;
+                    default: NozzleSprite = "Sprites/engine_nozzle"; break;
+                }
+            }
         }
     }
 

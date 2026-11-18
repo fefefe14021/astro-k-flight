@@ -149,11 +149,25 @@ namespace KANYE.UI
 
             ApplyRageMeter(HypeState.RageCanCharge);
 
-            if (exButtonObj != null && exButtonObj.activeSelf != (canEx && !canSuper))
-                exButtonObj.SetActive(canEx && !canSuper);
+            if (exButtonObj != null)
+            {
+                if (exButtonObj.activeSelf != canEx)
+                    exButtonObj.SetActive(canEx);
 
-            if (superButtonObj != null && superButtonObj.activeSelf != canSuper)
-                superButtonObj.SetActive(canSuper);
+                var exRect = exButtonObj.GetComponent<RectTransform>();
+                if (exRect != null)
+                    exRect.anchoredPosition = canSuper ? new Vector2(-155f, -112f) : new Vector2(0f, -112f);
+            }
+
+            if (superButtonObj != null)
+            {
+                if (superButtonObj.activeSelf != canSuper)
+                    superButtonObj.SetActive(canSuper);
+
+                var superRect = superButtonObj.GetComponent<RectTransform>();
+                if (superRect != null)
+                    superRect.anchoredPosition = canEx ? new Vector2(155f, -112f) : new Vector2(0f, -112f);
+            }
 
             // 3. Boss Health Bar Binding
             var boss = BossController.ActiveBoss;
@@ -179,6 +193,47 @@ namespace KANYE.UI
                 if (bossBarObj != null && bossBarObj.activeSelf)
                     bossBarObj.SetActive(false);
             }
+
+            // 4. Sector Cleanup Indicator (Route completed, eliminating remaining hostiles)
+            if (albumLabel != null && MissionController.IsRouteCompleted && !MissionController.IsMissionFinished)
+            {
+                var remaining = Enemy.ActiveEnemyCount;
+                if (remaining > 0)
+                {
+                    var word = remaining == 1 ? "ВРАГ" : (remaining >= 2 && remaining <= 4 ? "ВРАГА" : "ВРАГОВ");
+                    albumLabel.text = $"⚠️ ЗАЧИСТКА: {remaining} {word}";
+                    var pulse = Mathf.PingPong(Time.unscaledTime * 4.5f, 1f);
+                    albumLabel.color = Color.Lerp(new Color(1f, 0.85f, 0.2f), new Color(1f, 0.28f, 0.18f), pulse);
+                }
+                else
+                {
+                    albumLabel.text = "СЕКТОР ЗАЧИЩЕН!";
+                    albumLabel.color = new Color(0.35f, 1f, 0.45f);
+                }
+            }
+        }
+
+        public void ShakeMeterDenied()
+        {
+            StopCoroutine("DeniedShakeRoutine");
+            StartCoroutine("DeniedShakeRoutine");
+        }
+
+        private IEnumerator DeniedShakeRoutine()
+        {
+            if (rageMeter == null) yield break;
+            var rt = rageMeter.GetComponent<RectTransform>();
+            if (rt == null) yield break;
+            var origPos = rt.anchoredPosition;
+            var t = 0f;
+            while (t < 0.16f)
+            {
+                t += Time.unscaledDeltaTime;
+                var offset = Mathf.Sin(t * 60f) * 4f;
+                rt.anchoredPosition = new Vector2(origPos.x + offset, origPos.y);
+                yield return null;
+            }
+            rt.anchoredPosition = origPos;
         }
 
         public void ShowBanner(string title, string subtitle, float duration, Color titleColor)
@@ -249,7 +304,26 @@ namespace KANYE.UI
                     : hypeState.Hype / hypeState.HypeMax;
                 var req = hypeState.RouteRequired > 0f ? hypeState.RouteRequired : 6f;
                 if (albumLabel != null)
-                    albumLabel.text = $"ПУТЬ: {Mathf.FloorToInt(hypeState.Route)} / {Mathf.FloorToInt(req)} км";
+                {
+                    if (MissionController.IsRouteCompleted && !MissionController.IsMissionFinished)
+                    {
+                        var remaining = Enemy.ActiveEnemyCount;
+                        if (remaining > 0)
+                        {
+                            var word = remaining == 1 ? "ВРАГ" : (remaining >= 2 && remaining <= 4 ? "ВРАГА" : "ВРАГОВ");
+                            albumLabel.text = $"⚠️ ЗАЧИСТКА: {remaining} {word}";
+                        }
+                        else
+                        {
+                            albumLabel.text = "СЕКТОР ЗАЧИЩЕН!";
+                        }
+                    }
+                    else
+                    {
+                        albumLabel.text = $"ПУТЬ: {Mathf.FloorToInt(hypeState.Route)} / {Mathf.FloorToInt(req)} км";
+                        albumLabel.color = new Color(1f, 0.88f, 0.4f, 1f);
+                    }
+                }
 
                 // Update EX Card pips
                 var cards = hypeState.CardsCount;
@@ -382,7 +456,7 @@ namespace KANYE.UI
             });
             exButtonObj.SetActive(false);
 
-            superButtonObj = CreatePromptButton(canvasObj.transform, "SuperButton", "⚡ МЕГА-ЛАЗЕР [E]", new Vector2(0f, -112f), new Color(1f, 0.8f, 0.15f), () =>
+            superButtonObj = CreatePromptButton(canvasObj.transform, "SuperButton", "⚡ КРАСНЫЙ МЕГА-ЛАЗЕР [E]", new Vector2(0f, -112f), new Color(1f, 0.15f, 0.22f), () =>
             {
                 var shooter = FindAnyObjectByType<ShipShooter>();
                 shooter?.TryFireSuper();

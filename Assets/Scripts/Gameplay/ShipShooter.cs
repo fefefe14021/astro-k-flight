@@ -115,9 +115,21 @@ namespace KANYE.Gameplay
 #endif
 
             if (superPressed)
-                TryFireSuper();
+            {
+                if (!TryFireSuper())
+                {
+                    AudioManager.PlayDenied();
+                    HypeHud.Instance?.ShakeMeterDenied();
+                }
+            }
             else if (exPressed)
-                TryFireEX();
+            {
+                if (!TryFireEX())
+                {
+                    AudioManager.PlayDenied();
+                    HypeHud.Instance?.ShakeMeterDenied();
+                }
+            }
         }
 
         private void UpdateHeatState()
@@ -261,17 +273,7 @@ namespace KANYE.Gameplay
 
         private void FireSuperBeam()
         {
-            var launchDir = (Vector2)transform.right;
-            var origin = (Vector2)(transform.position + transform.rotation * (Vector3)muzzleOffset);
-            var superObj = new GameObject("SuperBeam", typeof(SpriteRenderer), typeof(Rigidbody2D), typeof(CircleCollider2D));
-            superObj.transform.position = origin;
-            var beam = superObj.AddComponent<SuperProjectile>();
-            beam.Launch(launchDir);
-
-            AudioManager.PlaySuperBeam();
-            EffectsManager.PlayMuzzleFlash(origin, new Color(0.25f, 0.9f, 1f), 2.6f);
-            CameraShake.HitStop(0.06f);
-            CameraShake.Shake(0.6f, 0.5f);
+            SuperProjectile.UnleashMegaLaser(transform, muzzleOffset);
             GetComponent<ShipThrusterVisual>()?.TriggerRecoil();
         }
 

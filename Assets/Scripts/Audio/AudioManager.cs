@@ -31,6 +31,8 @@ namespace KANYE.Audio
         private AudioClip radioBeepClip;
         private AudioClip radioOpenClip;
         private AudioClip powerupClip;
+        private AudioClip enemyLaserClip;
+        private AudioClip emptyDeniedClip;
         private AudioClip arcadeMusicLoop;
 
         public static float MasterVolume { get; private set; } = 0.75f;
@@ -199,6 +201,16 @@ namespace KANYE.Audio
             Instance?.PlayOneShot(Instance.powerupClip, 0.9f, 0.04f);
         }
 
+        public static void PlayEnemyLaser()
+        {
+            Instance?.PlayOneShot(Instance.enemyLaserClip, 0.65f, 0.08f);
+        }
+
+        public static void PlayDenied()
+        {
+            Instance?.PlayOneShot(Instance.emptyDeniedClip, 0.75f, 0.02f);
+        }
+
         // ==========================================
         // PROCEDURAL AUDIO SYNTHESIZERS (Zero assets)
         // ==========================================
@@ -206,6 +218,16 @@ namespace KANYE.Audio
         private void SynthesizeClips()
         {
             const int sampleRate = 44100;
+
+            // 0. Enemy Laser: Threatening electronic blaster pulse (540Hz -> 140Hz, 0.08s)
+            enemyLaserClip = SynthesizeClip("Sfx_EnemyLaser", sampleRate, 0.08f, (t, dur) =>
+            {
+                var env = Mathf.Pow(1f - (t / dur), 1.2f);
+                var freq = Mathf.Lerp(540f, 140f, t / dur);
+                var triangle = Mathf.PingPong(t * freq * 4f, 2f) - 1f;
+                var noise = (Random.value * 2f - 1f) * 0.18f;
+                return (triangle * 0.75f + noise) * env * 0.7f;
+            });
 
             // 1. Shoot: Downward frequency chirp (850Hz -> 200Hz, 0.09s)
             shootClip = SynthesizeClip("Sfx_Shoot", sampleRate, 0.09f, (t, dur) =>
@@ -379,6 +401,16 @@ namespace KANYE.Audio
                 var env = 1f - ((t % (dur / 4f)) / (dur / 4f));
                 var wave = Mathf.Sin(2f * Mathf.PI * freq * t) * 0.7f + Mathf.Sin(4f * Mathf.PI * freq * t) * 0.3f;
                 return wave * env * 0.6f;
+            });
+
+            // 16. Denied / Empty: Low electronic double-buzz for unready actions (0.12s)
+            emptyDeniedClip = SynthesizeClip("Sfx_Denied", sampleRate, 0.12f, (t, dur) =>
+            {
+                var env = 1f - (t / dur);
+                var pulse = (t < 0.05f || t > 0.065f) ? 1f : 0f;
+                var f = 150f;
+                var sq = Mathf.Sign(Mathf.Sin(2f * Mathf.PI * f * t));
+                return sq * env * pulse * 0.5f;
             });
         }
 

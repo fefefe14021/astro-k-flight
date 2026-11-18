@@ -109,6 +109,7 @@ namespace KANYE.Gameplay
             Lives = Mathf.Min(MaxLives, Lives + amount);
             NotifyChanged();
             Changed?.Invoke(Lives);
+            FloatingCombatText.ShowHeal(transform.position, amount);
             AudioManager.PlayPowerup();
             EffectsManager.PlayImpact(transform.position, Vector2.up, Color.green);
             return true;

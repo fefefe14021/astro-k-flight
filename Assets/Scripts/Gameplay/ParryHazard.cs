@@ -3,6 +3,7 @@
 // Cuphead-style pink parryable hazard/projectile.
 
 using KANYE.Systems;
+using KANYE.UI;
 using UnityEngine;
 
 namespace KANYE.Gameplay
@@ -108,19 +109,20 @@ namespace KANYE.Gameplay
         public void ExecuteParry(PlayerHealth health)
         {
             // 1. Visceral Cuphead feedback
+            FloatingCombatText.ShowParry(transform.position);
             EffectsManager.PlayParry(transform.position);
             CameraShake.Shake(0.35f, 0.25f);
             CameraShake.HitStop(0.08f); // 80ms freeze frame
 
-            // 2. Grant Hype meter (+30 Hype!)
-            var hypeBonus = 30f;
+            // 2. Grant Hype meter (+12 Hype base, nearly half an EX card!)
+            var hypeBonus = 12f;
             var invulnDuration = 0.75f;
             if (SaveManager.Instance != null && SaveManager.Instance.Data != null)
             {
                 var parryLvl = SaveManager.Instance.Data.parryMetaLevel;
                 if (parryLvl > 1)
                 {
-                    hypeBonus += (parryLvl - 1) * 10f;
+                    hypeBonus += (parryLvl - 1) * 3f;
                     invulnDuration += (parryLvl - 1) * 0.25f;
                 }
             }
