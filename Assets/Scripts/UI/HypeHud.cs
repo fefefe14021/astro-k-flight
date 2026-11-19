@@ -28,7 +28,9 @@ namespace KANYE.UI
         private Text rageLabel;
         private GameObject rageMeter;
         private RectTransform centerPanelRect;
-        private Text livesLabel;
+        private RectTransform livesPanelRect;
+        private Image[] heartImages = new Image[6];
+        private Transform heartsContainer;
         private Text parryLabel;
 
         // EX & Super Action Prompts
@@ -49,6 +51,10 @@ namespace KANYE.UI
         private float targetHypeFill;
         private GameObject pauseRoot;
         private bool pausedByPlayer;
+        private Text pauseBtnLabel;
+        private Text pauseTitleLabel;
+        private Text resumeBtnLabel;
+        private Text menuBtnLabel;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AutoHook()
@@ -107,13 +113,18 @@ namespace KANYE.UI
                 yield return null;
 
             yield return new WaitForSecondsRealtime(0.25f);
-            ShowBanner("READY? FIGHT!", "Сокруши вражеский флот и собери ресурсы!", 2.0f, new Color(1f, 0.85f, 0.2f));
+            ShowBanner("READY? FIGHT!", Localization.T("Сокруши вражеский флот и собери ресурсы!", "Defeat the enemy fleet and extract resources!"), 2.0f, new Color(1f, 0.85f, 0.2f));
         }
 
         private void Update()
         {
+#if ENABLE_INPUT_SYSTEM
+            if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
+                TryTogglePause();
+#else
             if (Input.GetKeyDown(KeyCode.Escape))
                 TryTogglePause();
+#endif
 
             if (hypeState == null)
             {
@@ -121,6 +132,16 @@ namespace KANYE.UI
                 if (hypeState != null)
                 {
                     hypeState.Changed += Refresh;
+                    Refresh();
+                }
+            }
+
+            if (shipHealth == null)
+            {
+                shipHealth = FindAnyObjectByType<ShipHealth>();
+                if (shipHealth != null)
+                {
+                    shipHealth.Changed += Refresh;
                     Refresh();
                 }
             }
@@ -149,25 +170,11 @@ namespace KANYE.UI
 
             ApplyRageMeter(HypeState.RageCanCharge);
 
-            if (exButtonObj != null)
-            {
-                if (exButtonObj.activeSelf != canEx)
-                    exButtonObj.SetActive(canEx);
+            if (exButtonObj != null && exButtonObj.activeSelf != (canEx && !canSuper))
+                exButtonObj.SetActive(canEx && !canSuper);
 
-                var exRect = exButtonObj.GetComponent<RectTransform>();
-                if (exRect != null)
-                    exRect.anchoredPosition = canSuper ? new Vector2(-155f, -112f) : new Vector2(0f, -112f);
-            }
-
-            if (superButtonObj != null)
-            {
-                if (superButtonObj.activeSelf != canSuper)
-                    superButtonObj.SetActive(canSuper);
-
-                var superRect = superButtonObj.GetComponent<RectTransform>();
-                if (superRect != null)
-                    superRect.anchoredPosition = canEx ? new Vector2(155f, -112f) : new Vector2(0f, -112f);
-            }
+            if (superButtonObj != null && superButtonObj.activeSelf != canSuper)
+                superButtonObj.SetActive(canSuper);
 
             // 3. Boss Health Bar Binding
             var boss = BossController.ActiveBoss;
@@ -193,47 +200,6 @@ namespace KANYE.UI
                 if (bossBarObj != null && bossBarObj.activeSelf)
                     bossBarObj.SetActive(false);
             }
-
-            // 4. Sector Cleanup Indicator (Route completed, eliminating remaining hostiles)
-            if (albumLabel != null && MissionController.IsRouteCompleted && !MissionController.IsMissionFinished)
-            {
-                var remaining = Enemy.ActiveEnemyCount;
-                if (remaining > 0)
-                {
-                    var word = remaining == 1 ? "ВРАГ" : (remaining >= 2 && remaining <= 4 ? "ВРАГА" : "ВРАГОВ");
-                    albumLabel.text = $"⚠️ ЗАЧИСТКА: {remaining} {word}";
-                    var pulse = Mathf.PingPong(Time.unscaledTime * 4.5f, 1f);
-                    albumLabel.color = Color.Lerp(new Color(1f, 0.85f, 0.2f), new Color(1f, 0.28f, 0.18f), pulse);
-                }
-                else
-                {
-                    albumLabel.text = "СЕКТОР ЗАЧИЩЕН!";
-                    albumLabel.color = new Color(0.35f, 1f, 0.45f);
-                }
-            }
-        }
-
-        public void ShakeMeterDenied()
-        {
-            StopCoroutine("DeniedShakeRoutine");
-            StartCoroutine("DeniedShakeRoutine");
-        }
-
-        private IEnumerator DeniedShakeRoutine()
-        {
-            if (rageMeter == null) yield break;
-            var rt = rageMeter.GetComponent<RectTransform>();
-            if (rt == null) yield break;
-            var origPos = rt.anchoredPosition;
-            var t = 0f;
-            while (t < 0.16f)
-            {
-                t += Time.unscaledDeltaTime;
-                var offset = Mathf.Sin(t * 60f) * 4f;
-                rt.anchoredPosition = new Vector2(origPos.x + offset, origPos.y);
-                yield return null;
-            }
-            rt.anchoredPosition = origPos;
         }
 
         public void ShowBanner(string title, string subtitle, float duration, Color titleColor)
@@ -304,26 +270,7 @@ namespace KANYE.UI
                     : hypeState.Hype / hypeState.HypeMax;
                 var req = hypeState.RouteRequired > 0f ? hypeState.RouteRequired : 6f;
                 if (albumLabel != null)
-                {
-                    if (MissionController.IsRouteCompleted && !MissionController.IsMissionFinished)
-                    {
-                        var remaining = Enemy.ActiveEnemyCount;
-                        if (remaining > 0)
-                        {
-                            var word = remaining == 1 ? "ВРАГ" : (remaining >= 2 && remaining <= 4 ? "ВРАГА" : "ВРАГОВ");
-                            albumLabel.text = $"⚠️ ЗАЧИСТКА: {remaining} {word}";
-                        }
-                        else
-                        {
-                            albumLabel.text = "СЕКТОР ЗАЧИЩЕН!";
-                        }
-                    }
-                    else
-                    {
-                        albumLabel.text = $"ПУТЬ: {Mathf.FloorToInt(hypeState.Route)} / {Mathf.FloorToInt(req)} км";
-                        albumLabel.color = new Color(1f, 0.88f, 0.4f, 1f);
-                    }
-                }
+                    albumLabel.text = Localization.TFormat("ПУТЬ: {0} / {1} км", "ROUTE: {0} / {1} km", Mathf.FloorToInt(hypeState.Route), Mathf.FloorToInt(req));
 
                 // Update EX Card pips
                 var cards = hypeState.CardsCount;
@@ -339,14 +286,38 @@ namespace KANYE.UI
                 }
             }
 
-            if (shipHealth != null && livesLabel != null)
+            if (shipHealth != null)
             {
-                var hp = shipHealth.Lives;
-                var hearts = "";
-                for (var i = 0; i < shipHealth.MaxLives; i++)
-                    hearts += (i < hp) ? "❤️ " : "🖤 ";
+                var hp = Mathf.Max(0, shipHealth.Lives);
+                var maxHp = Mathf.Clamp(shipHealth.MaxLives, 1, heartImages.Length);
 
-                livesLabel.text = shipHealth.IsDefeated ? "СБИТ" : hearts.TrimEnd();
+                // Dynamically fit panel width tightly to max lives (34px per heart + 22px padding)
+                if (livesPanelRect != null)
+                {
+                    var targetWidth = Mathf.Max(90f, maxHp * 34f + 22f);
+                    livesPanelRect.sizeDelta = new Vector2(targetWidth, 44f);
+                }
+
+                for (var i = 0; i < heartImages.Length; i++)
+                {
+                    if (heartImages[i] == null) continue;
+
+                    if (i < maxHp)
+                    {
+                        heartImages[i].gameObject.SetActive(true);
+                        var isFull = i < hp;
+                        heartImages[i].sprite = isFull ? PixelUiAtlas.IconHeartFull : PixelUiAtlas.IconHeartEmpty;
+                        heartImages[i].color = isFull ? Color.white : new Color(0.45f, 0.55f, 0.7f, 0.65f);
+
+                        // Center hearts within the container
+                        var rt = heartImages[i].rectTransform;
+                        rt.anchoredPosition = new Vector2((i - (maxHp - 1) * 0.5f) * 34f, 0f);
+                    }
+                    else
+                    {
+                        heartImages[i].gameObject.SetActive(false);
+                    }
+                }
             }
 
             if (parryLabel != null)
@@ -354,7 +325,7 @@ namespace KANYE.UI
                 if (Systems.GameRules.IsParryUnlocked)
                 {
                     parryLabel.gameObject.SetActive(true);
-                    parryLabel.text = $"⚡ ПАРИ: {Systems.GameRules.ParriesThisRun}";
+                    parryLabel.text = Localization.TFormat("ПАРИРОВАНИЕ: {0}", "PARRY: {0}", Systems.GameRules.ParriesThisRun);
                 }
                 else
                 {
@@ -376,23 +347,51 @@ namespace KANYE.UI
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
+            scaler.dynamicPixelsPerUnit = 1.25f;
 
-            // 1. Top-Left: Pilot Vitality (Lives hearts) & Parry count
+            // 1. Top-Left: Pilot Vitality (Lives hearts) - Compact, clean arcade panel
             var livesPanel = CreateImage("LivesPanel", canvasObj.transform, PixelUiAtlas.SubPanel, Color.white);
             livesPanel.type = Image.Type.Sliced;
-            livesPanel.rectTransform.anchorMin = new Vector2(0f, 1f);
-            livesPanel.rectTransform.anchorMax = new Vector2(0f, 1f);
-            livesPanel.rectTransform.pivot = new Vector2(0f, 1f);
-            livesPanel.rectTransform.anchoredPosition = new Vector2(24f, -24f);
-            livesPanel.rectTransform.sizeDelta = new Vector2(280f, 56f);
+            livesPanelRect = livesPanel.rectTransform;
+            livesPanelRect.anchorMin = new Vector2(0f, 1f);
+            livesPanelRect.anchorMax = new Vector2(0f, 1f);
+            livesPanelRect.pivot = new Vector2(0f, 1f);
+            livesPanelRect.anchoredPosition = new Vector2(24f, -24f);
+            livesPanelRect.sizeDelta = new Vector2(124f, 44f);
 
-            livesLabel = CreateText("LivesText", livesPanel.transform, "❤️ ❤️ ❤️", 22, Vector2.zero, Color.white);
-            livesLabel.fontStyle = FontStyle.Bold;
+            var containerObj = new GameObject("HeartsContainer", typeof(RectTransform));
+            containerObj.transform.SetParent(livesPanel.transform, false);
+            heartsContainer = containerObj.transform;
+            var containerRect = containerObj.GetComponent<RectTransform>();
+            containerRect.anchorMin = new Vector2(0f, 0f);
+            containerRect.anchorMax = new Vector2(1f, 1f);
+            containerRect.offsetMin = Vector2.zero;
+            containerRect.offsetMax = Vector2.zero;
 
-            parryLabel = CreateText("ParryText", canvasObj.transform, "⚡ ПАРИ: 0", 18, new Vector2(164f, -92f), new Color(1f, 0.45f, 0.85f, 1f));
+            for (var i = 0; i < heartImages.Length; i++)
+            {
+                var hObj = new GameObject($"Heart_{i}", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                hObj.transform.SetParent(heartsContainer, false);
+                var hRect = hObj.GetComponent<RectTransform>();
+                hRect.anchorMin = new Vector2(0.5f, 0.5f);
+                hRect.anchorMax = new Vector2(0.5f, 0.5f);
+                hRect.pivot = new Vector2(0.5f, 0.5f);
+                hRect.anchoredPosition = new Vector2((i - 1f) * 34f, 0f);
+                hRect.sizeDelta = new Vector2(26f, 26f);
+
+                var hImg = hObj.GetComponent<Image>();
+                hImg.sprite = PixelUiAtlas.IconHeartFull;
+                hImg.preserveAspect = true;
+                heartImages[i] = hImg;
+                hObj.SetActive(false);
+            }
+
+            parryLabel = CreateText("ParryText", canvasObj.transform, Localization.T("ПАРИРОВАНИЕ: 0", "PARRY: 0"), 16, new Vector2(24f, -76f), new Color(1f, 0.45f, 0.85f, 1f));
             parryLabel.rectTransform.anchorMin = new Vector2(0f, 1f);
             parryLabel.rectTransform.anchorMax = new Vector2(0f, 1f);
+            parryLabel.rectTransform.pivot = new Vector2(0f, 1f);
             parryLabel.alignment = TextAnchor.MiddleLeft;
+            parryLabel.rectTransform.sizeDelta = new Vector2(240f, 26f);
 
             // 2. Top-Center: Segmented Hype / EX Meter & Album Objectives
             var centerPanel = CreateImage("CenterPanel", canvasObj.transform, PixelUiAtlas.SubPanel, Color.white);
@@ -404,12 +403,12 @@ namespace KANYE.UI
             centerPanelRect.anchoredPosition = new Vector2(0f, -20f);
             centerPanelRect.sizeDelta = new Vector2(520f, 76f);
 
-            rageLabel = CreateText("RageLabel", centerPanel.transform, "ЯРОСТЬ", 16, new Vector2(-188f, 16f), new Color(0.45f, 0.92f, 1f, 1f));
+            rageLabel = CreateText("RageLabel", centerPanel.transform, Localization.T("ЯРОСТЬ", "HYPE"), 16, new Vector2(-188f, 16f), new Color(0.45f, 0.92f, 1f, 1f));
             rageLabel.fontStyle = FontStyle.Bold;
             rageLabel.alignment = TextAnchor.MiddleLeft;
             rageLabel.rectTransform.sizeDelta = new Vector2(140f, 28f);
 
-            albumLabel = CreateText("AlbumLabel", centerPanel.transform, "ПУТЬ: 0 / 0 км", 18, new Vector2(78f, 16f), new Color(1f, 0.88f, 0.4f, 1f));
+            albumLabel = CreateText("AlbumLabel", centerPanel.transform, Localization.T("ПУТЬ: 0 / 0 км", "ROUTE: 0 / 0 km"), 18, new Vector2(78f, 16f), new Color(1f, 0.88f, 0.4f, 1f));
             albumLabel.fontStyle = FontStyle.Bold;
             albumLabel.alignment = TextAnchor.MiddleRight;
             albumLabel.rectTransform.sizeDelta = new Vector2(300f, 28f);
@@ -449,14 +448,14 @@ namespace KANYE.UI
             hypeFill.transform.SetAsLastSibling();
 
             // 3. Action Prompts / Buttons for EX [Q] and Super [E]
-            exButtonObj = CreatePromptButton(canvasObj.transform, "EXButton", "🚀 EX РАКЕТА [Q]", new Vector2(0f, -112f), new Color(0.2f, 0.75f, 1f), () =>
+            exButtonObj = CreatePromptButton(canvasObj.transform, "EXButton", Localization.T("EX-РАКЕТА [Q]", "EX-ROCKET [Q]"), new Vector2(0f, -112f), new Color(0.2f, 0.75f, 1f), () =>
             {
                 var shooter = FindAnyObjectByType<ShipShooter>();
                 shooter?.TryFireEX();
             });
             exButtonObj.SetActive(false);
 
-            superButtonObj = CreatePromptButton(canvasObj.transform, "SuperButton", "⚡ КРАСНЫЙ МЕГА-ЛАЗЕР [E]", new Vector2(0f, -112f), new Color(1f, 0.15f, 0.22f), () =>
+            superButtonObj = CreatePromptButton(canvasObj.transform, "SuperButton", Localization.T("МЕГА-ЛАЗЕР [E]", "MEGA-LASER [E]"), new Vector2(0f, -112f), new Color(1f, 0.8f, 0.15f), () =>
             {
                 var shooter = FindAnyObjectByType<ShipShooter>();
                 shooter?.TryFireSuper();
@@ -551,9 +550,17 @@ namespace KANYE.UI
             TutorialHints.SetCoveredByPause(paused);
 
             if (paused)
+            {
+                if (pauseBtnLabel != null) pauseBtnLabel.text = Localization.T("ПАУЗА", "PAUSE");
+                if (pauseTitleLabel != null) pauseTitleLabel.text = Localization.T("ПАУЗА", "PAUSE");
+                if (resumeBtnLabel != null) resumeBtnLabel.text = Localization.T("ПРОДОЛЖИТЬ", "RESUME");
+                if (menuBtnLabel != null) menuBtnLabel.text = Localization.T("В МЕНЮ", "MAIN MENU");
                 GamePause.Lock();
+            }
             else if (!MissionController.IsMissionFinished)
+            {
                 GamePause.Release();
+            }
         }
 
         private void BuildMissionPause(Transform parent)
@@ -569,8 +576,8 @@ namespace KANYE.UI
             var buttonImage = buttonObj.GetComponent<Image>();
             buttonImage.sprite = PixelUiAtlas.ButtonSecondary;
             buttonImage.type = Image.Type.Sliced;
-            var buttonLabel = CreateText("Label", buttonObj.transform, "ПАУЗА", 18, Vector2.zero, Color.white);
-            buttonLabel.fontStyle = FontStyle.Bold;
+            pauseBtnLabel = CreateText("Label", buttonObj.transform, Localization.T("ПАУЗА", "PAUSE"), 18, Vector2.zero, Color.white);
+            pauseBtnLabel.fontStyle = FontStyle.Bold;
             buttonObj.GetComponent<Button>().onClick.AddListener(TryTogglePause);
 
             pauseRoot = new GameObject("PauseRoot", typeof(RectTransform));
@@ -584,15 +591,15 @@ namespace KANYE.UI
             panel.type = Image.Type.Sliced;
             panel.rectTransform.sizeDelta = new Vector2(460f, 280f);
 
-            var title = CreateText("Title", panel.transform, "ПАУЗА", 32, new Vector2(0f, 90f), new Color(1f, 0.85f, 0.35f));
-            title.fontStyle = FontStyle.Bold;
+            pauseTitleLabel = CreateText("Title", panel.transform, Localization.T("ПАУЗА", "PAUSE"), 32, new Vector2(0f, 90f), new Color(1f, 0.85f, 0.35f));
+            pauseTitleLabel.fontStyle = FontStyle.Bold;
 
-            CreatePauseChoice(panel.transform, "Resume", "ПРОДОЛЖИТЬ", new Vector2(0f, 10f), PixelUiAtlas.ButtonPrimary, () =>
+            resumeBtnLabel = CreatePauseChoice(panel.transform, "Resume", Localization.T("ПРОДОЛЖИТЬ", "RESUME"), new Vector2(0f, 10f), PixelUiAtlas.ButtonPrimary, () =>
             {
                 AudioManager.PlayClick();
                 SetPaused(false);
             });
-            CreatePauseChoice(panel.transform, "Menu", "В МЕНЮ", new Vector2(0f, -60f), PixelUiAtlas.ButtonDanger, () =>
+            menuBtnLabel = CreatePauseChoice(panel.transform, "Menu", Localization.T("В МЕНЮ", "MAIN MENU"), new Vector2(0f, -60f), PixelUiAtlas.ButtonDanger, () =>
             {
                 AudioManager.PlayClick();
                 GamePause.Release();
@@ -602,7 +609,7 @@ namespace KANYE.UI
             pauseRoot.SetActive(false);
         }
 
-        private static void CreatePauseChoice(Transform parent, string name, string text, Vector2 position, Sprite sprite, UnityEngine.Events.UnityAction onClick)
+        private static Text CreatePauseChoice(Transform parent, string name, string text, Vector2 position, Sprite sprite, UnityEngine.Events.UnityAction onClick)
         {
             var choice = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             choice.transform.SetParent(parent, false);
@@ -615,6 +622,7 @@ namespace KANYE.UI
             var label = CreateText("Label", choice.transform, text, 18, Vector2.zero, Color.white);
             label.fontStyle = FontStyle.Bold;
             choice.GetComponent<Button>().onClick.AddListener(onClick);
+            return label;
         }
 
         private static GameObject CreatePromptButton(Transform parent, string name, string text, Vector2 pos, Color highlight, System.Action onClick)
@@ -663,7 +671,7 @@ namespace KANYE.UI
             rect.sizeDelta = new Vector2(500f, 36f);
 
             var label = obj.GetComponent<Text>();
-            label.font = UIFont.DefaultFont;
+            label.font = GameFont.Get();
             label.fontSize = fontSize;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = color;

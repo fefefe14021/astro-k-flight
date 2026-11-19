@@ -1,3 +1,4 @@
+using KANYE.Services;
 using KANYE.Systems;
 using UnityEngine;
 using UnityEngine.UI;
@@ -90,9 +91,9 @@ namespace KANYE.UI
         void Show(AchievementData data)
         {
             if (title != null)
-                title.text = "Открыто";
+                title.text = Localization.T("Открыто!", "Unlocked!");
             if (body != null)
-                body.text = data.displayName + "\n" + data.description;
+                body.text = Localization.GetAchievementTitle(data.id, data.displayName) + "\n" + Localization.GetAchievementDesc(data.id, data.description);
             hideAt = Time.unscaledTime + 3.4f;
         }
 
@@ -107,7 +108,7 @@ namespace KANYE.UI
             rect.anchoredPosition = position;
             rect.sizeDelta = new Vector2(-32f, 36f);
             var text = textObject.GetComponent<Text>();
-            text.font = UIFont.DefaultFont;
+            text.font = GameFont.Get();
             text.fontSize = fontSize;
             text.alignment = TextAnchor.UpperLeft;
             text.color = color;

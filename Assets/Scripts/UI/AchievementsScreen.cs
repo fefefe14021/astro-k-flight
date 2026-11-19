@@ -27,6 +27,7 @@ namespace KANYE.UI
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
+            scaler.dynamicPixelsPerUnit = 1.25f;
 
             // Background
             var bgObj = new GameObject("Bg", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
@@ -51,7 +52,7 @@ namespace KANYE.UI
             cardImg.sprite = PixelUiAtlas.Panel;
             cardImg.type = Image.Type.Sliced;
 
-            CreateLabel(cardObj.transform, "БОРТОВЫЕ ДОСТИЖЕНИЯ", new Vector2(0.5f, 1f), new Vector2(0f, -42f), new Vector2(800f, 44f), 32, new Color(1f, 0.85f, 0.4f));
+            CreateLabel(cardObj.transform, Localization.T("БОРТОВЫЕ ДОСТИЖЕНИЯ", "SHIP ACHIEVEMENTS"), new Vector2(0.5f, 1f), new Vector2(0f, -42f), new Vector2(800f, 44f), 32, new Color(1f, 0.85f, 0.4f));
 
             var viewport = CreatePanel(cardObj.transform, "List", new Vector2(0.5f, 0.5f), new Vector2(0f, -15f), new Vector2(800f, 540f));
             viewport.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.25f);
@@ -90,14 +91,14 @@ namespace KANYE.UI
             definitions.Sort((a, b) => string.Compare(a.displayName, b.displayName, System.StringComparison.Ordinal));
 
             if (definitions.Count == 0)
-                CreateRow(content, "Пока нет достижений", "Они появятся по ходу полёта.", "—", false);
+                CreateRow(content, Localization.T("Пока нет достижений", "No achievements yet"), Localization.T("Они появятся по ходу полёта.", "They will unlock during your flight."), "—", false);
             else
             {
                 for (var i = 0; i < definitions.Count; i++)
                     CreateRow(content, definitions[i]);
             }
 
-            var back = CreateButton(cardObj.transform, "Back", "В ГЛАВНОЕ МЕНЮ", new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(280f, 54f));
+            var back = CreateButton(cardObj.transform, "Back", Localization.T("В ГЛАВНОЕ МЕНЮ", "MAIN MENU"), new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(280f, 54f));
             back.onClick.AddListener(SceneLoader.ReturnToMainMenu);
         }
 
@@ -107,8 +108,10 @@ namespace KANYE.UI
             var unlocked = manager != null && manager.IsUnlocked(data.id);
             var progress = manager != null ? manager.GetProgress(data.id) : 0;
             var target = Mathf.Max(1, data.targetAmount);
-            var status = unlocked ? "ОТКРЫТО" : progress + " / " + target;
-            CreateRow(parent, data.displayName, data.description, status, unlocked);
+            var status = unlocked ? Localization.T("ОТКРЫТО", "UNLOCKED") : progress + " / " + target;
+            var title = Localization.GetAchievementTitle(data.id, data.displayName);
+            var desc = Localization.GetAchievementDesc(data.id, data.description);
+            CreateRow(parent, title, desc, status, unlocked);
         }
 
         private static void CreateRow(RectTransform parent, string title, string description, string status, bool unlocked)
@@ -166,7 +169,7 @@ namespace KANYE.UI
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
             var text = textObject.GetComponent<Text>();
-            text.font = UIFont.DefaultFont;
+            text.font = GameFont.Get();
             text.fontSize = fontSize;
             text.fontStyle = FontStyle.Bold;
             text.color = color;
@@ -200,7 +203,7 @@ namespace KANYE.UI
             textRect.offsetMin = Vector2.zero;
             textRect.offsetMax = Vector2.zero;
             var label = textObject.GetComponent<Text>();
-            label.font = UIFont.DefaultFont;
+            label.font = GameFont.Get();
             label.fontSize = 19;
             label.fontStyle = FontStyle.Bold;
             label.alignment = TextAnchor.MiddleCenter;

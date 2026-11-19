@@ -37,12 +37,11 @@ namespace KANYE.Gameplay
 
     public class RogueExpeditionController : MonoBehaviour
     {
-        public const int MaxCoinsPerRun = 999999;
+        public const int MaxCoinsPerRun = 150;
 
         public static RogueExpeditionController Instance { get; private set; }
         public static int CurrentWave { get; private set; } = 1;
         public static int CoinsEarnedThisRun { get; private set; } = 0;
-        public static int CoresEarnedThisRun { get; private set; } = 0;
 
         // Modifiers active for current run
         public static int BonusDamage { get; private set; } = 0;
@@ -59,8 +58,6 @@ namespace KANYE.Gameplay
         private BossController activeBoss;
 
         private GameObject perkModalObj;
-        private GameObject extractionModalObj;
-        private Text extractionStatsText;
         private GameObject pauseRoot;
         private Text waveHudText;
         private Text bannerText;
@@ -71,7 +68,6 @@ namespace KANYE.Gameplay
         {
             CurrentWave = 1;
             CoinsEarnedThisRun = 0;
-            CoresEarnedThisRun = 0;
             BonusDamage = 0;
             FireRateMultiplier = 1f;
             MoveSpeedMultiplier = 1f;
@@ -80,21 +76,21 @@ namespace KANYE.Gameplay
             ActivePerkTitles.Clear();
         }
 
-        public static float CurrentWaveMultiplier => 1.0f + 0.15f * Mathf.Max(0, CurrentWave - 1);
-
         public static void AddRogueCoins(int amount)
         {
-            if (amount <= 0)
+            if (amount <= 0 || CoinsEarnedThisRun >= MaxCoinsPerRun)
                 return;
 
-            var multiplied = Mathf.RoundToInt(amount * CurrentWaveMultiplier);
-            CoinsEarnedThisRun += multiplied;
-            SaveManager.Instance?.AddCoins(multiplied);
+            var remaining = MaxCoinsPerRun - CoinsEarnedThisRun;
+            var toAdd = Mathf.Clamp(amount, 0, remaining);
+            CoinsEarnedThisRun += toAdd;
+            SaveManager.Instance?.AddCoins(toAdd);
         }
 
         private void Awake()
         {
             Instance = this;
+            EnsureEventSystem();
             ResetRunModifiers();
             StartWave(1);
             BuildHudAndModal();
@@ -111,13 +107,12 @@ namespace KANYE.Gameplay
             CurrentWave = wave;
             albumsRequiredForWave = 10 + wave * 2;
             isWaveTransitioning = false;
-            MissionController.IsRouteCompleted = false;
 
             var hype = FindAnyObjectByType<HypeState>();
             if (hype != null)
                 hype.BeginMission(albumsRequiredForWave);
 
-            ShowBanner($"⚡ ВОЛНА {CurrentWave} ⚡", $"Маршрут волны: {albumsRequiredForWave} км");
+            ShowBanner(Localization.TFormat("⚡ ВОЛНА {0} ⚡", "⚡ WAVE {0} ⚡", CurrentWave), Localization.TFormat("Маршрут волны: {0} км", "Wave route: {0} km", albumsRequiredForWave));
             AudioManager.PlayPowerup();
             UpdateHud();
         }
@@ -131,8 +126,13 @@ namespace KANYE.Gameplay
 
         private void Update()
         {
+#if ENABLE_INPUT_SYSTEM
+            if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
+                TryTogglePause();
+#else
             if (Input.GetKeyDown(KeyCode.Escape))
                 TryTogglePause();
+#endif
 
             if (isWaveTransitioning || Time.timeScale <= 0f)
                 return;
@@ -187,24 +187,12 @@ namespace KANYE.Gameplay
                 }
             }
 
-            // Check if wave route completed
+            // Check if wave albums collected
             var currentHype = FindAnyObjectByType<HypeState>();
             currentHype?.AdvanceRoute(1.05f * Time.deltaTime);
-            if (currentHype != null && currentHype.Route >= currentHype.RouteRequired)
+            if (currentHype != null && currentHype.Route + 0.05f >= currentHype.RouteRequired)
             {
-                if (!MissionController.IsRouteCompleted)
-                {
-                    MissionController.IsRouteCompleted = true;
-                    if (Enemy.ActiveEnemyCount > 0)
-                    {
-                        HypeHud.Instance?.ShowBanner("ДИСТАНЦИЯ ПРОЙДЕНА!", "Уничтожьте всех оставшихся врагов!", 2.2f, new Color(1f, 0.45f, 0.2f));
-                    }
-                }
-
-                if (Enemy.ActiveEnemyCount == 0)
-                {
-                    CompleteWave();
-                }
+                CompleteWave();
             }
         }
 
@@ -213,9 +201,9 @@ namespace KANYE.Gameplay
             if (isWaveTransitioning) return;
             isWaveTransitioning = true;
 
-            // Award dynamic wave coins with scaling multiplier
-            var baseWaveReward = 8 + CurrentWave * 3;
-            AddRogueCoins(baseWaveReward);
+            // Award wave coins (respecting 150 cap)
+            var waveReward = Mathf.Min(16, 6 + CurrentWave * 2);
+            AddRogueCoins(waveReward);
 
             // Audio & Screen Juice
             AudioManager.PlayVictory();
@@ -224,44 +212,15 @@ namespace KANYE.Gameplay
 
             if (CurrentWave % 5 == 0)
             {
-                // Boss defeated! Award Star Core!
-                CoresEarnedThisRun++;
-                SaveManager.Instance?.AddStarCores(1);
-                ShowBanner("БОСС ПОЛНОСТЬЮ ПОВЕРЖЕН!", $"+{baseWaveReward} кредитов и +1 ЗВЁЗДНОЕ ЯДРО!");
-                StartCoroutine(OpenExtractionModalAfterDelay());
+                // Boss defeated!
+                ShowBanner(Localization.T("👑 БОСС ПОВЕРЖЕН!", "👑 BOSS DEFEATED!"), Localization.TFormat("+{0} монет! Подготовка к выбору перка...", "+{0} coins! Preparing perk selection...", waveReward));
             }
             else
             {
-                ShowBanner($"ВОЛНА {CurrentWave} ЗАВЕРШЕНА", $"+{baseWaveReward} кредитов! Выберите улучшение...");
-                StartCoroutine(OpenPerkAfterDelay());
+                ShowBanner(Localization.TFormat("ВОЛНА {0} ПРОЙДЕНА!", "WAVE {0} CLEARED!", CurrentWave), Localization.TFormat("+{0} монет! Выберите перк...", "+{0} coins! Choose a perk...", waveReward));
             }
-        }
 
-        private IEnumerator OpenExtractionModalAfterDelay()
-        {
-            yield return new WaitForSecondsRealtime(1.2f);
-            ShowExtractionModal();
-        }
-
-        private void ShowExtractionModal()
-        {
-            pausedByPlayer = false;
-            if (pauseRoot != null) pauseRoot.SetActive(false);
-            GamePause.Lock();
-
-            if (extractionModalObj != null)
-            {
-                var bonus = Mathf.RoundToInt(CoinsEarnedThisRun * 0.25f);
-                if (extractionStatsText != null)
-                {
-                    extractionStatsText.text =
-                        $"Пройдено волн: {CurrentWave}   |   Уничтожено боссов: {CurrentWave / 5}\n" +
-                        $"Собрано в экспедиции: +{CoinsEarnedThisRun} кредитов   |   +{CoresEarnedThisRun} Звёздных Ядер\n" +
-                        $"Бонус эвакуации через Гипер-Врата: +{bonus} кредитов (+25% к банку)!";
-                }
-                extractionModalObj.SetActive(true);
-                UITween.FadeInModal(this, extractionModalObj);
-            }
+            StartCoroutine(OpenPerkAfterDelay());
         }
 
         private IEnumerator OpenPerkAfterDelay()
@@ -275,13 +234,15 @@ namespace KANYE.Gameplay
             pausedByPlayer = false;
             if (pauseRoot != null)
                 pauseRoot.SetActive(false);
+            if (bannerText != null)
+                bannerText.gameObject.SetActive(false);
             GamePause.Lock();
             PresentPerkModal();
         }
 
         private void TryTogglePause()
         {
-            if ((perkModalObj != null && perkModalObj.activeSelf) || (extractionModalObj != null && extractionModalObj.activeSelf))
+            if (perkModalObj != null && perkModalObj.activeSelf)
                 return;
 
             var player = FindAnyObjectByType<PlayerHealth>();
@@ -299,7 +260,7 @@ namespace KANYE.Gameplay
 
             if (paused)
                 GamePause.Lock();
-            else if ((perkModalObj == null || !perkModalObj.activeSelf) && (extractionModalObj == null || !extractionModalObj.activeSelf))
+            else if (perkModalObj == null || !perkModalObj.activeSelf)
                 GamePause.Release();
         }
 
@@ -329,7 +290,7 @@ namespace KANYE.Gameplay
         {
             var bossTier = ((CurrentWave / 5) - 1) % 5;
             activeBoss = BossController.SpawnBoss(bossTier);
-            ShowBanner("⚠️ ВНИМАНИЕ: БОСС ЭКСПЕДИЦИИ!", "Уничтожьте флагман Синдиката для завершения сектора!");
+            ShowBanner(Localization.T("⚠️ ВНИМАНИЕ: БОСС ЭКСПЕДИЦИИ!", "⚠️ WARNING: EXPEDITION BOSS!"), Localization.T("Уничтожьте флагман Синдиката для завершения сектора!", "Destroy the Syndicate flagship to clear the sector!"));
             AudioManager.PlayBossWarning();
         }
 
@@ -346,6 +307,7 @@ namespace KANYE.Gameplay
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
+            scaler.dynamicPixelsPerUnit = 1.25f;
 
             // Top-Center Info Badge
             var badgeObj = new GameObject("WaveBadge", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
@@ -364,7 +326,7 @@ namespace KANYE.Gameplay
             var textObj = new GameObject("WaveText", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             textObj.transform.SetParent(badgeObj.transform, false);
             waveHudText = textObj.GetComponent<Text>();
-            waveHudText.font = UIFont.DefaultFont;
+            waveHudText.font = GameFont.Get();
             waveHudText.fontSize = 18;
             waveHudText.alignment = TextAnchor.MiddleCenter;
             waveHudText.color = new Color(0.4f, 0.95f, 1f);
@@ -381,7 +343,7 @@ namespace KANYE.Gameplay
             bannerRect.anchoredPosition = new Vector2(0f, 120f);
             bannerRect.sizeDelta = new Vector2(900f, 120f);
             bannerText = bannerObj.GetComponent<Text>();
-            bannerText.font = UIFont.DefaultFont;
+            bannerText.font = GameFont.Get();
             bannerText.fontSize = 32;
             bannerText.alignment = TextAnchor.MiddleCenter;
             bannerText.fontStyle = FontStyle.Bold;
@@ -389,7 +351,6 @@ namespace KANYE.Gameplay
             bannerText.gameObject.SetActive(false);
 
             BuildPerkModalRoot(canvasObj.transform);
-            BuildExtractionModalRoot(canvasObj.transform);
             BuildPauseOverlay(canvasObj.transform);
             BuildPauseButton(canvasObj.transform);
         }
@@ -405,9 +366,8 @@ namespace KANYE.Gameplay
         private void UpdateHud()
         {
             if (waveHudText == null) return;
-            var mult = CurrentWaveMultiplier;
-            var cores = SaveManager.Instance != null && SaveManager.Instance.Data != null ? SaveManager.Instance.Data.starCores : 0;
-            waveHudText.text = $"ЭКСПЕДИЦИЯ  •  ВОЛНА: {CurrentWave} (x{mult:0.0} ЛУТ)   |   КРЕДИТЫ: {CoinsEarnedThisRun}   |   ЯДРА: {cores}";
+            var capStr = CoinsEarnedThisRun >= MaxCoinsPerRun ? Localization.T("<color=#ff5555>[ЛИМИТ]</color>", "<color=#ff5555>[CAP]</color>") : "";
+            waveHudText.text = Localization.TFormat("🌀 ЭКСПЕДИЦИЯ // ВОЛНА: {0}   |   🪙 {1}/{2} {3}", "🌀 EXPEDITION // WAVE: {0}   |   🪙 {1}/{2} {3}", CurrentWave, CoinsEarnedThisRun, MaxCoinsPerRun, capStr);
         }
 
         private void BuildPerkModalRoot(Transform parent)
@@ -433,9 +393,9 @@ namespace KANYE.Gameplay
             var titleObj = new GameObject("Title", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             titleObj.transform.SetParent(panelObj.transform, false);
             var tText = titleObj.GetComponent<Text>();
-            tText.font = UIFont.DefaultFont;
+            tText.font = GameFont.Get();
             tText.fontSize = 28;
-            tText.text = "⚡ ВЫБЕРИТЕ УЛУЧШЕНИЕ ЭКСПЕДИЦИИ ⚡";
+            tText.text = Localization.T("⚡ ВЫБЕРИТЕ УЛУЧШЕНИЕ ЭКСПЕДИЦИИ ⚡", "⚡ CHOOSE EXPEDITION UPGRADE ⚡");
             tText.fontStyle = FontStyle.Bold;
             tText.alignment = TextAnchor.MiddleCenter;
             tText.color = new Color(1f, 0.85f, 0.35f);
@@ -445,9 +405,9 @@ namespace KANYE.Gameplay
             var subObj = new GameObject("Subtitle", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             subObj.transform.SetParent(panelObj.transform, false);
             var sText = subObj.GetComponent<Text>();
-            sText.font = UIFont.DefaultFont;
+            sText.font = GameFont.Get();
             sText.fontSize = 17;
-            sText.text = $"Волна {CurrentWave} зачищена. Установите квантовый апгрейд на тарелку Зигги:";
+            sText.text = Localization.TFormat("Волна {0} зачищена. Установите квантовый апгрейд на тарелку Зигги:", "Wave {0} cleared. Install quantum upgrade to Ziggy's saucer:", CurrentWave);
             sText.alignment = TextAnchor.MiddleCenter;
             sText.color = new Color(0.8f, 0.92f, 1f);
             sText.rectTransform.anchoredPosition = new Vector2(0f, 168f);
@@ -461,93 +421,10 @@ namespace KANYE.Gameplay
             var leaveImage = leaveObj.GetComponent<Image>();
             leaveImage.sprite = PixelUiAtlas.ButtonDanger;
             leaveImage.type = Image.Type.Sliced;
-            CreateLabel(leaveObj.transform, "Label", "В МЕНЮ", 18, Vector2.zero, new Vector2(260f, 40f), Color.white, FontStyle.Bold);
+            CreateLabel(leaveObj.transform, "Label", Localization.T("В МЕНЮ", "MAIN MENU"), 18, Vector2.zero, new Vector2(260f, 40f), Color.white, FontStyle.Bold);
             leaveObj.GetComponent<Button>().onClick.AddListener(ExitToMenu);
 
             perkModalObj.SetActive(false);
-        }
-
-        private void BuildExtractionModalRoot(Transform parent)
-        {
-            extractionModalObj = new GameObject("ExtractionModalRoot", typeof(RectTransform));
-            extractionModalObj.transform.SetParent(parent, false);
-            Stretch(extractionModalObj.GetComponent<RectTransform>());
-
-            var dim = new GameObject("Dim", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            dim.transform.SetParent(extractionModalObj.transform, false);
-            Stretch(dim.GetComponent<RectTransform>());
-            dim.GetComponent<Image>().color = new Color(0.02f, 0.04f, 0.08f, 0.88f);
-
-            var panelObj = new GameObject("ExtractionPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            panelObj.transform.SetParent(extractionModalObj.transform, false);
-            var pRect = panelObj.GetComponent<RectTransform>();
-            pRect.sizeDelta = new Vector2(780f, 480f);
-            var pImg = panelObj.GetComponent<Image>();
-            pImg.sprite = PixelUiAtlas.Panel;
-            pImg.type = Image.Type.Sliced;
-            pImg.color = Color.white;
-
-            CreateLabel(panelObj.transform, "Title", "🌀 ГИПЕР-ВРАТА СИНДИКАТА 🌀", 28, new Vector2(0f, 180f), new Vector2(740f, 44f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
-            CreateLabel(panelObj.transform, "Subtitle", "Сектор зачищен! Босс уничтожен. Выберите дальнейшую тактику:", 17, new Vector2(0f, 138f), new Vector2(740f, 32f), new Color(0.8f, 0.92f, 1f), FontStyle.Normal);
-
-            // Stats Sub-Panel
-            var subPanel = new GameObject("StatsBox", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            subPanel.transform.SetParent(panelObj.transform, false);
-            var spRect = subPanel.GetComponent<RectTransform>();
-            spRect.anchoredPosition = new Vector2(0f, 35f);
-            spRect.sizeDelta = new Vector2(700f, 140f);
-            var spImg = subPanel.GetComponent<Image>();
-            spImg.sprite = PixelUiAtlas.SubPanel;
-            spImg.type = Image.Type.Sliced;
-            spImg.color = new Color(0.06f, 0.12f, 0.2f, 0.95f);
-
-            var stObj = new GameObject("StatsText", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
-            stObj.transform.SetParent(subPanel.transform, false);
-            extractionStatsText = stObj.GetComponent<Text>();
-            extractionStatsText.font = UIFont.DefaultFont;
-            extractionStatsText.fontSize = 17;
-            extractionStatsText.alignment = TextAnchor.MiddleCenter;
-            extractionStatsText.color = Color.white;
-            extractionStatsText.lineSpacing = 1.25f;
-            Stretch(extractionStatsText.rectTransform);
-
-            // Evacuate Button
-            var evacObj = new GameObject("EvacuateBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
-            evacObj.transform.SetParent(panelObj.transform, false);
-            var evacRect = evacObj.GetComponent<RectTransform>();
-            evacRect.anchoredPosition = new Vector2(0f, -80f);
-            evacRect.sizeDelta = new Vector2(520f, 52f);
-            var evacImg = evacObj.GetComponent<Image>();
-            evacImg.sprite = PixelUiAtlas.ButtonPrimary;
-            evacImg.type = Image.Type.Sliced;
-            CreateLabel(evacObj.transform, "Label", "🚪 ЭВАКУАЦИЯ В АНГАР (+25% БОНУС КРЕДИТОВ)", 17, Vector2.zero, new Vector2(500f, 40f), Color.white, FontStyle.Bold);
-            evacObj.GetComponent<Button>().onClick.AddListener(() =>
-            {
-                var bonus = Mathf.RoundToInt(CoinsEarnedThisRun * 0.25f);
-                SaveManager.Instance?.AddCoins(bonus);
-                AudioManager.PlayVictory();
-                GamePause.Release();
-                SceneLoader.ReturnToMainMenu();
-            });
-
-            // Continue Button
-            var contObj = new GameObject("ContinueBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
-            contObj.transform.SetParent(panelObj.transform, false);
-            var contRect = contObj.GetComponent<RectTransform>();
-            contRect.anchoredPosition = new Vector2(0f, -145f);
-            contRect.sizeDelta = new Vector2(520f, 48f);
-            var contImg = contObj.GetComponent<Image>();
-            contImg.sprite = PixelUiAtlas.ButtonSecondary;
-            contImg.type = Image.Type.Sliced;
-            CreateLabel(contObj.transform, "Label", "⚔️ ПРОДОЛЖИТЬ ЭКСПЕДИЦИЮ В ГЛУБЬ КОСМОСА", 16, Vector2.zero, new Vector2(500f, 40f), Color.white, FontStyle.Bold);
-            contObj.GetComponent<Button>().onClick.AddListener(() =>
-            {
-                AudioManager.PlayClick();
-                extractionModalObj.SetActive(false);
-                OpenPerkSelection();
-            });
-
-            extractionModalObj.SetActive(false);
         }
 
         private void BuildPauseButton(Transform parent)
@@ -563,7 +440,7 @@ namespace KANYE.Gameplay
             var image = buttonObj.GetComponent<Image>();
             image.sprite = PixelUiAtlas.ButtonSecondary;
             image.type = Image.Type.Sliced;
-            CreateLabel(buttonObj.transform, "Label", "ПАУЗА", 18, Vector2.zero, new Vector2(140f, 36f), Color.white, FontStyle.Bold);
+            CreateLabel(buttonObj.transform, "Label", Localization.T("ПАУЗА", "PAUSE"), 18, Vector2.zero, new Vector2(140f, 36f), Color.white, FontStyle.Bold);
             buttonObj.GetComponent<Button>().onClick.AddListener(TryTogglePause);
         }
 
@@ -586,7 +463,7 @@ namespace KANYE.Gameplay
             panelImage.sprite = PixelUiAtlas.Panel;
             panelImage.type = Image.Type.Sliced;
 
-            CreateLabel(panel.transform, "Title", "ПАУЗА", 32, new Vector2(0f, 90f), new Vector2(400f, 48f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
+            CreateLabel(panel.transform, "Title", Localization.T("ПАУЗА", "PAUSE"), 32, new Vector2(0f, 90f), new Vector2(400f, 48f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
 
             var resumeObj = new GameObject("Resume", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             resumeObj.transform.SetParent(panel.transform, false);
@@ -596,7 +473,7 @@ namespace KANYE.Gameplay
             var resumeImage = resumeObj.GetComponent<Image>();
             resumeImage.sprite = PixelUiAtlas.ButtonPrimary;
             resumeImage.type = Image.Type.Sliced;
-            CreateLabel(resumeObj.transform, "Label", "ПРОДОЛЖИТЬ", 18, Vector2.zero, new Vector2(280f, 40f), Color.white, FontStyle.Bold);
+            CreateLabel(resumeObj.transform, "Label", Localization.T("ПРОДОЛЖИТЬ", "RESUME"), 18, Vector2.zero, new Vector2(280f, 40f), Color.white, FontStyle.Bold);
             resumeObj.GetComponent<Button>().onClick.AddListener(() =>
             {
                 AudioManager.PlayClick();
@@ -611,7 +488,7 @@ namespace KANYE.Gameplay
             var menuImage = menuObj.GetComponent<Image>();
             menuImage.sprite = PixelUiAtlas.ButtonDanger;
             menuImage.type = Image.Type.Sliced;
-            CreateLabel(menuObj.transform, "Label", "В МЕНЮ", 18, Vector2.zero, new Vector2(280f, 40f), Color.white, FontStyle.Bold);
+            CreateLabel(menuObj.transform, "Label", Localization.T("В МЕНЮ", "MAIN MENU"), 18, Vector2.zero, new Vector2(280f, 40f), Color.white, FontStyle.Bold);
             menuObj.GetComponent<Button>().onClick.AddListener(ExitToMenu);
 
             pauseRoot.SetActive(false);
@@ -621,7 +498,6 @@ namespace KANYE.Gameplay
         {
             if (perkModalObj == null) return;
             perkModalObj.SetActive(true);
-            UITween.FadeInModal(this, perkModalObj);
 
             var panel = perkModalObj.transform.Find("PerkPanel");
             if (panel == null) return;
@@ -656,63 +532,43 @@ namespace KANYE.Gameplay
             }
         }
 
-        private static Sprite GetPerkSprite(string perkId)
-        {
-            switch (perkId)
-            {
-                case "dmg": return Resources.Load<Sprite>("Sprites/bolt") ?? PixelUiAtlas.IconCredit;
-                case "rate": return Resources.Load<Sprite>("Sprites/proj_spread") ?? PixelUiAtlas.IconCredit;
-                case "armor": return Resources.Load<Sprite>("Sprites/nanite_repair") ?? PixelUiAtlas.White;
-                case "speed": return Resources.Load<Sprite>("Sprites/thruster_ion") ?? Resources.Load<Sprite>("Sprites/thruster");
-                case "hype": return PixelUiAtlas.IconStarCore;
-                case "magnet": return Resources.Load<Sprite>("Sprites/parry_orb") ?? PixelUiAtlas.IconCredit;
-                default: return PixelUiAtlas.IconCredit;
-            }
-        }
-
         private void CreatePerkCard(Transform parent, RoguePerk perk, Vector2 pos)
         {
             var cardObj = new GameObject($"PerkCard_{perk.Id}", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             cardObj.transform.SetParent(parent, false);
             var rect = cardObj.GetComponent<RectTransform>();
             rect.anchoredPosition = pos;
-            rect.sizeDelta = new Vector2(260f, 330f);
+            rect.sizeDelta = new Vector2(260f, 320f);
 
             var img = cardObj.GetComponent<Image>();
             img.sprite = PixelUiAtlas.SubPanel;
             img.type = Image.Type.Sliced;
             img.color = new Color(0.08f, 0.14f, 0.22f, 0.98f);
+            img.raycastTarget = true;
 
-            var btn = cardObj.GetComponent<Button>();
-            UITween.AttachButtonFeedback(btn);
-            btn.onClick.AddListener(() =>
+            void OnSelectPerk()
             {
                 AudioManager.PlayClick();
                 ApplyPerk(perk);
-            });
+            }
 
-            // Category Badge Header
-            CreateLabel(cardObj.transform, "Badge", $"[ {perk.Subtitle} ]", 13, new Vector2(0f, 130f), new Vector2(230f, 26f), perk.ThemeColor, FontStyle.Bold);
+            var btn = cardObj.GetComponent<Button>();
+            btn.onClick.AddListener(OnSelectPerk);
 
-            // Icon Image
-            var iconBox = new GameObject("PerkIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            iconBox.transform.SetParent(cardObj.transform, false);
-            var iconRect = iconBox.GetComponent<RectTransform>();
-            iconRect.anchoredPosition = new Vector2(0f, 75f);
-            iconRect.sizeDelta = new Vector2(56f, 56f);
-            var iconImg = iconBox.GetComponent<Image>();
-            iconImg.sprite = GetPerkSprite(perk.Id);
-            iconImg.color = (perk.Id == "hype" || perk.Id == "armor") ? Color.white : perk.ThemeColor;
-            iconImg.preserveAspect = true;
+            // Icon Emoji
+            CreateLabel(cardObj.transform, "Icon", perk.IconEmoji, 40, new Vector2(0f, 102f), new Vector2(220f, 48f), perk.ThemeColor, FontStyle.Bold);
 
             // Title
-            CreateLabel(cardObj.transform, "Title", perk.Title, 19, new Vector2(0f, 22f), new Vector2(230f, 36f), Color.white, FontStyle.Bold);
+            CreateLabel(cardObj.transform, "Title", perk.Title, 18, new Vector2(0f, 52f), new Vector2(230f, 32f), perk.ThemeColor, FontStyle.Bold);
+
+            // Subtitle
+            CreateLabel(cardObj.transform, "Sub", perk.Subtitle, 12, new Vector2(0f, 22f), new Vector2(230f, 20f), new Color(0.6f, 0.85f, 1f), FontStyle.Normal);
 
             // Description
-            CreateLabel(cardObj.transform, "Sub", perk.Description, 14, new Vector2(0f, -34f), new Vector2(220f, 60f), new Color(0.85f, 0.95f, 1f), FontStyle.Normal);
+            CreateLabel(cardObj.transform, "Desc", perk.Description, 14, new Vector2(0f, -34f), new Vector2(230f, 68f), new Color(0.9f, 0.95f, 1f), FontStyle.Normal);
 
             // Select Button inside card
-            var pickBtnObj = new GameObject("PickBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var pickBtnObj = new GameObject("PickBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             pickBtnObj.transform.SetParent(cardObj.transform, false);
             var pickRect = pickBtnObj.GetComponent<RectTransform>();
             pickRect.anchoredPosition = new Vector2(0f, -118f);
@@ -720,7 +576,12 @@ namespace KANYE.Gameplay
             var pickImg = pickBtnObj.GetComponent<Image>();
             pickImg.sprite = PixelUiAtlas.ButtonPrimary;
             pickImg.type = Image.Type.Sliced;
-            CreateLabel(pickBtnObj.transform, "Label", "ВЫБРАТЬ", 16, Vector2.zero, new Vector2(200f, 34f), Color.white, FontStyle.Bold);
+            pickImg.raycastTarget = true;
+
+            var pickBtn = pickBtnObj.GetComponent<Button>();
+            pickBtn.onClick.AddListener(OnSelectPerk);
+
+            CreateLabel(pickBtnObj.transform, "Label", Localization.T("ВЫБРАТЬ", "SELECT"), 16, Vector2.zero, new Vector2(200f, 34f), Color.white, FontStyle.Bold);
         }
 
         private void ApplyPerk(RoguePerk perk)
@@ -740,12 +601,36 @@ namespace KANYE.Gameplay
         {
             return new List<RoguePerk>
             {
-                new RoguePerk("dmg", "Тяжелый Заряд", "ОРУЖИЕ", "+1 к урону всех выстрелов тарелки.", "💥", new Color(1f, 0.5f, 0.2f), p => BonusDamage += 1),
-                new RoguePerk("rate", "Форсаж Плазмы", "СКОРОСТЬ СТРЕЛЬБЫ", "+20% к темпу стрельбы.", "⚡", new Color(0.3f, 0.9f, 1f), p => FireRateMultiplier *= 1.2f),
-                new RoguePerk("armor", "Нано-Броня", "ЗАЩИТА", "+1 макс. прочность и полное исцеление тарелки.", "🛡️", new Color(0.3f, 1f, 0.5f), p => p?.IncreaseMaxLives(1)),
-                new RoguePerk("speed", "Ионный Форсаж", "МАНЕВРЕННОСТЬ", "+25% к скорости перемещения тарелки.", "🚀", new Color(1f, 0.85f, 0.3f), p => MoveSpeedMultiplier *= 1.25f),
-                new RoguePerk("hype", "Резонатор ярости", "СПЕЦ-АТАКИ", "+40% к скорости накопления шкалы Ярости.", "🌀", new Color(0.9f, 0.4f, 1f), p => HypeMultiplier *= 1.4f),
-                new RoguePerk("magnet", "Грави-Магнит", "РЕСУРСЫ", "Притягивает наниты и сферы с удвоенного расстояния.", "🧲", new Color(0.4f, 0.8f, 1f), p => MagnetRangeBonus += 3.5f)
+                new RoguePerk("dmg",
+                    Localization.T("Тяжелый Заряд", "Heavy Charge"),
+                    Localization.T("ОРУЖИЕ", "WEAPONS"),
+                    Localization.T("+1 к урону всех выстрелов тарелки.", "+1 damage to all saucer shots."),
+                    "💥", new Color(1f, 0.5f, 0.2f), p => BonusDamage += 1),
+                new RoguePerk("rate",
+                    Localization.T("Форсаж Плазмы", "Plasma Overdrive"),
+                    Localization.T("СКОРОСТЬ СТРЕЛЬБЫ", "FIRE RATE"),
+                    Localization.T("+20% к темпу стрельбы.", "+20% to saucer fire rate."),
+                    "⚡", new Color(0.3f, 0.9f, 1f), p => FireRateMultiplier *= 1.2f),
+                new RoguePerk("armor",
+                    Localization.T("Нано-Броня", "Nano-Armor"),
+                    Localization.T("ЗАЩИТА", "DEFENSE"),
+                    Localization.T("+1 макс. прочность и полное исцеление тарелки.", "+1 max vitality and full saucer repair."),
+                    "🛡️", new Color(0.3f, 1f, 0.5f), p => p?.IncreaseMaxLives(1)),
+                new RoguePerk("speed",
+                    Localization.T("Ионный Форсаж", "Ionic Boost"),
+                    Localization.T("МАНЕВРЕННОСТЬ", "MOBILITY"),
+                    Localization.T("+25% к скорости перемещения тарелки.", "+25% to saucer flight speed."),
+                    "🚀", new Color(1f, 0.85f, 0.3f), p => MoveSpeedMultiplier *= 1.25f),
+                new RoguePerk("hype",
+                    Localization.T("Резонатор ярости", "Hype Resonator"),
+                    Localization.T("СПЕЦ-АТАКИ", "SPECIAL ATTACKS"),
+                    Localization.T("+40% к скорости накопления шкалы Ярости.", "+40% faster Hype meter gain."),
+                    "🌀", new Color(0.9f, 0.4f, 1f), p => HypeMultiplier *= 1.4f),
+                new RoguePerk("magnet",
+                    Localization.T("Грави-Магнит", "Grav-Magnet"),
+                    Localization.T("РЕСУРСЫ", "RESOURCES"),
+                    Localization.T("Притягивает наниты и сферы с удвоенного расстояния.", "Attracts nanites and relics from 2x range."),
+                    "🧲", new Color(0.4f, 0.8f, 1f), p => MagnetRangeBonus += 3.5f)
             };
         }
 
@@ -757,13 +642,24 @@ namespace KANYE.Gameplay
             rect.anchoredPosition = pos;
             rect.sizeDelta = sizeDelta;
             var t = go.GetComponent<Text>();
-            t.font = UIFont.DefaultFont;
+            t.font = GameFont.Get();
             t.text = text;
             t.fontSize = size;
             t.fontStyle = style;
             t.alignment = TextAnchor.MiddleCenter;
             t.color = color;
+            t.horizontalOverflow = HorizontalWrapMode.Wrap;
+            t.verticalOverflow = VerticalWrapMode.Overflow;
+            t.raycastTarget = false;
             return t;
+        }
+
+        private static void EnsureEventSystem()
+        {
+            if (UnityEngine.EventSystems.EventSystem.current != null) return;
+            var go = new GameObject("EventSystem");
+            go.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            go.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>().AssignDefaultActions();
         }
 
         private static void Stretch(RectTransform rect)

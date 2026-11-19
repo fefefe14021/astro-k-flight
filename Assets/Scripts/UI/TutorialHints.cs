@@ -5,6 +5,7 @@
 
 using System.Collections;
 using KANYE.Gameplay;
+using KANYE.Services;
 using KANYE.Systems;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -49,6 +50,7 @@ namespace KANYE.UI
         }
 
         private bool moved;
+        private bool shot;
         private Lesson step = Lesson.Move;
         private HypeState hype;
         private Asteroid activeTrainingAsteroid;
@@ -186,14 +188,14 @@ namespace KANYE.UI
         {
             step = Lesson.Move;
             if (titleText != null)
-                titleText.text = "ШАГ 1 ИЗ 4  ·  МАНЁВР";
+                titleText.text = Localization.T("ШАГ 1 ИЗ 4  ·  МАНЁВР", "STEP 1 OF 4  ·  MANEUVER");
             if (moveText != null)
-                moveText.text = "Сдвинь тарелку клавишами WASD или стрелками.";
+                moveText.text = Localization.T("Сдвинь тарелку клавишами WASD или стрелками.", "Move your saucer using WASD or arrow keys.");
             if (fireText != null)
                 fireText.text = "";
             if (statusText != null)
             {
-                statusText.text = "Пока корабль не сдвинется, учебная цель не появится.";
+                statusText.text = Localization.T("Пока корабль не сдвинется, учебная цель не появится.", "Training target will not appear until the ship moves.");
                 statusText.color = new Color(0.75f, 0.88f, 1f);
             }
         }
@@ -202,17 +204,17 @@ namespace KANYE.UI
         {
             step = Lesson.Shoot;
             if (titleText != null)
-                titleText.text = "ШАГ 2 ИЗ 4  ·  ОГОНЬ";
+                titleText.text = Localization.T("ШАГ 2 ИЗ 4  ·  ОГОНЬ", "STEP 2 OF 4  ·  FIRE");
             if (moveText != null)
             {
-                moveText.text = "✓ Манёвр засчитан";
+                moveText.text = Localization.T("✓ Манёвр засчитан", "✓ Maneuver complete");
                 moveText.color = new Color(0.45f, 1f, 0.55f);
             }
             if (fireText != null)
-                fireText.text = "Зажми ПРОБЕЛ и сбей астероид справа.";
+                fireText.text = Localization.T("Зажми ПРОБЕЛ и сбей астероид справа.", "Hold SPACE to shoot down the asteroid on the right.");
             if (statusText != null)
             {
-                statusText.text = "Сбитые цели копят шкалу Ярости. Задание миссии — пройденный путь, не альбомы.";
+                statusText.text = Localization.T("Сбитые цели копят шкалу Ярости. Задание миссии — пройденный путь, не альбомы.", "Destroying targets builds Hype. Mission goal is distance travelled, not albums.");
                 statusText.color = new Color(1f, 0.88f, 0.45f);
             }
             SpawnTrainingAsteroidInstance();
@@ -227,6 +229,7 @@ namespace KANYE.UI
 
         private void HandleShot()
         {
+            shot = true;
         }
 
         private void HandleEx()
@@ -250,14 +253,14 @@ namespace KANYE.UI
             GameRules.TutorialArsenal = true;
             EnsureHype(HypeState.EXCost);
             if (titleText != null)
-                titleText.text = "ШАГ 3 ИЗ 4  ·  РАКЕТА";
+                titleText.text = Localization.T("ШАГ 3 ИЗ 4  ·  РАКЕТА", "STEP 3 OF 4  ·  EX ROCKET");
             if (moveText != null)
-                moveText.text = "✓ Манёвр    ✓ Выстрел";
+                moveText.text = Localization.T("✓ Манёвр    ✓ Выстрел", "✓ Maneuver    ✓ Fire");
             if (fireText != null)
-                fireText.text = "Нажми Q — EX-ракета.";
+                fireText.text = Localization.T("Нажми Q — EX-ракета.", "Press Q — EX-Rocket.");
             if (statusText != null)
             {
-                statusText.text = "Карта Ярости уже есть. Если ракета уйдёт мимо, карта вернётся.";
+                statusText.text = Localization.T("Карта Ярости уже есть. Если ракета уйдёт мимо, карта вернётся.", "Energy card ready. If rocket misses, card will be refunded.");
                 statusText.color = new Color(0.45f, 0.9f, 1f);
             }
             SpawnTrainingAsteroidInstance();
@@ -268,14 +271,14 @@ namespace KANYE.UI
             step = Lesson.Super;
             EnsureHype(100f);
             if (titleText != null)
-                titleText.text = "ШАГ 4 ИЗ 4  ·  МЕГА-ЛУЧ";
+                titleText.text = Localization.T("ШАГ 4 ИЗ 4  ·  МЕГА-ЛУЧ", "STEP 4 OF 4  ·  MEGA-LASER");
             if (moveText != null)
-                moveText.text = "✓ Манёвр    ✓ Выстрел    ✓ Ракета Q";
+                moveText.text = Localization.T("✓ Манёвр    ✓ Выстрел    ✓ Ракета Q", "✓ Maneuver    ✓ Fire    ✓ Rocket Q");
             if (fireText != null)
-                fireText.text = "Нажми E — мега-луч.";
+                fireText.text = Localization.T("Нажми E — мега-луч.", "Press E — Mega-Laser.");
             if (statusText != null)
             {
-                statusText.text = "Шкала Ярости полная. Если луч уйдёт мимо, шкала вернётся.";
+                statusText.text = Localization.T("Шкала Ярости полная. Если луч уйдёт мимо, шкала вернётся.", "Hype meter is full. If laser misses, meter will be refunded.");
                 statusText.color = new Color(1f, 0.88f, 0.45f);
             }
             SpawnTrainingAsteroidInstance();
@@ -320,7 +323,7 @@ namespace KANYE.UI
 
             if (statusText != null)
             {
-                statusText.text = "Это учебная цель без урона. Отойди и сбей её пробелом.";
+                statusText.text = Localization.T("Это учебная цель без урона. Отойди и сбей её пробелом.", "Training dummy inflicts no damage. Move back and blast it with space.");
                 statusText.color = new Color(1f, 0.45f, 0.45f);
             }
 
@@ -333,7 +336,7 @@ namespace KANYE.UI
 
             if (statusText != null)
             {
-                statusText.text = "Астероид ушёл мимо. Поднимись на его высоту и снова стреляй.";
+                statusText.text = Localization.T("Астероид ушёл мимо. Поднимись на его высоту и снова стреляй.", "Asteroid passed by. Realign your altitude and fire again.");
                 statusText.color = new Color(1f, 0.75f, 0.3f);
             }
 
@@ -362,14 +365,14 @@ namespace KANYE.UI
         private IEnumerator FinishTutorialRoutine()
         {
             if (titleText != null)
-                titleText.text = "УРОК ЗАКРЫТ";
+                titleText.text = Localization.T("УРОК ЗАКРЫТ", "TUTORIAL COMPLETE");
             if (moveText != null)
-                moveText.text = "✓ Манёвр    ✓ Выстрел    ✓ Q    ✓ E";
+                moveText.text = Localization.T("✓ Манёвр    ✓ Выстрел    ✓ Q    ✓ E", "✓ Maneuver    ✓ Fire    ✓ Q    ✓ E");
             if (fireText != null)
-                fireText.text = "Обе кнопки проверены.";
+                fireText.text = Localization.T("Обе кнопки проверены.", "All systems verified.");
             if (statusText != null)
             {
-                statusText.text = "Дальше идёт обычная волна первой миссии.";
+                statusText.text = Localization.T("Дальше идёт обычная волна первой миссии.", "Entering standard mission wave.");
                 statusText.color = new Color(0.3f, 1f, 0.7f);
             }
             if (skipButton != null) skipButton.gameObject.SetActive(false);
@@ -490,7 +493,7 @@ namespace KANYE.UI
             skipButton = skipObj.GetComponent<Button>();
             skipObj.SetActive(false);
 
-            var skipLabel = CreateLabel(skipObj.transform, "SkipText", "Пропустить [TAB]", 14, Vector2.zero, 24f, Color.white);
+            var skipLabel = CreateLabel(skipObj.transform, "SkipText", Localization.T("Пропустить [TAB]", "Skip [TAB]"), 14, Vector2.zero, 24f, Color.white);
             skipLabel.rectTransform.anchorMin = Vector2.zero;
             skipLabel.rectTransform.anchorMax = Vector2.one;
             skipLabel.rectTransform.sizeDelta = Vector2.zero;
@@ -509,13 +512,13 @@ namespace KANYE.UI
             rect.sizeDelta = new Vector2(-32f, height);
 
             var label = go.GetComponent<Text>();
-            label.font = UIFont.DefaultFont;
+            label.font = GameFont.Get();
             label.fontSize = fontSize;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = color;
             label.text = text;
             label.horizontalOverflow = HorizontalWrapMode.Wrap;
-            label.verticalOverflow = VerticalWrapMode.Truncate;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
             return label;
         }
     }

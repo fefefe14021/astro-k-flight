@@ -22,18 +22,6 @@ namespace KANYE.Gameplay
         private HypeState hypeState;
         private float cooldown;
 
-        public float CurrentHeat { get; private set; }
-        public bool IsOverheated { get; private set; }
-
-        private const float OverheatDuration = 1.35f;
-        private const float HeatCooldownRate = 0.40f;
-        private float overheatTimer;
-        private float steamTimer;
-
-        private Transform heatBarRoot;
-        private SpriteRenderer heatBarFill;
-        private SpriteRenderer heatBarBg;
-
         private void Awake()
         {
             shipInput = GetComponent<ShipInput>();
@@ -42,51 +30,12 @@ namespace KANYE.Gameplay
         private void Start()
         {
             hypeState = FindAnyObjectByType<HypeState>();
-            BuildHeatGauge();
-        }
-
-        private void BuildHeatGauge()
-        {
-            var gaugeObj = new GameObject("HeatGauge");
-            heatBarRoot = gaugeObj.transform;
-            heatBarRoot.SetParent(transform, false);
-            heatBarRoot.localPosition = new Vector3(0f, -0.56f, 0f);
-
-            var bgObj = new GameObject("Bg", typeof(SpriteRenderer));
-            bgObj.transform.SetParent(heatBarRoot, false);
-            heatBarBg = bgObj.GetComponent<SpriteRenderer>();
-            heatBarBg.sprite = MakePixelSprite();
-            heatBarBg.color = new Color(0.08f, 0.1f, 0.14f, 0.75f);
-            heatBarBg.transform.localScale = new Vector3(0.92f, 0.12f, 1f);
-            heatBarBg.sortingOrder = 2;
-
-            var fillObj = new GameObject("Fill", typeof(SpriteRenderer));
-            fillObj.transform.SetParent(heatBarRoot, false);
-            heatBarFill = fillObj.GetComponent<SpriteRenderer>();
-            heatBarFill.sprite = MakePixelSprite();
-            heatBarFill.color = new Color(0.25f, 0.95f, 0.65f, 0.95f);
-            heatBarFill.transform.localScale = new Vector3(0.88f, 0.08f, 1f);
-            heatBarFill.sortingOrder = 3;
-
-            heatBarRoot.gameObject.SetActive(false);
-        }
-
-        private static Sprite MakePixelSprite()
-        {
-            var tex = new Texture2D(2, 2);
-            var px = new Color[] { Color.white, Color.white, Color.white, Color.white };
-            tex.SetPixels(px);
-            tex.filterMode = FilterMode.Point;
-            tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, 2, 2), new Vector2(0.5f, 0.5f), 2f);
         }
 
         private void Update()
         {
             if (MissionRadioComms.IsCommsActive || Time.timeScale <= 0f)
                 return;
-
-            UpdateHeatState();
 
             // Input checks for EX Move [Q] and Super Art [E]
             var superPressed = false;
@@ -114,98 +63,15 @@ namespace KANYE.Gameplay
                 exPressed = true;
 #endif
 
+            if (TouchFlightControls.ConsumeTouchSuper())
+                superPressed = true;
+            if (TouchFlightControls.ConsumeTouchEx())
+                exPressed = true;
+
             if (superPressed)
-            {
-                if (!TryFireSuper())
-                {
-                    AudioManager.PlayDenied();
-                    HypeHud.Instance?.ShakeMeterDenied();
-                }
-            }
+                TryFireSuper();
             else if (exPressed)
-            {
-                if (!TryFireEX())
-                {
-                    AudioManager.PlayDenied();
-                    HypeHud.Instance?.ShakeMeterDenied();
-                }
-            }
-        }
-
-        private void UpdateHeatState()
-        {
-            if (IsOverheated)
-            {
-                overheatTimer -= Time.deltaTime;
-                CurrentHeat = Mathf.Clamp01(overheatTimer / OverheatDuration);
-
-                steamTimer += Time.deltaTime;
-                if (steamTimer >= 0.10f)
-                {
-                    steamTimer = 0f;
-                    var origin = (Vector2)(transform.position + transform.rotation * (Vector3)muzzleOffset);
-                    EffectsManager.EmitExhaustParticle(origin, new Color(1f, 0.35f, 0.2f, 0.75f), Vector2.up * 1.5f, "steam");
-                }
-
-                if (overheatTimer <= 0f)
-                {
-                    IsOverheated = false;
-                    CurrentHeat = 0f;
-                    AudioManager.PlayClick();
-                }
-            }
-            else
-            {
-                if (shipInput == null || !shipInput.FireHeld)
-                {
-                    CurrentHeat = Mathf.Max(0f, CurrentHeat - HeatCooldownRate * Time.deltaTime);
-                }
-            }
-
-            UpdateHeatGaugeVisual();
-        }
-
-        private void UpdateHeatGaugeVisual()
-        {
-            if (heatBarRoot == null) return;
-
-            // Only show gauge when heating up or overheated
-            if (CurrentHeat <= 0.04f && !IsOverheated)
-            {
-                heatBarRoot.gameObject.SetActive(false);
-                return;
-            }
-
-            heatBarRoot.gameObject.SetActive(true);
-            heatBarRoot.localRotation = Quaternion.Inverse(transform.rotation); // keep horizontal
-
-            Color heatCol;
-            if (IsOverheated)
-            {
-                var flash = Mathf.PingPong(Time.time * 20f, 1f);
-                heatCol = Color.Lerp(new Color(1f, 0.15f, 0.15f), Color.white, flash);
-            }
-            else if (CurrentHeat > 0.80f)
-            {
-                heatCol = new Color(1f, 0.22f, 0.18f);
-            }
-            else if (CurrentHeat > 0.50f)
-            {
-                heatCol = new Color(1f, 0.80f, 0.22f);
-            }
-            else
-            {
-                heatCol = new Color(0.25f, 0.95f, 0.65f);
-            }
-
-            if (heatBarFill != null)
-            {
-                heatBarFill.color = heatCol;
-                var maxWidth = 0.88f;
-                var currentWidth = maxWidth * Mathf.Clamp01(CurrentHeat);
-                heatBarFill.transform.localScale = new Vector3(currentWidth, 0.08f, 1f);
-                heatBarFill.transform.localPosition = new Vector3(-maxWidth * 0.5f + currentWidth * 0.5f, 0f, 0f);
-            }
+                TryFireEX();
         }
 
         private void LateUpdate()
@@ -219,7 +85,7 @@ namespace KANYE.Gameplay
             if (shipInput == null)
                 return;
 
-            if (!shipInput.FireHeld || cooldown > 0f || IsOverheated)
+            if (!shipInput.FireHeld || cooldown > 0f)
                 return;
 
             Shoot();
@@ -273,7 +139,17 @@ namespace KANYE.Gameplay
 
         private void FireSuperBeam()
         {
-            SuperProjectile.UnleashMegaLaser(transform, muzzleOffset);
+            var launchDir = (Vector2)transform.right;
+            var origin = (Vector2)(transform.position + transform.rotation * (Vector3)muzzleOffset);
+            var superObj = new GameObject("SuperBeam", typeof(SpriteRenderer), typeof(Rigidbody2D), typeof(CircleCollider2D));
+            superObj.transform.position = origin;
+            var beam = superObj.AddComponent<SuperProjectile>();
+            beam.Launch(launchDir);
+
+            AudioManager.PlaySuperBeam();
+            EffectsManager.PlayMuzzleFlash(origin, new Color(0.25f, 0.9f, 1f), 2.6f);
+            CameraShake.HitStop(0.06f);
+            CameraShake.Shake(0.6f, 0.5f);
             GetComponent<ShipThrusterVisual>()?.TriggerRecoil();
         }
 
@@ -381,25 +257,6 @@ namespace KANYE.Gameplay
                              weapon.Type == WeaponType.ScatterShotgun ? 1.8f : 1.25f;
             EffectsManager.PlayMuzzleFlash(origin, weapon.ThemeColor, flashScale);
             GetComponent<ShipThrusterVisual>()?.TriggerRecoil();
-
-            // Weapon Overheat Accumulation
-            var heatPerShot = weapon.Type == WeaponType.ScatterShotgun ? 0.095f :
-                              weapon.Type == WeaponType.HomingMissiles ? 0.075f :
-                              weapon.Type == WeaponType.HeavyRailgun ? 0.18f :
-                              weapon.Type == WeaponType.SawDisc ? 0.085f :
-                              weapon.Type == WeaponType.PlasmaMortar ? 0.22f :
-                              0.040f; // TwinBlaster: ~3.5 seconds sustained continuous fire
-
-            CurrentHeat += heatPerShot;
-            if (CurrentHeat >= 1.0f)
-            {
-                CurrentHeat = 1.0f;
-                IsOverheated = true;
-                overheatTimer = OverheatDuration;
-                CameraShake.Shake(0.18f, 0.2f);
-                EffectsManager.PlayImpact(origin, Vector2.up, new Color(1f, 0.35f, 0.15f));
-            }
-
             cooldown = fireInterval;
         }
 

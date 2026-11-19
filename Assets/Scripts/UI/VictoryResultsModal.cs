@@ -1,6 +1,6 @@
 // Assets/Scripts/UI/VictoryResultsModal.cs
 // Namespace: KANYE.UI
-// Cuphead-style Victory Grade Card & Results Modal.
+// Cuphead-style Victory Grade Card & Results Modal with Rewarded Double Reward feature.
 
 using System;
 using KANYE.Audio;
@@ -25,8 +25,13 @@ namespace KANYE.UI
         private Text superText;
         private Text gradeText;
         private Text rewardText;
-        private Button nextButton;
         private Button doubleRewardBtn;
+        private Text doubleRewardLabel;
+        private Image doubleRewardImage;
+        private Button nextButton;
+
+        private int currentRewardAmount;
+        private bool hasDoubledReward;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AutoCreate()
@@ -61,10 +66,7 @@ namespace KANYE.UI
         private void DoShow(int missionIndex, int hp, int maxHp, int parries, int supersUsed, float clearTime, Action onNext)
         {
             if (modalRoot != null)
-            {
                 modalRoot.SetActive(true);
-                UITween.FadeInModal(this, modalRoot);
-            }
 
             AudioManager.PlayVictory();
 
@@ -73,24 +75,26 @@ namespace KANYE.UI
                 : null;
 
             if (titleText != null)
-                titleText.text = (mission != null && mission.HasBoss) ? "БОСС ПОВЕРЖЕН!" : "МИССИЯ ВЫПОЛНЕНА!";
+                titleText.text = (mission != null && mission.HasBoss)
+                    ? Localization.T("БОСС ПОВЕРЖЕН!", "BOSS DEFEATED!")
+                    : Localization.T("МИССИЯ ВЫПОЛНЕНА!", "MISSION ACCOMPLISHED!");
 
             if (sectorText != null)
-                sectorText.text = mission != null ? mission.Title : "Сектор завершен";
+                sectorText.text = mission != null ? mission.LocalizedTitle : Localization.T("Сектор завершен", "Sector Cleared");
 
             var mins = Mathf.FloorToInt(clearTime / 60f);
             var secs = Mathf.FloorToInt(clearTime % 60f);
             if (timeText != null)
-                timeText.text = $"Время: {mins:00}:{secs:00}";
+                timeText.text = Localization.TFormat("⏱ Время: {0:00}:{1:00}", "⏱ Time: {0:00}:{1:00}", mins, secs);
 
             if (hpText != null)
-                hpText.text = $"Прочность: {hp} / {maxHp}";
+                hpText.text = Localization.TFormat("❤️ Прочность: {0} / {1}", "❤️ Vitality: {0} / {1}", hp, maxHp);
 
             if (parryText != null)
-                parryText.text = $"Парирования: {parries}";
+                parryText.text = Localization.TFormat("⚡ Парирования: {0}", "⚡ Parries: {0}", parries);
 
             if (superText != null)
-                superText.text = $"Супервыстрелы: {supersUsed}";
+                superText.text = Localization.TFormat("💥 Супервыстрелы: {0}", "💥 Super-Shots: {0}", supersUsed);
 
             // Cuphead Grade
             var grade = GameRules.CalculateGrade(hp, maxHp, parries, clearTime);
@@ -105,32 +109,27 @@ namespace KANYE.UI
             var reward = baseReward + gradeBonus;
             SaveManager.Instance?.AddCoins(reward);
 
-            if (grade == "S")
-                SaveManager.Instance?.AddStarCores(1);
+            currentRewardAmount = reward;
+            hasDoubledReward = false;
 
             if (rewardText != null)
-                rewardText.text = (grade == "S")
-                    ? $"Награда: +{reward} кредитов   +1 Звёздное Ядро!"
-                    : $"Награда: +{reward} кредитов";
+            {
+                rewardText.text = Localization.TFormat("🪙 Награда: +{0} монет", "🪙 Reward: +{0} coins", reward);
+                rewardText.color = new Color(1f, 0.85f, 0.35f);
+            }
 
             if (doubleRewardBtn != null)
             {
                 doubleRewardBtn.gameObject.SetActive(true);
                 doubleRewardBtn.interactable = true;
-                doubleRewardBtn.onClick.RemoveAllListeners();
-                doubleRewardBtn.onClick.AddListener(() =>
-                {
-                    AudioManager.PlayClick();
-                    YandexGamesService.Instance?.ShowRewarded(() =>
-                    {
-                        SaveManager.Instance?.AddCoins(reward);
-                        doubleRewardBtn.gameObject.SetActive(false);
-                        rewardText.text = (grade == "S")
-                            ? $"Награда: +{reward * 2} кредитов (УДВОЕНО!)   +1 Звёздное Ядро!"
-                            : $"Награда: +{reward * 2} кредитов (УДВОЕНО!)";
-                        AudioManager.PlayPowerup();
-                    });
-                });
+            }
+            if (doubleRewardImage != null)
+            {
+                doubleRewardImage.color = new Color(1f, 0.78f, 0.15f, 1f);
+            }
+            if (doubleRewardLabel != null)
+            {
+                doubleRewardLabel.text = Localization.TFormat("🎬 УДВОИТЬ НАГРАДУ (+{0}) [РЕКЛАМА]", "🎬 DOUBLE REWARD (+{0}) [AD]", reward);
             }
 
             var hasNext = (missionIndex + 1) < MissionCatalog.All.Length;
@@ -147,6 +146,53 @@ namespace KANYE.UI
             }
         }
 
+        private void OnDoubleRewardClicked()
+        {
+            if (hasDoubledReward || currentRewardAmount <= 0)
+                return;
+
+            AudioManager.PlayClick();
+
+            var sdk = YandexGamesService.Instance;
+            if (sdk != null)
+            {
+                sdk.ShowRewarded(ApplyDoubledReward);
+            }
+            else
+            {
+                ApplyDoubledReward();
+            }
+        }
+
+        private void ApplyDoubledReward()
+        {
+            if (hasDoubledReward || currentRewardAmount <= 0)
+                return;
+
+            hasDoubledReward = true;
+            SaveManager.Instance?.AddCoins(currentRewardAmount);
+            AudioManager.PlayVictory();
+
+            if (rewardText != null)
+            {
+                rewardText.text = Localization.TFormat("🪙 Награда: +{0} монет (УДВОЕНО!)", "🪙 Reward: +{0} coins (DOUBLED!)", currentRewardAmount * 2);
+                rewardText.color = new Color(1f, 0.95f, 0.2f);
+            }
+
+            if (doubleRewardBtn != null)
+            {
+                doubleRewardBtn.interactable = false;
+            }
+            if (doubleRewardImage != null)
+            {
+                doubleRewardImage.color = new Color(0.2f, 0.65f, 0.35f, 0.85f);
+            }
+            if (doubleRewardLabel != null)
+            {
+                doubleRewardLabel.text = Localization.TFormat("✓ НАГРАДА УДВОЕНА (+{0})", "✓ REWARD DOUBLED (+{0})", currentRewardAmount);
+            }
+        }
+
         private void BuildUI()
         {
             var canvasObj = new GameObject("VictoryCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
@@ -160,6 +206,7 @@ namespace KANYE.UI
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
+            scaler.dynamicPixelsPerUnit = 1.25f;
 
             modalRoot = new GameObject("ModalRoot", typeof(RectTransform));
             modalRoot.transform.SetParent(canvasObj.transform, false);
@@ -178,12 +225,12 @@ namespace KANYE.UI
             titleText = CreateLabel(panel.transform, "Title", "СЕКТОР ЗАЧИЩЕН!", 34, new Vector2(0f, 245f), new Color(1f, 0.85f, 0.25f, 1f));
             titleText.fontStyle = FontStyle.Bold;
 
-            sectorText = CreateLabel(panel.transform, "Sector", "Сектор 1", 20, new Vector2(0f, 198f), new Color(0.75f, 0.88f, 1f, 1f));
+            sectorText = CreateLabel(panel.transform, "Sector", "Сектор 1", 20, new Vector2(0f, 200f), new Color(0.75f, 0.88f, 1f, 1f));
 
             // Stats Sub-Panel
             var subPanel = CreateImage("StatsPanel", panel.transform, PixelUiAtlas.SubPanel, Color.white);
             subPanel.type = Image.Type.Sliced;
-            subPanel.rectTransform.anchoredPosition = new Vector2(0f, 65f);
+            subPanel.rectTransform.anchoredPosition = new Vector2(0f, 75f);
             subPanel.rectTransform.sizeDelta = new Vector2(640f, 180f);
 
             timeText = CreateLabel(subPanel.transform, "Time", "⏱ Время: 00:00", 20, new Vector2(35f, 45f), Color.white);
@@ -198,13 +245,13 @@ namespace KANYE.UI
             hpText.rectTransform.pivot = new Vector2(0f, 0.5f);
             hpText.alignment = TextAnchor.MiddleLeft;
 
-            parryText = CreateLabel(subPanel.transform, "Parry", "Парирования: 0", 20, new Vector2(35f, -25f), Color.white);
+            parryText = CreateLabel(subPanel.transform, "Parry", "⚡ Парирования: 0", 20, new Vector2(35f, -25f), Color.white);
             parryText.rectTransform.anchorMin = new Vector2(0f, 0.5f);
             parryText.rectTransform.anchorMax = new Vector2(0f, 0.5f);
             parryText.rectTransform.pivot = new Vector2(0f, 0.5f);
             parryText.alignment = TextAnchor.MiddleLeft;
 
-            superText = CreateLabel(subPanel.transform, "Super", "Супервыстрелы: 0", 20, new Vector2(35f, -60f), Color.white);
+            superText = CreateLabel(subPanel.transform, "Super", "💥 Супервыстрелы: 0", 20, new Vector2(35f, -60f), Color.white);
             superText.rectTransform.anchorMin = new Vector2(0f, 0.5f);
             superText.rectTransform.anchorMax = new Vector2(0f, 0.5f);
             superText.rectTransform.pivot = new Vector2(0f, 0.5f);
@@ -213,22 +260,27 @@ namespace KANYE.UI
             // Cuphead Grade Stamp Box
             var gradeBox = CreateImage("GradeBox", subPanel.transform, PixelUiAtlas.Panel, new Color(0.06f, 0.15f, 0.24f, 1f));
             gradeBox.type = Image.Type.Sliced;
-            gradeBox.rectTransform.anchoredPosition = new Vector2(180f, -5f);
+            gradeBox.rectTransform.anchoredPosition = new Vector2(185f, -5f);
             gradeBox.rectTransform.sizeDelta = new Vector2(120f, 130f);
 
-            var gradeHeader = CreateLabel(gradeBox.transform, "GHeader", " РАНГ ", 16, new Vector2(0f, 42f), new Color(0.7f, 0.85f, 1f));
+            var gradeHeader = CreateLabel(gradeBox.transform, "GHeader", Localization.T(" РАНГ ", " GRADE "), 16, new Vector2(0f, 42f), new Color(0.7f, 0.85f, 1f));
             gradeText = CreateLabel(gradeBox.transform, "Grade", "S", 58, new Vector2(0f, -8f), new Color(1f, 0.85f, 0.2f));
             gradeText.fontStyle = FontStyle.Bold;
 
-            rewardText = CreateLabel(panel.transform, "Reward", "Награда: +70 кредитов", 22, new Vector2(0f, -70f), new Color(1f, 0.85f, 0.35f));
+            rewardText = CreateLabel(panel.transform, "Reward", Localization.T("🪙 Награда: +70 монет", "🪙 Reward: +70 coins"), 22, new Vector2(0f, -42f), new Color(1f, 0.85f, 0.35f));
             rewardText.fontStyle = FontStyle.Bold;
 
             // Action Buttons
-            doubleRewardBtn = CreateButton(panel.transform, "DoubleRewardBtn", "⚡ УДВОИТЬ КРЕДИТЫ (РЕКЛАМА x2)", new Vector2(0f, -125f), new Vector2(480f, 48f), PixelUiAtlas.ButtonPrimary);
+            doubleRewardBtn = CreateButton(panel.transform, "DoubleRewardButton", Localization.T("🎬 УДВОИТЬ НАГРАДУ (x2) [РЕКЛАМА]", "🎬 DOUBLE REWARD (x2) [AD]"), new Vector2(0f, -100f), new Vector2(520f, 52f), PixelUiAtlas.ButtonPrimary);
+            doubleRewardLabel = doubleRewardBtn.GetComponentInChildren<Text>();
+            doubleRewardImage = doubleRewardBtn.GetComponent<Image>();
+            if (doubleRewardImage != null)
+                doubleRewardImage.color = new Color(1f, 0.78f, 0.15f, 1f);
+            doubleRewardBtn.onClick.AddListener(OnDoubleRewardClicked);
 
-            nextButton = CreateButton(panel.transform, "NextButton", "СЛЕДУЮЩИЙ СЕКТОР  ▶", new Vector2(0f, -185f), new Vector2(480f, 52f), PixelUiAtlas.ButtonPrimary);
+            nextButton = CreateButton(panel.transform, "NextButton", Localization.T("СЛЕДУЮЩИЙ СЕКТОР  ▶", "NEXT SECTOR  ▶"), new Vector2(0f, -162f), new Vector2(520f, 52f), PixelUiAtlas.ButtonPrimary);
 
-            var retryButton = CreateButton(panel.transform, "RetryButton", "ПЕРЕИГРАТЬ СЕКТОР", new Vector2(-135f, -248f), new Vector2(230f, 46f), PixelUiAtlas.ButtonSecondary);
+            var retryButton = CreateButton(panel.transform, "RetryButton", Localization.T("ПЕРЕИГРАТЬ СЕКТОР", "RETRY SECTOR"), new Vector2(-140f, -228f), new Vector2(240f, 48f), PixelUiAtlas.ButtonSecondary);
             retryButton.onClick.AddListener(() =>
             {
                 AudioManager.PlayClick();
@@ -236,7 +288,7 @@ namespace KANYE.UI
                 SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
             });
 
-            var menuButton = CreateButton(panel.transform, "MenuButton", "В ГЛАВНОЕ МЕНЮ", new Vector2(135f, -248f), new Vector2(230f, 46f), PixelUiAtlas.ButtonDanger);
+            var menuButton = CreateButton(panel.transform, "MenuButton", Localization.T("В ГЛАВНОЕ МЕНЮ", "MAIN MENU"), new Vector2(140f, -228f), new Vector2(240f, 48f), PixelUiAtlas.ButtonDanger);
             menuButton.onClick.AddListener(() =>
             {
                 AudioManager.PlayClick();
@@ -271,13 +323,14 @@ namespace KANYE.UI
             rect.sizeDelta = new Vector2(400f, 40f);
 
             var label = obj.GetComponent<Text>();
-            label.font = UIFont.DefaultFont;
+            label.font = GameFont.Get();
             label.fontSize = fontSize;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = color;
             label.text = text;
             label.horizontalOverflow = HorizontalWrapMode.Overflow;
             label.verticalOverflow = VerticalWrapMode.Overflow;
+            label.raycastTarget = false;
             return label;
         }
 
@@ -296,13 +349,13 @@ namespace KANYE.UI
             img.sprite = bgSprite;
             img.type = Image.Type.Sliced;
             img.color = Color.white;
+            img.raycastTarget = true;
 
             var label = CreateLabel(obj.transform, "Label", text, 18, Vector2.zero, Color.white);
             label.rectTransform.sizeDelta = size;
             label.fontStyle = FontStyle.Bold;
-            var btn = obj.GetComponent<Button>();
-            UITween.AttachButtonFeedback(btn);
-            return btn;
+            label.raycastTarget = false;
+            return obj.GetComponent<Button>();
         }
 
         private static void Stretch(RectTransform rect)

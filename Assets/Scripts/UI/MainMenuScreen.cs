@@ -29,13 +29,8 @@ namespace KANYE.UI
         private Text sectorDescText;
         private Text shipSkinTitleText;
         private Image shipDisplayImage;
-        private Image nozzleDisplayImage;
         private Transform shipDisplayTransform;
         private Transform thrusterFlameTransform;
-        private RectTransform holoRingTransform;
-        private RectTransform holoScannerTransform;
-        private RectTransform jackpotAuraTransform;
-        private readonly List<RectTransform> pulsingRewardIcons = new List<RectTransform>();
 
         // Modals
         private GameObject shopModal;
@@ -43,9 +38,57 @@ namespace KANYE.UI
         private GameObject settingsModal;
         private GameObject loreModal;
         private GameObject dailyRewardModal;
+        private Transform dailyCardsContainer;
         private RectTransform achievementScrollContent;
         private readonly List<Button> skinActionButtons = new List<Button>();
         private readonly List<Text> skinActionLabels = new List<Text>();
+
+        // Localized navigation button labels
+        private Text btnCampaignLabel;
+        private Text btnRogueLabel;
+        private Text btnHangarLabel;
+        private Text btnLoreLabel;
+        private Text btnAchievementsLabel;
+        private Text btnSettingsLabel;
+        private Text btnAuthLabel;
+        private Text btnDailyHeaderLabel;
+
+        // Localized daily reward elements
+        private Text dailyTitleText;
+        private Text dailySubText;
+        private Button dailyClaimBtn;
+        private Text dailyClaimBtnText;
+        private Text dailyCloseBtnText;
+        private Transform jackpotAuraTransform;
+
+        // Localized settings modal elements
+        private Text settingsTitleText;
+        private Text langCaptionText;
+        private Text langButtonLabel;
+        private Text volCaptionText;
+        private Text ctrlCaptionText;
+        private Text ctrlL1, ctrlL2, ctrlL3, ctrlL4, ctrlL5;
+        private Text resetTitleText;
+        private Text resetDescText;
+        private Text resetBtnLabel;
+        private Text closeBtnLabel;
+
+        // Localized lore modal elements
+        private Text loreTitleText;
+        private Text loreSubText;
+        private Text loreCutsceneBtnText;
+        private Text loreCloseBtnText;
+        private Transform loreScrollContent;
+
+        // Localized achievements modal elements
+        private Text achievementsTitleText;
+        private Text achievementsCloseBtnLabel;
+
+        // Localized first launch modal elements
+        private Text firstLaunchTitleText;
+        private Text firstLaunchBodyText;
+        private Text firstLaunchGoBtnLabel;
+        private Text firstLaunchStayBtnLabel;
 
         private Sprite shipSprite;
         private Sprite thrusterSprite;
@@ -66,7 +109,9 @@ namespace KANYE.UI
             if (YandexGamesService.Instance != null)
                 YandexGamesService.Instance.Changed += RefreshData;
 
+            Localization.LanguageChanged += RefreshAllTexts;
             RefreshData();
+            RefreshAllTexts();
         }
 
         private void OnDisable()
@@ -77,61 +122,31 @@ namespace KANYE.UI
                 AchievementManager.Instance.Changed -= RefreshData;
             if (YandexGamesService.Instance != null)
                 YandexGamesService.Instance.Changed -= RefreshData;
+
+            Localization.LanguageChanged -= RefreshAllTexts;
         }
 
         private void Update()
         {
-            var time = Time.unscaledTime;
-
-            // Floating hover + smooth banking pitch tilt in the hangar bay
+            // Floating hover animation for the ship in the hangar bay
             if (shipDisplayTransform != null)
             {
-                var hover = Mathf.Sin(time * 2.2f) * 8f;
-                var tilt = Mathf.Sin(time * 1.8f) * 3.2f;
+                var hover = Mathf.Sin(Time.unscaledTime * 2.8f) * 10f;
                 shipDisplayTransform.localPosition = new Vector3(-350f, -30f + hover, 0f);
-                shipDisplayTransform.localEulerAngles = new Vector3(0f, 0f, tilt);
             }
 
-            // Engine thruster flame flicker & spark particle trail
+            // Engine thruster flame flicker
             if (thrusterFlameTransform != null)
             {
-                var flicker = 0.9f + 0.35f * Mathf.Sin(time * 24f);
-                thrusterFlameTransform.localScale = new Vector3(flicker * 1.35f, flicker * 0.92f, 1f);
-
-                // Periodic thruster spark emission
-                if (MenuParticleSystem.Instance != null && Time.frameCount % 5 == 0)
-                {
-                    var yOffset = Mathf.Sin(time * 2.2f) * 8f;
-                    MenuParticleSystem.Instance.EmitThrusterEmber(new Vector2(-410f, -30f + yOffset), new Color(0.25f, 0.85f, 1f, 0.85f));
-                }
+                var flicker = 0.9f + 0.35f * Mathf.Sin(Time.unscaledTime * 24f);
+                thrusterFlameTransform.localScale = new Vector3(flicker * 1.3f, flicker * 0.9f, 1f);
             }
 
-            // Holographic platform pulsating
-            if (holoRingTransform != null)
+            // Jackpot daily reward icon pulse animation
+            if (jackpotAuraTransform != null && dailyRewardModal != null && dailyRewardModal.activeInHierarchy)
             {
-                var p = 1f + 0.05f * Mathf.Sin(time * 3f);
-                holoRingTransform.localScale = new Vector3(p, p, 1f);
-            }
-
-            // Hologram scanner beam moving vertically across the ship
-            if (holoScannerTransform != null)
-            {
-                var scanY = Mathf.PingPong(time * 65f, 70f) - 35f;
-                holoScannerTransform.anchoredPosition = new Vector2(0f, scanY);
-            }
-
-            // Daily reward modal jackpot rotating aura and pulses
-            if (dailyRewardModal != null && dailyRewardModal.activeInHierarchy)
-            {
-                if (jackpotAuraTransform != null)
-                    jackpotAuraTransform.Rotate(0f, 0f, -40f * Time.unscaledDeltaTime);
-
-                var pulse = 1f + 0.07f * Mathf.Sin(time * 4f);
-                for (var i = 0; i < pulsingRewardIcons.Count; i++)
-                {
-                    if (pulsingRewardIcons[i] != null)
-                        pulsingRewardIcons[i].localScale = Vector3.one * pulse;
-                }
+                var s = 1f + 0.08f * Mathf.Sin(Time.unscaledTime * 4f);
+                jackpotAuraTransform.localScale = new Vector3(s, s, 1f);
             }
         }
 
@@ -156,9 +171,6 @@ namespace KANYE.UI
             // Subtle dark overlay to ensure maximum text readability
             var dimObj = CreateImage("AtmosphereDim", canvas.transform, PixelUiAtlas.White, new Color(0.02f, 0.04f, 0.07f, 0.40f));
             Stretch(dimObj.rectTransform);
-
-            // Ambient Space Dust & Interactive UI Particle System
-            MenuParticleSystem.Create(canvas);
 
             // 2. Top Header Navigation Bar (Pilot dossier & Currency)
             BuildTopHeader(canvas.transform);
@@ -198,20 +210,21 @@ namespace KANYE.UI
             border.rectTransform.sizeDelta = new Vector2(0f, 2f);
 
             // Left: Pilot dossier badge
-            rankText = CreateText(header.transform, "RankBadge", "ПИЛОТ  •  0 СБИТО", new Vector2(0f, 0.5f), new Vector2(40f, 0f), new Vector2(450f, 36f), 19, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
+            rankText = CreateText(header.transform, "RankBadge", "ПИЛОТ // 0 СБИТО", new Vector2(0f, 0.5f), new Vector2(40f, 0f), new Vector2(450f, 36f), 20, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
             rankText.alignment = TextAnchor.MiddleLeft;
 
             // Right: Credits / Currency badge
-            coinsText = CreateText(header.transform, "CoinsBadge", "0 КРЕДИТОВ", new Vector2(1f, 0.5f), new Vector2(-40f, 0f), new Vector2(300f, 36f), 19, Color.white, FontStyle.Bold);
+            coinsText = CreateText(header.transform, "CoinsBadge", "0 МОНЕТ", new Vector2(1f, 0.5f), new Vector2(-40f, 0f), new Vector2(300f, 36f), 20, Color.white, FontStyle.Bold);
             coinsText.alignment = TextAnchor.MiddleRight;
 
-            var dailyBtn = CreateSlicedButton(header.transform, "BtnDaily", "🎁 НАГРАДА ДНЯ", PixelUiAtlas.ButtonPrimary, new Vector2(0f, 0f), new Vector2(210f, 38f), 15, new Color(1f, 0.92f, 0.35f));
+            var dailyBtn = CreateSlicedButton(header.transform, "BtnDaily", Localization.T("🎁 НАГРАДА ДНЯ", "🎁 DAILY REWARD"), PixelUiAtlas.ButtonPrimary, new Vector2(0f, 0f), new Vector2(210f, 38f), 15, new Color(1f, 0.92f, 0.35f));
             var dailyRect = dailyBtn.GetComponent<RectTransform>();
             dailyRect.anchorMin = new Vector2(1f, 0.5f);
             dailyRect.anchorMax = new Vector2(1f, 0.5f);
             dailyRect.pivot = new Vector2(1f, 0.5f);
             dailyRect.anchoredPosition = new Vector2(-360f, 0f);
-            dailyBtn.onClick.AddListener(() => OpenModal(dailyRewardModal));
+            btnDailyHeaderLabel = dailyBtn.GetComponentInChildren<Text>();
+            dailyBtn.onClick.AddListener(OpenDailyRewardModal);
 
             playerNameText = CreateText(header.transform, "PlayerName", "ПИЛОТ: ГОСТЬ", new Vector2(0.5f, 0.5f), new Vector2(52f, 0f), new Vector2(360f, 32f), 18, new Color(0.65f, 0.95f, 1f), FontStyle.Bold);
             var nameRect = playerNameText.rectTransform;
@@ -219,7 +232,8 @@ namespace KANYE.UI
             nameRect.anchoredPosition = new Vector2(52f, 0f);
             playerNameText.alignment = TextAnchor.MiddleRight;
 
-            authButton = CreateSlicedButton(header.transform, "BtnAuth", "ВОЙТИ", PixelUiAtlas.ButtonSecondary, new Vector2(148f, 0f), new Vector2(150f, 36f), 16, Color.white);
+            authButton = CreateSlicedButton(header.transform, "BtnAuth", Localization.T("ВОЙТИ", "SIGN IN"), PixelUiAtlas.ButtonSecondary, new Vector2(148f, 0f), new Vector2(150f, 36f), 16, Color.white);
+            btnAuthLabel = authButton.GetComponentInChildren<Text>();
             var authRect = authButton.GetComponent<RectTransform>();
             authRect.anchorMin = new Vector2(0.5f, 0.5f);
             authRect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -255,7 +269,6 @@ namespace KANYE.UI
             holoRing.type = Image.Type.Sliced;
             holoRing.rectTransform.anchoredPosition = new Vector2(0f, -65f);
             holoRing.rectTransform.sizeDelta = new Vector2(280f, 22f);
-            holoRingTransform = holoRing.rectTransform;
 
             // Floating Ship Sprite (Original sleek saucer facing right)
             var shipObj = CreateImage("ShipVisual", shipContainer.transform, shipSprite, Color.white);
@@ -265,34 +278,13 @@ namespace KANYE.UI
             shipObj.preserveAspect = true;
             shipDisplayImage = shipObj;
 
-            // Hologram laser scanline sweeping vertically across the ship
-            var scannerLine = CreateImage("HoloScanner", shipObj.transform, PixelUiAtlas.White, new Color(0f, 0.95f, 1f, 0.45f));
-            var scRect = scannerLine.rectTransform;
-            scRect.anchorMin = new Vector2(0.5f, 0.5f);
-            scRect.anchorMax = new Vector2(0.5f, 0.5f);
-            scRect.pivot = new Vector2(0.5f, 0.5f);
-            scRect.sizeDelta = new Vector2(180f, 2.5f);
-            holoScannerTransform = scRect;
-
-            // Mechanical Engine Nozzle on Main Menu ship preview
-            var nozzleSprite = Resources.Load<Sprite>("Sprites/engine_nozzle");
-            var nozzleObj = CreateImage("EngineNozzle", shipObj.transform, nozzleSprite, Color.white);
-            var nRect = nozzleObj.rectTransform;
-            nRect.anchorMin = new Vector2(0f, 0.5f);
-            nRect.anchorMax = new Vector2(0f, 0.5f);
-            nRect.pivot = new Vector2(1f, 0.5f);
-            nRect.anchoredPosition = new Vector2(10f, -10f);
-            nRect.sizeDelta = new Vector2(45f, 40f);
-            nRect.localEulerAngles = Vector3.zero;
-            nozzleDisplayImage = nozzleObj;
-
-            // Dynamic Thruster Flame (Attached to engine nozzle mouth at the rear left)
-            var flameObj = CreateImage("ThrusterFlame", nozzleObj.transform, thrusterSprite, new Color(0.3f, 0.85f, 1f, 0.95f));
+            // Dynamic Thruster Flame (Attached to engine exhaust at the rear left)
+            var flameObj = CreateImage("ThrusterFlame", shipObj.transform, thrusterSprite, new Color(0.3f, 0.85f, 1f, 0.95f));
             var flameRect = flameObj.rectTransform;
             flameRect.anchorMin = new Vector2(0f, 0.5f);
             flameRect.anchorMax = new Vector2(0f, 0.5f);
             flameRect.pivot = new Vector2(1f, 0.5f);
-            flameRect.anchoredPosition = new Vector2(10f, 0f);
+            flameRect.anchoredPosition = new Vector2(-4f, 0f);
             flameRect.sizeDelta = new Vector2(55f, 32f);
             flameRect.localEulerAngles = Vector3.zero;
             thrusterFlameTransform = flameRect;
@@ -325,30 +317,31 @@ namespace KANYE.UI
             rect.anchoredPosition = new Vector2(360f, -30f);
             rect.sizeDelta = new Vector2(520f, 540f);
 
-            // Primary Hero Buttons - CAMPAIGN & ROGUELITE EXPEDITION
-            var campaignBtn = CreateSlicedButton(menuRoot.transform, "BtnPlay", "БОЕВАЯ КАМПАНИЯ", PixelUiAtlas.ButtonPrimary, new Vector2(0f, 185f), new Vector2(480f, 62f), 22, new Color(1f, 0.98f, 0.85f));
+            // Primary Hero Buttons - CAMPAIGN & ROGUELITE EXPEDITION (Distinct separation & generous spacing)
+            var campaignBtn = CreateSlicedButton(menuRoot.transform, "BtnPlay", Localization.T("КАМПАНИЯ // СЮЖЕТ", "CAMPAIGN // STORY"), PixelUiAtlas.ButtonPrimary, new Vector2(0f, 172f), new Vector2(480f, 58f), 22, new Color(1f, 0.98f, 0.85f));
+            btnCampaignLabel = campaignBtn.GetComponentInChildren<Text>();
             campaignBtn.onClick.AddListener(OnPlayClicked);
 
-            var rogueBtn = CreateSlicedButton(menuRoot.transform, "BtnRogue", "ЭКСПЕДИЦИЯ В БЕЗДНУ", PixelUiAtlas.ButtonPrimary, new Vector2(0f, 115f), new Vector2(480f, 62f), 22, new Color(0.85f, 0.95f, 1f));
+            var rogueBtn = CreateSlicedButton(menuRoot.transform, "BtnRogue", Localization.T("РОГАЛИК // ЭКСПЕДИЦИЯ", "ROGUELITE // EXPEDITION"), PixelUiAtlas.ButtonPrimary, new Vector2(0f, 104f), new Vector2(480f, 58f), 22, new Color(0.85f, 0.95f, 1f));
+            btnRogueLabel = rogueBtn.GetComponentInChildren<Text>();
             rogueBtn.onClick.AddListener(OnRogueClicked);
 
-            // Secondary Navigation Buttons (Sliced cyber-blue arcade buttons)
-            var hangarBtn = CreateSlicedButton(menuRoot.transform, "BtnHangar", "АНГАР И АРСЕНАЛ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, 50f), new Vector2(480f, 52f), 18, Color.white);
-            hangarBtn.onClick.AddListener(OpenShop);
+            // Secondary Navigation Buttons (Clean, crisp, separated arcade buttons)
+            var hangarBtn = CreateSlicedButton(menuRoot.transform, "BtnHangar", Localization.T("АНГАР И АРСЕНАЛ", "HANGAR & ARSENAL"), PixelUiAtlas.ButtonSecondary, new Vector2(0f, 36f), new Vector2(480f, 50f), 19, Color.white);
+            btnHangarLabel = hangarBtn.GetComponentInChildren<Text>();
+            hangarBtn.onClick.AddListener(() => SceneLoader.LoadSceneByName(SceneLoader.ShopScene));
 
-            var loreBtn = CreateSlicedButton(menuRoot.transform, "BtnLore", "БОРТОВОЙ ЖУРНАЛ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -8f), new Vector2(480f, 50f), 18, new Color(0.9f, 0.95f, 1f));
+            var loreBtn = CreateSlicedButton(menuRoot.transform, "BtnLore", Localization.T("БОРТОВОЙ ЖУРНАЛ // ЛОР", "LOGBOOK // LORE"), PixelUiAtlas.ButtonSecondary, new Vector2(0f, -24f), new Vector2(480f, 48f), 19, new Color(0.9f, 0.95f, 1f));
+            btnLoreLabel = loreBtn.GetComponentInChildren<Text>();
             loreBtn.onClick.AddListener(() => OpenModal(loreModal));
 
-            var achBtn = CreateSlicedButton(menuRoot.transform, "BtnAchievements", "ДОСТИЖЕНИЯ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -64f), new Vector2(480f, 50f), 18, Color.white);
+            var achBtn = CreateSlicedButton(menuRoot.transform, "BtnAchievements", Localization.T("ДОСТИЖЕНИЯ", "ACHIEVEMENTS"), PixelUiAtlas.ButtonSecondary, new Vector2(0f, -82f), new Vector2(480f, 48f), 19, Color.white);
+            btnAchievementsLabel = achBtn.GetComponentInChildren<Text>();
             achBtn.onClick.AddListener(() => OpenModal(achievementsModal));
 
-            var settingsBtn = CreateSlicedButton(menuRoot.transform, "BtnSettings", "НАСТРОЙКИ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -120f), new Vector2(480f, 50f), 18, Color.white);
+            var settingsBtn = CreateSlicedButton(menuRoot.transform, "BtnSettings", Localization.T("НАСТРОЙКИ", "SETTINGS"), PixelUiAtlas.ButtonSecondary, new Vector2(0f, -140f), new Vector2(480f, 48f), 19, Color.white);
+            btnSettingsLabel = settingsBtn.GetComponentInChildren<Text>();
             settingsBtn.onClick.AddListener(() => OpenModal(settingsModal));
-
-#if !UNITY_WEBGL || UNITY_EDITOR
-            var quitBtn = CreateSlicedButton(menuRoot.transform, "BtnQuit", "ВЫХОД ИЗ ИГРЫ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -176f), new Vector2(480f, 48f), 17, new Color(0.95f, 0.75f, 0.8f));
-            quitBtn.onClick.AddListener(SceneLoader.Quit);
-#endif
         }
 
         #region Modals Implementation
@@ -356,8 +349,8 @@ namespace KANYE.UI
         private void BuildShopModal(Transform parent)
         {
             shopModal = CreateModalContainer(parent, "ShopModal", out var card);
-            CreateText(card.transform, "Title", "КОСМИЧЕСКИЙ АНГАР // СКИНОТЕКА", new Vector2(0.5f, 1f), new Vector2(0f, -38f), new Vector2(740f, 38f), 32, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
-            CreateText(card.transform, "Sub", "Облик меняет цвет и стиль корабля, не влияя на боевые параметры.", new Vector2(0.5f, 1f), new Vector2(0f, -76f), new Vector2(740f, 26f), 17, new Color(0.7f, 0.85f, 0.95f), FontStyle.Normal);
+            CreateText(card.transform, "Title", Localization.T("КОСМИЧЕСКИЙ АНГАР // СКИНОТЕКА", "SPACE HANGAR // SKINS"), new Vector2(0.5f, 1f), new Vector2(0f, -38f), new Vector2(740f, 38f), 32, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
+            CreateText(card.transform, "Sub", Localization.T("Облик меняет цвет и стиль корабля, не влияя на боевые параметры.", "Hulls customize ship visuals and thruster trail effects without affecting combat stats."), new Vector2(0.5f, 1f), new Vector2(0f, -76f), new Vector2(740f, 26f), 17, new Color(0.7f, 0.85f, 0.95f), FontStyle.Normal);
 
             for (var i = 0; i < ShipSkinCatalog.All.Length; i++)
             {
@@ -381,11 +374,11 @@ namespace KANYE.UI
                 iconBox.rectTransform.localEulerAngles = Vector3.zero;
                 iconBox.preserveAspect = true;
 
-                CreateText(row.transform, "Name", skin.Title, new Vector2(0f, 0.5f), new Vector2(125f, 14f), new Vector2(360f, 28f), 20, Color.white, FontStyle.Bold).alignment = TextAnchor.MiddleLeft;
-                var costStr = skin.Price == 0 ? "Базовый корпус" : $"Стоимость: {skin.Price} монет";
+                CreateText(row.transform, "Name", skin.LocalizedTitle, new Vector2(0f, 0.5f), new Vector2(125f, 14f), new Vector2(360f, 28f), 20, Color.white, FontStyle.Bold).alignment = TextAnchor.MiddleLeft;
+                var costStr = skin.Price == 0 ? Localization.T("Базовый корпус", "Default Hull") : Localization.TFormat("Стоимость: {0} монет", "Price: {0} coins", skin.Price);
                 CreateText(row.transform, "Price", costStr, new Vector2(0f, 0.5f), new Vector2(125f, -16f), new Vector2(360f, 24f), 17, new Color(1f, 0.85f, 0.4f), FontStyle.Normal).alignment = TextAnchor.MiddleLeft;
 
-                var btn = CreateSlicedButton(row.transform, "Btn" + i, "Выбрать", PixelUiAtlas.ButtonSecondary, new Vector2(270f, 0f), new Vector2(190f, 52f), 19, Color.white);
+                var btn = CreateSlicedButton(row.transform, "Btn" + i, Localization.T("Выбрать", "Select"), PixelUiAtlas.ButtonSecondary, new Vector2(270f, 0f), new Vector2(190f, 52f), 19, Color.white);
                 skinActionButtons.Add(btn);
                 skinActionLabels.Add(btn.GetComponentInChildren<Text>());
 
@@ -393,142 +386,154 @@ namespace KANYE.UI
                 btn.onClick.AddListener(() => BuyOrEquipSkin(s));
             }
 
-            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", "ЗАКРЫТЬ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -330f), new Vector2(300f, 54f), 20, Color.white);
+            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", Localization.T("ЗАКРЫТЬ", "CLOSE"), PixelUiAtlas.ButtonSecondary, new Vector2(0f, -330f), new Vector2(300f, 54f), 20, Color.white);
             closeBtn.onClick.AddListener(CloseAllModals);
         }
 
         private void BuildAchievementsModal(Transform parent)
         {
             achievementsModal = CreateModalContainer(parent, "AchievementsModal", out var card);
-            CreateText(card.transform, "Title", "БОРТОВЫЕ ДОСТИЖЕНИЯ", new Vector2(0.5f, 1f), new Vector2(0f, -38f), new Vector2(740f, 38f), 32, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
+            achievementsTitleText = CreateText(card.transform, "Title", Localization.T("БОРТОВЫЕ ДОСТИЖЕНИЯ", "SHIP ACHIEVEMENTS"), new Vector2(0.5f, 1f), new Vector2(0f, -38f), new Vector2(740f, 38f), 32, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
 
             var scroll = CreateScroll(card.transform, new Vector2(0f, -95f), new Vector2(800f, 500f));
             achievementScrollContent = scroll;
 
-            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", "ЗАКРЫТЬ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -330f), new Vector2(300f, 54f), 20, Color.white);
+            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", Localization.T("ЗАКРЫТЬ", "CLOSE"), PixelUiAtlas.ButtonSecondary, new Vector2(0f, -330f), new Vector2(300f, 54f), 20, Color.white);
+            achievementsCloseBtnLabel = closeBtn.GetComponentInChildren<Text>();
             closeBtn.onClick.AddListener(CloseAllModals);
         }
 
         private void BuildSettingsModal(Transform parent)
         {
             settingsModal = CreateModalContainer(parent, "SettingsModal", out var card);
-            CreateText(card.transform, "Title", "НАСТРОЙКИ СИСТЕМЫ", new Vector2(0.5f, 1f), new Vector2(0f, -36f), new Vector2(740f, 38f), 32, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
+            var cardRect = card.GetComponent<RectTransform>();
+            cardRect.sizeDelta = new Vector2(880f, 760f);
 
-            // Volume Section (Clean sliced subpanel)
+            settingsTitleText = CreateText(card.transform, "Title", Localization.T("НАСТРОЙКИ СИСТЕМЫ", "SYSTEM SETTINGS"), new Vector2(0.5f, 1f), new Vector2(0f, -28f), new Vector2(800f, 38f), 28, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
+
+            // 1. Language Section (Clean subpanel)
+            var langBox = CreateImage("LangBox", card.transform, PixelUiAtlas.SubPanel, Color.white);
+            langBox.type = Image.Type.Sliced;
+            var lRect = langBox.rectTransform;
+            lRect.anchorMin = new Vector2(0.5f, 1f);
+            lRect.anchorMax = new Vector2(0.5f, 1f);
+            lRect.pivot = new Vector2(0.5f, 1f);
+            lRect.anchoredPosition = new Vector2(0f, -76f);
+            lRect.sizeDelta = new Vector2(820f, 72f);
+
+            langCaptionText = CreateText(langBox.transform, "LangCaption", Localization.T("ЯЗЫК ИНТЕРФЕЙСА", "INTERFACE LANGUAGE"), new Vector2(0f, 0.5f), new Vector2(28f, 0f), new Vector2(460f, 32f), 18, Color.white, FontStyle.Bold);
+            langCaptionText.alignment = TextAnchor.MiddleLeft;
+
+            var langBtn = CreateSlicedButton(langBox.transform, "BtnLang", Localization.GetLanguageDisplayName(), PixelUiAtlas.ButtonPrimary, new Vector2(-28f, 0f), new Vector2(260f, 46f), 17, Color.white, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
+            langButtonLabel = langBtn.GetComponentInChildren<Text>();
+            langBtn.onClick.AddListener(() =>
+            {
+                Localization.ToggleLanguage();
+                RefreshAllTexts();
+            });
+
+            // 2. Volume Section (Clean sliced subpanel)
             var volBox = CreateImage("VolBox", card.transform, PixelUiAtlas.SubPanel, Color.white);
             volBox.type = Image.Type.Sliced;
             volBox.rectTransform.anchorMin = new Vector2(0.5f, 1f);
             volBox.rectTransform.anchorMax = new Vector2(0.5f, 1f);
             volBox.rectTransform.pivot = new Vector2(0.5f, 1f);
-            volBox.rectTransform.anchoredPosition = new Vector2(0f, -95f);
-            volBox.rectTransform.sizeDelta = new Vector2(780f, 95f);
+            volBox.rectTransform.anchoredPosition = new Vector2(0f, -158f);
+            volBox.rectTransform.sizeDelta = new Vector2(820f, 94f);
 
-            CreateText(volBox.transform, "VolCaption", "ГРОМКОСТЬ ЗВУКА И САУНДТРЕКА", new Vector2(0.5f, 1f), new Vector2(0f, -18f), new Vector2(700f, 26f), 19, Color.white, FontStyle.Bold);
-            CreateSlider(volBox.transform, new Vector2(0f, -56f));
+            volCaptionText = CreateText(volBox.transform, "VolCaption", Localization.T("ГРОМКОСТЬ ЗВУКА И САУНДТРЕКА", "MASTER & MUSIC VOLUME"), new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(760f, 28f), 17, Color.white, FontStyle.Bold);
+            CreateSlider(volBox.transform, new Vector2(0f, -54f));
 
-            // Controls Guide Section (Clean sliced subpanel)
+            // 3. Controls Guide Section (Clean sliced subpanel)
             var ctrlBox = CreateImage("CtrlBox", card.transform, PixelUiAtlas.SubPanel, Color.white);
             ctrlBox.type = Image.Type.Sliced;
             ctrlBox.rectTransform.anchorMin = new Vector2(0.5f, 1f);
             ctrlBox.rectTransform.anchorMax = new Vector2(0.5f, 1f);
             ctrlBox.rectTransform.pivot = new Vector2(0.5f, 1f);
-            ctrlBox.rectTransform.anchoredPosition = new Vector2(0f, -205f);
-            ctrlBox.rectTransform.sizeDelta = new Vector2(780f, 175f);
+            ctrlBox.rectTransform.anchoredPosition = new Vector2(0f, -262f);
+            ctrlBox.rectTransform.sizeDelta = new Vector2(820f, 186f);
 
-            CreateText(ctrlBox.transform, "CtrlCaption", "БОРТОВОЕ УПРАВЛЕНИЕ (CUPHEAD & BROFORCE EDITION)", new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(700f, 26f), 19, new Color(0.35f, 0.85f, 1f), FontStyle.Bold);
-            CreateText(ctrlBox.transform, "L1", "WASD / Стрелки / Сенсорный стик — Маневрирование корабля", new Vector2(0.5f, 1f), new Vector2(0f, -44f), new Vector2(720f, 24f), 16, Color.white, FontStyle.Normal);
-            CreateText(ctrlBox.transform, "L2", "ПРОБЕЛ / Огонь — Основной скорострельный залп", new Vector2(0.5f, 1f), new Vector2(0f, -70f), new Vector2(720f, 24f), 16, Color.white, FontStyle.Normal);
-            CreateText(ctrlBox.transform, "L3", "КЛАВИША [Q] — EX-ракета (тратит 1 карту энергии)", new Vector2(0.5f, 1f), new Vector2(0f, -96f), new Vector2(720f, 24f), 16, new Color(0.4f, 0.85f, 1f), FontStyle.Normal);
-            CreateText(ctrlBox.transform, "L4", "КЛАВИША [E] — Мега-Лазер (полный супер-залп при полной шкале Ярости)", new Vector2(0.5f, 1f), new Vector2(0f, -122f), new Vector2(720f, 24f), 16, new Color(1f, 0.85f, 0.4f), FontStyle.Normal);
-            CreateText(ctrlBox.transform, "L5", "⚡ ПАРИРОВАНИЕ: Сближайся с РОЗОВЫМИ сферами для поглощения и +30 Ярости!", new Vector2(0.5f, 1f), new Vector2(0f, -148f), new Vector2(720f, 22f), 15, new Color(1f, 0.45f, 0.85f), FontStyle.Bold);
+            ctrlCaptionText = CreateText(ctrlBox.transform, "CtrlCaption", Localization.T("БОРТОВОЕ УПРАВЛЕНИЕ", "FLIGHT CONTROLS"), new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(760f, 28f), 17, new Color(0.35f, 0.85f, 1f), FontStyle.Bold);
+            ctrlL1 = CreateText(ctrlBox.transform, "L1", Localization.T("WASD / Стрелки / Сенсорный стик — Маневрирование корабля", "WASD / Arrows / Touch Stick — Ship Maneuvering"), new Vector2(0.5f, 1f), new Vector2(0f, -44f), new Vector2(760f, 24f), 15, Color.white, FontStyle.Normal);
+            ctrlL2 = CreateText(ctrlBox.transform, "L2", Localization.T("ПРОБЕЛ / Кнопка «Огонь» — Скорострельный залп", "SPACE / Fire Button — Primary Fire"), new Vector2(0.5f, 1f), new Vector2(0f, -70f), new Vector2(760f, 24f), 15, Color.white, FontStyle.Normal);
+            ctrlL3 = CreateText(ctrlBox.transform, "L3", Localization.T("КЛАВИША [Q] — EX-ракета (тратит 1 карту энергии)", "KEY [Q] — EX Rocket (Consumes 1 Energy Card)"), new Vector2(0.5f, 1f), new Vector2(0f, -96f), new Vector2(760f, 24f), 15, new Color(0.4f, 0.85f, 1f), FontStyle.Normal);
+            ctrlL4 = CreateText(ctrlBox.transform, "L4", Localization.T("КЛАВИША [E] — Мега-Лазер (полный супер-залп при полной шкале)", "KEY [E] — Mega-Laser (Full Super Beam on Full Hype)"), new Vector2(0.5f, 1f), new Vector2(0f, -122f), new Vector2(760f, 24f), 15, new Color(1f, 0.85f, 0.4f), FontStyle.Normal);
+            ctrlL5 = CreateText(ctrlBox.transform, "L5", Localization.T("⚡ ПАРИРОВАНИЕ: Сближайся с РОЗОВЫМИ сферами для +30 Ярости!", "PARRY: Touch PINK hazards to absorb +30 Hype!"), new Vector2(0.5f, 1f), new Vector2(0f, -148f), new Vector2(760f, 24f), 14, new Color(1f, 0.45f, 0.85f), FontStyle.Bold);
 
-            // Reset Section - KEPT PROMINENTLY IN SETTINGS AS REQUESTED!
+            // 4. Reset Section (Spacious layout with clean text and button separation)
             var resetBox = CreateImage("ResetBox", card.transform, PixelUiAtlas.SubPanel, Color.white);
             resetBox.type = Image.Type.Sliced;
             resetBox.rectTransform.anchorMin = new Vector2(0.5f, 1f);
             resetBox.rectTransform.anchorMax = new Vector2(0.5f, 1f);
             resetBox.rectTransform.pivot = new Vector2(0.5f, 1f);
-            resetBox.rectTransform.anchoredPosition = new Vector2(0f, -495f);
-            resetBox.rectTransform.sizeDelta = new Vector2(780f, 115f);
+            resetBox.rectTransform.anchoredPosition = new Vector2(0f, -460f);
+            resetBox.rectTransform.sizeDelta = new Vector2(820f, 154f);
 
-            CreateText(resetBox.transform, "Warn", "СБРОС ПРОГРЕССА И ПОВТОР ОБУЧЕНИЯ", new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(700f, 24f), 17, new Color(1f, 0.45f, 0.45f), FontStyle.Bold);
-            CreateText(resetBox.transform, "WarnDesc", "Очистит сохранения, открытые скины и рекорды, и запустит стартовое обучение пилота.", new Vector2(0.5f, 1f), new Vector2(0f, -40f), new Vector2(720f, 26f), 14, new Color(0.9f, 0.8f, 0.85f), FontStyle.Normal);
+            resetTitleText = CreateText(resetBox.transform, "Warn", Localization.T("СБРОС ПРОГРЕССА И ПОВТОР ОБУЧЕНИЯ", "RESET PROGRESS & REPLAY TUTORIAL"), new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(760f, 26f), 16, new Color(1f, 0.45f, 0.45f), FontStyle.Bold);
+            resetDescText = CreateText(resetBox.transform, "WarnDesc", Localization.T("Очистит сохранения, открытые скины и рекорды,\nи сразу же запустит стартовое обучение пилота в Секторе 1.", "Clears save data, unlocked skins and records,\nand immediately launches flight tutorial in Sector 1."), new Vector2(0.5f, 1f), new Vector2(0f, -42f), new Vector2(760f, 38f), 14, new Color(0.9f, 0.8f, 0.85f), FontStyle.Normal);
 
-            var resetBtn = CreateSlicedButton(resetBox.transform, "BtnReset", "СБРОСИТЬ И НАЧАТЬ ОБУЧЕНИЕ", PixelUiAtlas.ButtonDanger, new Vector2(0f, -78f), new Vector2(400f, 40f), 16, Color.white);
+            var resetBtn = CreateSlicedButton(resetBox.transform, "BtnReset", Localization.T("СБРОСИТЬ И НАЧАТЬ ОБУЧЕНИЕ", "RESET & START TUTORIAL"), PixelUiAtlas.ButtonDanger, new Vector2(0f, 16f), new Vector2(420f, 42f), 16, Color.white, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f));
+            resetBtnLabel = resetBtn.GetComponentInChildren<Text>();
             resetBtn.onClick.AddListener(ResetProgressAndStartTutorial);
 
-            // Yandex Ads Testing Section
-            var adBox = CreateImage("AdTestBox", card.transform, PixelUiAtlas.SubPanel, Color.white);
-            adBox.type = Image.Type.Sliced;
-            adBox.rectTransform.anchorMin = new Vector2(0.5f, 1f);
-            adBox.rectTransform.anchorMax = new Vector2(0.5f, 1f);
-            adBox.rectTransform.pivot = new Vector2(0.5f, 1f);
-            adBox.rectTransform.anchoredPosition = new Vector2(0f, -390f);
-            adBox.rectTransform.sizeDelta = new Vector2(780f, 95f);
-
-            CreateText(adBox.transform, "AdCaption", "ПРОВЕРКА РЕКЛАМЫ (SDK ЯНДЕКС ИГРЫ)", new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(700f, 24f), 17, new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
-
-            var testInterBtn = CreateSlicedButton(adBox.transform, "BtnTestInter", "МЕЖСТРАНИЧНАЯ РЕКЛАМА", PixelUiAtlas.ButtonPrimary, new Vector2(-190f, -54f), new Vector2(350f, 40f), 15, Color.white);
-            testInterBtn.onClick.AddListener(() =>
-            {
-                AudioManager.PlayClick();
-                YandexGamesService.Instance?.ShowInterstitial(() =>
-                {
-                    Debug.Log("[AdTest] Interstitial completed successfully.");
-                });
-            });
-
-            var testRewardBtn = CreateSlicedButton(adBox.transform, "BtnTestReward", "ВИДЕО ЗА НАГРАДУ (+100¢)", PixelUiAtlas.ButtonPrimary, new Vector2(190f, -54f), new Vector2(350f, 40f), 15, Color.white);
-            testRewardBtn.onClick.AddListener(() =>
-            {
-                AudioManager.PlayClick();
-                YandexGamesService.Instance?.ShowRewarded(() =>
-                {
-                    SaveManager.Instance?.AddCoins(100);
-                    RefreshData();
-                    Debug.Log("[AdTest] Rewarded ad watched: +100 coins granted.");
-                });
-            });
-
-            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", "ЗАКРЫТЬ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -330f), new Vector2(300f, 54f), 20, Color.white);
+            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", Localization.T("ЗАКРЫТЬ", "CLOSE"), PixelUiAtlas.ButtonSecondary, new Vector2(0f, 22f), new Vector2(280f, 50f), 19, Color.white, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f));
+            closeBtnLabel = closeBtn.GetComponentInChildren<Text>();
             closeBtn.onClick.AddListener(CloseAllModals);
         }
 
         private void BuildLoreModal(Transform parent)
         {
             loreModal = CreateModalContainer(parent, "LoreModal", out var card);
-            var loreTitle = CreateText(card.transform, "Title", "БОРТОВОЙ ЖУРНАЛ", new Vector2(0.5f, 1f), new Vector2(0f, -28f), new Vector2(780f, 34f), 28, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
-            loreTitle.horizontalOverflow = HorizontalWrapMode.Overflow;
-            loreTitle.verticalOverflow = VerticalWrapMode.Truncate;
-            var loreSub = CreateText(card.transform, "Sub", "Хроники Капитана Зигги, досье боссов Синдиката и тайны реликвий Hype Core", new Vector2(0.5f, 1f), new Vector2(0f, -68f), new Vector2(780f, 36f), 16, new Color(0.7f, 0.85f, 0.95f), FontStyle.Normal);
-            loreSub.verticalOverflow = VerticalWrapMode.Truncate;
+            loreTitleText = CreateText(card.transform, "Title", Localization.T("БОРТОВОЙ ЖУРНАЛ", "FLIGHT LOGBOOK"), new Vector2(0.5f, 1f), new Vector2(0f, -28f), new Vector2(780f, 34f), 28, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
+            loreSubText = CreateText(card.transform, "Sub", Localization.T("Хроники Капитана Зигги, досье боссов Синдиката и тайны реликвий Hype Core", "Captain Ziggy's chronicles, Syndicate boss dossiers, and secrets of the Hype Core relics"), new Vector2(0.5f, 1f), new Vector2(0f, -68f), new Vector2(780f, 36f), 16, new Color(0.7f, 0.85f, 0.95f), FontStyle.Normal);
 
             var scroll = CreateScroll(card.transform, new Vector2(0f, -112f), new Vector2(800f, 470f));
-            var entries = LoreCatalog.Entries;
+            loreScrollContent = scroll;
+            PopulateLoreItems();
 
+            var watchCutsceneBtn = CreateSlicedButton(card.transform, "BtnWatchPrologue", Localization.T("СМОТРЕТЬ ПРОЛОГ (КАТСЦЕНА)", "WATCH PROLOGUE (CUTSCENE)"), PixelUiAtlas.ButtonPrimary, new Vector2(-160f, 24f), new Vector2(380f, 50f), 17, Color.white, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f));
+            loreCutsceneBtnText = watchCutsceneBtn.GetComponentInChildren<Text>();
+            watchCutsceneBtn.onClick.AddListener(() =>
+            {
+                CloseAllModals();
+                CinematicIntroCutscene.Play(null);
+            });
+
+            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", Localization.T("ЗАКРЫТЬ", "CLOSE"), PixelUiAtlas.ButtonSecondary, new Vector2(230f, 24f), new Vector2(240f, 50f), 19, Color.white, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f));
+            loreCloseBtnText = closeBtn.GetComponentInChildren<Text>();
+            closeBtn.onClick.AddListener(CloseAllModals);
+        }
+
+        private void PopulateLoreItems()
+        {
+            if (loreScrollContent == null) return;
+            for (var i = loreScrollContent.childCount - 1; i >= 0; i--)
+            {
+                Destroy(loreScrollContent.GetChild(i).gameObject);
+            }
+
+            var entries = LoreCatalog.Entries;
             for (var i = 0; i < entries.Length; i++)
             {
                 var entry = entries[i];
-                var lines = Mathf.Max(2, Mathf.CeilToInt(entry.Content.Length / 72f));
+                var contentText = entry.LocalizedContent;
+                var lines = Mathf.Max(2, Mathf.CeilToInt(contentText.Length / 72f));
                 var bodyHeight = lines * 26f;
-                var itemObj = CreateImage("LoreItem" + i, scroll, PixelUiAtlas.SubPanel, Color.white);
+                var itemObj = CreateImage("LoreItem" + i, loreScrollContent, PixelUiAtlas.SubPanel, Color.white);
                 itemObj.type = Image.Type.Sliced;
                 var le = itemObj.gameObject.AddComponent<LayoutElement>();
                 le.minHeight = 92f + bodyHeight;
                 le.preferredHeight = 92f + bodyHeight;
 
-                var tag = PlaceLoreLine(itemObj.transform, "Tag", $"[{entry.Category}]", 12f, 22f, 15, new Color(0.55f, 0.9f, 1f), FontStyle.Bold);
-                var title = PlaceLoreLine(itemObj.transform, "Title", entry.Title, 38f, 28f, 20, new Color(1f, 0.88f, 0.4f), FontStyle.Bold);
-                var content = PlaceLoreLine(itemObj.transform, "Content", entry.Content, 72f, bodyHeight, 17, new Color(0.9f, 0.94f, 0.98f), FontStyle.Normal);
+                var tag = PlaceLoreLine(itemObj.transform, "Tag", $"[{entry.LocalizedCategory}]", 12f, 22f, 15, new Color(0.55f, 0.9f, 1f), FontStyle.Bold);
+                var title = PlaceLoreLine(itemObj.transform, "Title", entry.LocalizedTitle, 38f, 28f, 20, new Color(1f, 0.88f, 0.4f), FontStyle.Bold);
+                var content = PlaceLoreLine(itemObj.transform, "Content", contentText, 72f, bodyHeight, 17, new Color(0.9f, 0.94f, 0.98f), FontStyle.Normal);
                 tag.alignment = TextAnchor.MiddleLeft;
                 title.alignment = TextAnchor.MiddleLeft;
                 content.alignment = TextAnchor.UpperLeft;
                 content.lineSpacing = 1.12f;
                 content.verticalOverflow = VerticalWrapMode.Overflow;
             }
-
-            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", "ЗАКРЫТЬ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -330f), new Vector2(280f, 54f), 19, Color.white);
-            closeBtn.onClick.AddListener(CloseAllModals);
         }
 
         private GameObject CreateModalContainer(Transform parent, string name, out GameObject cardObj)
@@ -557,38 +562,61 @@ namespace KANYE.UI
             return modal;
         }
 
-        private void OpenModal(GameObject modal)
-        {
-            CloseAllModals();
-            if (modal != null)
-            {
-                modal.SetActive(true);
-                UITween.FadeInModal(this, modal);
-            }
-        }
-
         private void BuildDailyRewardModal(Transform parent)
         {
             dailyRewardModal = CreateModalContainer(parent, "DailyRewardModal", out var card);
-            CreateText(card.transform, "Title", "🎁 ЕЖЕДНЕВНЫЙ БОНУС ПИЛОТА 🎁", new Vector2(0.5f, 1f), new Vector2(0f, -36f), new Vector2(740f, 38f), 30, new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
-            CreateText(card.transform, "Sub", "Заходи в игру каждый день, чтобы получать кредиты и редкие Звёздные Ядра!", new Vector2(0.5f, 1f), new Vector2(0f, -74f), new Vector2(740f, 26f), 16, new Color(0.7f, 0.85f, 0.95f), FontStyle.Normal);
+            var cardRect = card.GetComponent<RectTransform>();
+            cardRect.sizeDelta = new Vector2(920f, 540f);
+
+            dailyTitleText = CreateText(card.transform, "Title", Localization.T("🎁 ЕЖЕДНЕВНЫЙ БОНУС ПИЛОТА 🎁", "🎁 DAILY PILOT BONUS 🎁"), new Vector2(0.5f, 1f), new Vector2(0f, -32f), new Vector2(860f, 38f), 28, new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
+            dailySubText = CreateText(card.transform, "Sub", Localization.T("Заходи в игру каждый день, чтобы получать монеты и редкие Звёздные Ядра!", "Log in every day to collect coins and rare Star Cores!"), new Vector2(0.5f, 1f), new Vector2(0f, -70f), new Vector2(860f, 26f), 16, new Color(0.7f, 0.85f, 0.95f), FontStyle.Normal);
+
+            var cardsObj = new GameObject("CardsGrid", typeof(RectTransform));
+            cardsObj.transform.SetParent(card.transform, false);
+            var gridRect = cardsObj.GetComponent<RectTransform>();
+            gridRect.anchorMin = new Vector2(0.5f, 1f);
+            gridRect.anchorMax = new Vector2(0.5f, 1f);
+            gridRect.pivot = new Vector2(0.5f, 1f);
+            gridRect.anchoredPosition = new Vector2(0f, -115f);
+            gridRect.sizeDelta = new Vector2(880f, 230f);
+            dailyCardsContainer = cardsObj.transform;
+
+            dailyClaimBtn = CreateSlicedButton(card.transform, "BtnClaimDaily", Localization.T("ЗАБРАТЬ НАГРАДУ", "CLAIM REWARD"), PixelUiAtlas.ButtonPrimary, new Vector2(0f, 85f), new Vector2(440f, 52f), 19, Color.white, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f));
+            dailyClaimBtnText = dailyClaimBtn.GetComponentInChildren<Text>();
+            dailyClaimBtn.onClick.AddListener(() =>
+            {
+                if (SaveManager.Instance != null && SaveManager.Instance.ClaimDailyReward(out var c, out var cr))
+                {
+                    AudioManager.PlayVictory();
+                    dailyClaimBtn.interactable = false;
+                    if (dailyClaimBtnText != null)
+                        dailyClaimBtnText.text = Localization.T("НАГРАДА ПОЛУЧЕНА!", "REWARD CLAIMED!");
+                    RefreshData();
+                    RebuildDailyCards();
+                }
+            });
+
+            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", Localization.T("ЗАКРЫТЬ", "CLOSE"), PixelUiAtlas.ButtonSecondary, new Vector2(0f, 24f), new Vector2(240f, 44f), 17, Color.white, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f));
+            dailyCloseBtnText = closeBtn.GetComponentInChildren<Text>();
+            closeBtn.onClick.AddListener(CloseAllModals);
+
+            RebuildDailyCards();
+        }
+
+        private void RebuildDailyCards()
+        {
+            if (dailyCardsContainer == null) return;
+            for (var i = dailyCardsContainer.childCount - 1; i >= 0; i--)
+            {
+                Destroy(dailyCardsContainer.GetChild(i).gameObject);
+            }
 
             var save = SaveManager.Instance;
             var currentDay = save != null ? save.GetCurrentDailyDay() : 1;
             var isAvailable = save != null && save.IsDailyRewardAvailable();
-            pulsingRewardIcons.Clear();
 
-            var cardsContainer = new GameObject("CardsGrid", typeof(RectTransform));
-            cardsContainer.transform.SetParent(card.transform, false);
-            var gridRect = cardsContainer.GetComponent<RectTransform>();
-            gridRect.anchorMin = new Vector2(0.5f, 1f);
-            gridRect.anchorMax = new Vector2(0.5f, 1f);
-            gridRect.pivot = new Vector2(0.5f, 1f);
-            gridRect.anchoredPosition = new Vector2(0f, -120f);
-            gridRect.sizeDelta = new Vector2(800f, 220f);
-
-            var startX = -345f;
-            var gapX = 115f;
+            var startX = -375f;
+            var gapX = 125f;
 
             for (var d = 1; d <= 7; d++)
             {
@@ -598,65 +626,55 @@ namespace KANYE.UI
                 var isPast = dayNum < currentDay && !isAvailable;
                 var isJackpot = dayNum == 7;
 
-                var cardBox = CreateImage($"DayCard_{dayNum}", cardsContainer.transform, PixelUiAtlas.SubPanel, Color.white);
+                var cardBox = CreateImage($"DayCard_{dayNum}", dailyCardsContainer, PixelUiAtlas.SubPanel, Color.white);
                 cardBox.type = Image.Type.Sliced;
                 var cRect = cardBox.rectTransform;
                 cRect.anchorMin = new Vector2(0.5f, 0.5f);
                 cRect.anchorMax = new Vector2(0.5f, 0.5f);
                 cRect.pivot = new Vector2(0.5f, 0.5f);
                 cRect.anchoredPosition = new Vector2(startX + (dayNum - 1) * gapX, 0f);
-                cRect.sizeDelta = new Vector2(106f, 190f);
+                cRect.sizeDelta = new Vector2(110f, 210f);
 
                 if (isCurrent && isAvailable)
-                    cardBox.color = isJackpot ? new Color(0.35f, 0.30f, 0.12f, 1f) : new Color(0.18f, 0.32f, 0.5f, 1f);
+                    cardBox.color = isJackpot ? new Color(0.38f, 0.32f, 0.12f, 1f) : new Color(0.18f, 0.35f, 0.55f, 1f);
                 else if (isPast)
                     cardBox.color = new Color(0.08f, 0.12f, 0.18f, 0.6f);
                 else
-                    cardBox.color = isJackpot ? new Color(0.20f, 0.16f, 0.08f, 0.95f) : new Color(0.08f, 0.14f, 0.22f, 0.95f);
+                    cardBox.color = isJackpot ? new Color(0.22f, 0.18f, 0.08f, 0.95f) : new Color(0.08f, 0.14f, 0.22f, 0.95f);
 
-                CreateText(cardBox.transform, "DayHeader", $"ДЕНЬ {dayNum}", new Vector2(0.5f, 1f), new Vector2(0f, -16f), new Vector2(100f, 22f), 15, isCurrent ? new Color(1f, 0.85f, 0.3f) : (isJackpot ? new Color(1f, 0.8f, 0.4f) : new Color(0.65f, 0.85f, 1f)), FontStyle.Bold);
+                CreateText(cardBox.transform, "DayHeader", Localization.TFormat("ДЕНЬ {0}", "DAY {0}", dayNum), new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(104f, 20f), 15, isCurrent ? new Color(1f, 0.85f, 0.3f) : (isJackpot ? new Color(1f, 0.8f, 0.4f) : new Color(0.65f, 0.85f, 1f)), FontStyle.Bold);
 
                 if (isJackpot)
                 {
-                    CreateText(cardBox.transform, "JackpotLabel", "★ ДЖЕКПОТ ★", new Vector2(0.5f, 1f), new Vector2(0f, -34f), new Vector2(104f, 14f), 10, new Color(1f, 0.85f, 0.25f), FontStyle.Bold);
-
-                    // Rotating golden energy starburst aura behind the Jackpot chest
-                    var aura = CreateImage("JackpotAura", cardBox.transform, PixelUiAtlas.IconStarCore, new Color(1f, 0.75f, 0.15f, 0.35f));
-                    var aRect = aura.rectTransform;
-                    aRect.anchorMin = new Vector2(0.5f, 0.5f);
-                    aRect.anchorMax = new Vector2(0.5f, 0.5f);
-                    aRect.pivot = new Vector2(0.5f, 0.5f);
-                    aRect.anchoredPosition = new Vector2(0f, 6f);
-                    aRect.sizeDelta = new Vector2(68f, 68f);
-                    jackpotAuraTransform = aRect;
+                    CreateText(cardBox.transform, "JackpotLabel", Localization.T("★ ДЖЕКПОТ ★", "★ JACKPOT ★"), new Vector2(0.5f, 1f), new Vector2(0f, -32f), new Vector2(108f, 14f), 10, new Color(1f, 0.85f, 0.25f), FontStyle.Bold);
                 }
 
-                // Sprite icon for reward
+                // Reward Icon
                 var iconSprite = isJackpot ? PixelUiAtlas.IconChestEpic : (reward.cores > 0 ? PixelUiAtlas.IconStarCore : PixelUiAtlas.IconCredit);
                 var iconImg = CreateImage($"DayIcon_{dayNum}", cardBox.transform, iconSprite, Color.white);
                 var iconRect = iconImg.rectTransform;
                 iconRect.anchorMin = new Vector2(0.5f, 0.5f);
                 iconRect.anchorMax = new Vector2(0.5f, 0.5f);
                 iconRect.pivot = new Vector2(0.5f, 0.5f);
-                iconRect.anchoredPosition = new Vector2(0f, isJackpot ? 6f : 10f);
-                iconRect.sizeDelta = isJackpot ? new Vector2(50f, 50f) : new Vector2(40f, 40f);
+                iconRect.anchoredPosition = new Vector2(0f, isJackpot ? 10f : 14f);
+                iconRect.sizeDelta = isJackpot ? new Vector2(54f, 54f) : new Vector2(44f, 44f);
                 iconImg.preserveAspect = true;
 
-                if (isJackpot || reward.cores > 0 || (isCurrent && isAvailable))
+                if (isJackpot)
                 {
-                    pulsingRewardIcons.Add(iconRect);
+                    jackpotAuraTransform = iconImg.transform;
                 }
 
-                // Value description
+                // Reward text
                 string rewardStr;
                 if (isJackpot)
-                    rewardStr = $"+{reward.credits} ¢\n+{reward.cores} ЯДРА";
+                    rewardStr = Localization.TFormat("+{0} 💰\n+{1} ЯДРА", "+{0} 💰\n+{1} CORES", reward.credits, reward.cores);
                 else if (reward.cores > 0)
-                    rewardStr = $"+{reward.credits} ¢\n+{reward.cores} ЯДРО";
+                    rewardStr = Localization.TFormat("+{0} 💰\n+{1} ЯДРО", "+{0} 💰\n+{1} CORE", reward.credits, reward.cores);
                 else
-                    rewardStr = $"+{reward.credits} ¢";
+                    rewardStr = $"+{reward.credits} 💰";
 
-                CreateText(cardBox.transform, "Val", rewardStr, new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(100f, 38f), 13, isJackpot ? new Color(1f, 0.88f, 0.35f) : new Color(1f, 0.95f, 0.65f), FontStyle.Bold);
+                CreateText(cardBox.transform, "Val", rewardStr, new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(106f, 38f), 13, isJackpot ? new Color(1f, 0.88f, 0.35f) : new Color(1f, 0.95f, 0.65f), FontStyle.Bold);
 
                 if (isPast)
                 {
@@ -666,31 +684,29 @@ namespace KANYE.UI
                 }
             }
 
-            // Claim Button
-            var claimBtn = CreateSlicedButton(card.transform, "BtnClaimDaily", isAvailable ? "ЗАБРАТЬ НАГРАДУ" : "НАГРАДА УЖЕ ПОЛУЧЕНА", isAvailable ? PixelUiAtlas.ButtonPrimary : PixelUiAtlas.ButtonSecondary, new Vector2(0f, -380f), new Vector2(440f, 54f), 19, Color.white);
-            claimBtn.interactable = isAvailable;
-            claimBtn.onClick.AddListener(() =>
+            if (dailyClaimBtn != null)
             {
-                if (SaveManager.Instance != null && SaveManager.Instance.ClaimDailyReward(out var c, out var cr))
+                dailyClaimBtn.interactable = isAvailable;
+                if (dailyClaimBtnText != null)
                 {
-                    AudioManager.PlayVictory();
-
-                    // Explosive victory particle bursts
-                    if (MenuParticleSystem.Instance != null)
-                    {
-                        MenuParticleSystem.Instance.EmitBurst(Vector2.zero, new Color(1f, 0.88f, 0.25f, 1f), 36, PixelUiAtlas.IconCredit);
-                        MenuParticleSystem.Instance.EmitBurst(Vector2.zero, new Color(0.2f, 0.95f, 1f, 1f), 28, PixelUiAtlas.IconStarCore);
-                    }
-
-                    UITween.PunchScale(this, claimBtn.GetComponent<RectTransform>(), 1.18f, 0.25f);
-                    claimBtn.interactable = false;
-                    claimBtn.GetComponentInChildren<Text>().text = "НАГРАДА ПОЛУЧЕНА!";
-                    RefreshData();
+                    dailyClaimBtnText.text = isAvailable
+                        ? Localization.T("ЗАБРАТЬ НАГРАДУ", "CLAIM REWARD")
+                        : Localization.T("НАГРАДА УЖЕ ПОЛУЧЕНА", "ALREADY CLAIMED");
                 }
-            });
+            }
+        }
 
-            var closeBtn = CreateSlicedButton(card.transform, "BtnClose", "ЗАКРЫТЬ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -445f), new Vector2(240f, 44f), 17, Color.white);
-            closeBtn.onClick.AddListener(CloseAllModals);
+        private void OpenDailyRewardModal()
+        {
+            RebuildDailyCards();
+            OpenModal(dailyRewardModal);
+        }
+
+        private void OpenModal(GameObject modal)
+        {
+            CloseAllModals();
+            if (modal != null)
+                modal.SetActive(true);
         }
 
         private void CloseAllModals()
@@ -711,16 +727,24 @@ namespace KANYE.UI
         {
             var sdk = YandexGamesService.Instance;
             var authorized = sdk != null && sdk.IsAuthorized;
-            var name = authorized ? sdk.PlayerName : "Гость";
+            var rawName = authorized ? sdk.PlayerName : string.Empty;
+            string displayName;
+            if (!authorized || string.IsNullOrEmpty(rawName) || rawName.Equals("Гость", System.StringComparison.OrdinalIgnoreCase))
+                displayName = Localization.T("ГОСТЬ", "GUEST");
+            else if (rawName.Equals("Локальный пилот", System.StringComparison.OrdinalIgnoreCase))
+                displayName = Localization.T("ЛОКАЛЬНЫЙ ПИЛОТ", "LOCAL PILOT");
+            else
+                displayName = rawName.ToUpper();
+
             if (playerNameText != null)
-                playerNameText.text = authorized ? $"ПИЛОТ: {name.ToUpper()}" : "ПИЛОТ: ГОСТЬ";
+                playerNameText.text = Localization.TFormat("ПИЛОТ: {0}", "PILOT: {0}", displayName);
             if (authButton != null)
                 authButton.gameObject.SetActive(!authorized);
             if (firstLaunchNameText != null)
             {
                 firstLaunchNameText.text = authorized
-                    ? $"На связи {name}. Это имя пришло после авторизации."
-                    : "Пока ты гость. Кнопка «Войти» в шапке запрашивает имя у Яндекс Игр.";
+                    ? Localization.TFormat("На связи {0}. Это имя пришло после авторизации.", "Welcome {0}. Identity verified via platform.", displayName)
+                    : Localization.T("Пока ты гость. Кнопка «Войти» в шапке запрашивает имя у Яндекс Игр.", "Playing as Guest. 'Sign In' authorizes via Yandex Games.");
             }
         }
 
@@ -741,16 +765,20 @@ namespace KANYE.UI
             cardRect.pivot = new Vector2(0.5f, 0.5f);
             cardRect.sizeDelta = new Vector2(760f, 420f);
 
-            CreateText(card.transform, "Title", "ПЕРВЫЙ ВЫЛЕТ", new Vector2(0.5f, 1f), new Vector2(0f, -36f), new Vector2(680f, 40f), 32, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
-            firstLaunchNameText = CreateText(card.transform, "Pilot", "Пока ты гость.", new Vector2(0.5f, 1f), new Vector2(0f, -84f), new Vector2(680f, 28f), 18, new Color(0.65f, 0.95f, 1f), FontStyle.Normal);
-            var body = CreateText(card.transform, "Body",
-                "Сессия начинается с меню. Окно урока закроется только после манёвра, выстрела, ракеты на Q и мега-луча на E.\nДальше задание миссии — пройденный путь, а шкала Ярости копится от сбитых целей.",
+            firstLaunchTitleText = CreateText(card.transform, "Title", Localization.T("ПЕРВЫЙ ВЫЛЕТ", "MAIDEN FLIGHT"), new Vector2(0.5f, 1f), new Vector2(0f, -36f), new Vector2(680f, 40f), 32, new Color(1f, 0.85f, 0.4f), FontStyle.Bold);
+            firstLaunchNameText = CreateText(card.transform, "Pilot", Localization.T("Пока ты гость.", "Playing as Guest."), new Vector2(0.5f, 1f), new Vector2(0f, -84f), new Vector2(680f, 28f), 18, new Color(0.65f, 0.95f, 1f), FontStyle.Normal);
+            firstLaunchBodyText = CreateText(card.transform, "Body",
+                Localization.T(
+                    "Сессия начинается с меню. Окно урока закроется только после манёвра, выстрела, ракеты на Q и мега-луча на E.\nДальше задание миссии — пройденный путь, а шкала Ярости копится от сбитых целей.",
+                    "Mission flight begins from the hangar. The tutorial briefing completes after maneuvers, primary fire, EX rocket on [Q], and Mega-Laser on [E]. Progress by distance and charge Hype from destroyed targets."),
                 new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(660f, 110f), 20, Color.white, FontStyle.Normal);
-            body.alignment = TextAnchor.UpperCenter;
+            firstLaunchBodyText.alignment = TextAnchor.UpperCenter;
 
-            var go = CreateSlicedButton(card.transform, "BtnFirstFlight", "В ПЕРВЫЙ ВЫЛЕТ", PixelUiAtlas.ButtonPrimary, new Vector2(0f, -40f), new Vector2(420f, 58f), 22, new Color(1f, 0.98f, 0.85f));
+            var go = CreateSlicedButton(card.transform, "BtnFirstFlight", Localization.T("В ПЕРВЫЙ ВЫЛЕТ", "LAUNCH FLIGHT"), PixelUiAtlas.ButtonPrimary, new Vector2(0f, -40f), new Vector2(420f, 58f), 22, new Color(1f, 0.98f, 0.85f));
+            firstLaunchGoBtnLabel = go.GetComponentInChildren<Text>();
             go.onClick.AddListener(StartCampaign);
-            var stay = CreateSlicedButton(card.transform, "BtnStay", "ОСТАТЬСЯ В МЕНЮ", PixelUiAtlas.ButtonSecondary, new Vector2(0f, -110f), new Vector2(420f, 48f), 18, Color.white);
+            var stay = CreateSlicedButton(card.transform, "BtnStay", Localization.T("ОСТАТЬСЯ В МЕНЮ", "STAY IN MENU"), PixelUiAtlas.ButtonSecondary, new Vector2(0f, -110f), new Vector2(420f, 48f), 18, Color.white);
+            firstLaunchStayBtnLabel = stay.GetComponentInChildren<Text>();
             stay.onClick.AddListener(() => firstLaunchModal.SetActive(false));
 
             firstLaunchModal.SetActive(false);
@@ -775,6 +803,16 @@ namespace KANYE.UI
             var index = SaveManager.Instance != null ? SaveManager.Instance.CurrentMission : 0;
             MissionCatalog.Select(index);
 
+            // Cold Open: Launch cinematic intro cutscene if first time entering campaign
+            if (SaveManager.Instance != null && !SaveManager.Instance.HasSeenIntro)
+            {
+                CinematicIntroCutscene.Play(() =>
+                {
+                    SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
+                });
+                return;
+            }
+
             SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
         }
 
@@ -783,26 +821,6 @@ namespace KANYE.UI
             AudioManager.PlayClick();
             GameRules.CurrentMode = GameMode.RogueExpedition;
             SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
-        }
-
-        private void OpenShop()
-        {
-            AudioManager.PlayClick();
-            var existing = FindAnyObjectByType<ShopScreen>();
-            if (existing != null)
-            {
-                existing.gameObject.SetActive(true);
-                return;
-            }
-
-            var shopObj = new GameObject("ShopScreenManager");
-            var shop = shopObj.AddComponent<ShopScreen>();
-            shop.OnCloseRequested = () =>
-            {
-                if (shopObj != null)
-                    Destroy(shopObj);
-                RefreshData();
-            };
         }
 
         private void ResetProgressAndStartTutorial()
@@ -830,30 +848,97 @@ namespace KANYE.UI
             RefreshData();
         }
 
+        private void RefreshAllTexts()
+        {
+            if (btnCampaignLabel != null) btnCampaignLabel.text = Localization.T("КАМПАНИЯ // СЮЖЕТ", "CAMPAIGN // STORY");
+            if (btnRogueLabel != null) btnRogueLabel.text = Localization.T("РОГАЛИК // ЭКСПЕДИЦИЯ", "ROGUELITE // EXPEDITION");
+            if (btnHangarLabel != null) btnHangarLabel.text = Localization.T("АНГАР И АРСЕНАЛ", "HANGAR & ARSENAL");
+            if (btnLoreLabel != null) btnLoreLabel.text = Localization.T("БОРТОВОЙ ЖУРНАЛ // ЛОР", "LOGBOOK // LORE");
+            if (btnAchievementsLabel != null) btnAchievementsLabel.text = Localization.T("ДОСТИЖЕНИЯ", "ACHIEVEMENTS");
+            if (btnSettingsLabel != null) btnSettingsLabel.text = Localization.T("НАСТРОЙКИ", "SETTINGS");
+            if (btnAuthLabel != null) btnAuthLabel.text = Localization.T("ВОЙТИ", "SIGN IN");
+
+            if (settingsTitleText != null) settingsTitleText.text = Localization.T("НАСТРОЙКИ СИСТЕМЫ", "SYSTEM SETTINGS");
+            if (langCaptionText != null) langCaptionText.text = Localization.T("ЯЗЫК ИНТЕРФЕЙСА", "INTERFACE LANGUAGE");
+            if (langButtonLabel != null) langButtonLabel.text = Localization.GetLanguageDisplayName();
+            if (volCaptionText != null) volCaptionText.text = Localization.T("ГРОМКОСТЬ ЗВУКА И САУНДТРЕКА", "MASTER & MUSIC VOLUME");
+            if (ctrlCaptionText != null) ctrlCaptionText.text = Localization.T("БОРТОВОЕ УПРАВЛЕНИЕ", "FLIGHT CONTROLS");
+            if (ctrlL1 != null) ctrlL1.text = Localization.T("WASD / Стрелки / Сенсорный стик — Маневрирование корабля", "WASD / Arrows / Touch Stick — Ship Maneuvering");
+            if (ctrlL2 != null) ctrlL2.text = Localization.T("ПРОБЕЛ / Кнопка «Огонь» — Скорострельный залп", "SPACE / Fire Button — Primary Fire");
+            if (ctrlL3 != null) ctrlL3.text = Localization.T("КЛАВИША [Q] — EX-ракета (тратит 1 карту энергии)", "KEY [Q] — EX Rocket (Consumes 1 Energy Card)");
+            if (ctrlL4 != null) ctrlL4.text = Localization.T("КЛАВИША [E] — Мега-Лазер (полный супер-залп при полной шкале)", "KEY [E] — Mega-Laser (Full Super Beam on Full Hype)");
+            if (ctrlL5 != null) ctrlL5.text = Localization.T("⚡ ПАРИРОВАНИЕ: Сближайся с РОЗОВЫМИ сферами для +30 Ярости!", "PARRY: Touch PINK hazards to absorb +30 Hype!");
+            if (resetTitleText != null) resetTitleText.text = Localization.T("СБРОС ПРОГРЕССА И ПОВТОР ОБУЧЕНИЯ", "RESET PROGRESS & REPLAY TUTORIAL");
+            if (resetDescText != null) resetDescText.text = Localization.T("Очистит сохранения, открытые скины и рекорды,\nи сразу же запустит стартовое обучение пилота в Секторе 1.", "Clears save data, unlocked skins and records,\nand immediately launches flight tutorial in Sector 1.");
+            if (resetBtnLabel != null) resetBtnLabel.text = Localization.T("СБРОСИТЬ И НАЧАТЬ ОБУЧЕНИЕ", "RESET & START TUTORIAL");
+            if (closeBtnLabel != null) closeBtnLabel.text = Localization.T("ЗАКРЫТЬ", "CLOSE");
+
+            if (loreTitleText != null) loreTitleText.text = Localization.T("БОРТОВОЙ ЖУРНАЛ", "FLIGHT LOGBOOK");
+            if (loreSubText != null) loreSubText.text = Localization.T("Хроники Капитана Зигги, досье боссов Синдиката и тайны реликвий Hype Core", "Captain Ziggy's chronicles, Syndicate boss dossiers, and secrets of the Hype Core relics");
+            if (loreCutsceneBtnText != null) loreCutsceneBtnText.text = Localization.T("СМОТРЕТЬ ПРОЛОГ (КАТСЦЕНА)", "WATCH PROLOGUE (CUTSCENE)");
+            if (loreCloseBtnText != null) loreCloseBtnText.text = Localization.T("ЗАКРЫТЬ", "CLOSE");
+            PopulateLoreItems();
+
+            if (achievementsTitleText != null) achievementsTitleText.text = Localization.T("БОРТОВЫЕ ДОСТИЖЕНИЯ", "SHIP ACHIEVEMENTS");
+            if (achievementsCloseBtnLabel != null) achievementsCloseBtnLabel.text = Localization.T("ЗАКРЫТЬ", "CLOSE");
+
+            if (firstLaunchTitleText != null) firstLaunchTitleText.text = Localization.T("ПЕРВЫЙ ВЫЛЕТ", "MAIDEN FLIGHT");
+            if (firstLaunchBodyText != null)
+            {
+                firstLaunchBodyText.text = Localization.T(
+                    "Сессия начинается с меню. Окно урока закроется только после манёвра, выстрела, ракеты на Q и мега-луча на E.\nДальше задание миссии — пройденный путь, а шкала Ярости копится от сбитых целей.",
+                    "Mission flight begins from the hangar. The tutorial briefing completes after maneuvers, primary fire, EX rocket on [Q], and Mega-Laser on [E]. Progress by distance and charge Hype from destroyed targets.");
+            }
+            if (firstLaunchGoBtnLabel != null) firstLaunchGoBtnLabel.text = Localization.T("В ПЕРВЫЙ ВЫЛЕТ", "LAUNCH FLIGHT");
+            if (firstLaunchStayBtnLabel != null) firstLaunchStayBtnLabel.text = Localization.T("ОСТАТЬСЯ В МЕНЮ", "STAY IN MENU");
+
+            if (btnDailyHeaderLabel != null)
+            {
+                var isAvailable = SaveManager.Instance != null && SaveManager.Instance.IsDailyRewardAvailable();
+                btnDailyHeaderLabel.text = isAvailable
+                    ? Localization.T("🎁 НАГРАДА ДНЯ !", "🎁 DAILY REWARD !")
+                    : Localization.T("🎁 НАГРАДА ДНЯ", "🎁 DAILY REWARD");
+            }
+            if (dailyTitleText != null) dailyTitleText.text = Localization.T("🎁 ЕЖЕДНЕВНЫЙ БОНУС ПИЛОТА 🎁", "🎁 DAILY PILOT BONUS 🎁");
+            if (dailySubText != null) dailySubText.text = Localization.T("Заходи в игру каждый день, чтобы получать монеты и редкие Звёздные Ядра!", "Log in every day to collect coins and rare Star Cores!");
+            if (dailyCloseBtnText != null) dailyCloseBtnText.text = Localization.T("ЗАКРЫТЬ", "CLOSE");
+            RebuildDailyCards();
+
+            RefreshData();
+        }
+
         private void RefreshData()
         {
             var save = SaveManager.Instance;
             var coins = save != null ? save.Data.coins : 0;
-            var cores = save != null && save.Data != null ? save.Data.starCores : 0;
             var missionIndex = save != null ? save.CurrentMission : 0;
             var mission = MissionCatalog.All[Mathf.Clamp(missionIndex, 0, MissionCatalog.All.Length - 1)];
             var kills = save != null ? save.Data.totalKills : 0;
             var equippedSkinId = save != null ? save.Data.equippedSkinId : "default";
             var equippedSkin = ShipSkinCatalog.Find(equippedSkinId);
 
+            if (btnDailyHeaderLabel != null)
+            {
+                var isAvailable = save != null && save.IsDailyRewardAvailable();
+                btnDailyHeaderLabel.text = isAvailable
+                    ? Localization.T("🎁 НАГРАДА ДНЯ !", "🎁 DAILY REWARD !")
+                    : Localization.T("🎁 НАГРАДА ДНЯ", "🎁 DAILY REWARD");
+            }
+
             if (coinsText != null)
-                coinsText.text = $"{coins} ¢   •   {cores} ЯДЕР";
+                coinsText.text = Localization.TFormat("{0} МОНЕТ", "{0} COINS", coins);
             if (rankText != null)
-                rankText.text = $"{PilotRank.Title(kills).ToUpper()}  •  {kills} СБИТО";
+                rankText.text = Localization.TFormat("{0} // {1} СБИТО", "{0} // {1} KILLS", PilotRank.Title(kills).ToUpper(), kills);
             if (sectorTitleText != null)
-                sectorTitleText.text = mission.Title.ToUpper();
+                sectorTitleText.text = mission.LocalizedTitle.ToUpper();
             if (sectorDescText != null)
-                sectorDescText.text = mission.Summary;
+                sectorDescText.text = mission.LocalizedSummary;
             if (shipSkinTitleText != null)
             {
                 var weapon = WeaponCatalog.Find(save != null ? save.Data.equippedWeaponId : SaveManager.DefaultWeaponId);
-                var weaponTitle = weapon != null ? weapon.Title : "Базовое оружие";
-                shipSkinTitleText.text = $"КОРПУС: {equippedSkin.Title.ToUpper()}\nОРУЖИЕ: {weaponTitle.ToUpper()}";
+                var weaponTitle = weapon != null ? weapon.LocalizedTitle : Localization.T("Базовое оружие", "Default Weapon");
+                var skinTitle = equippedSkin != null ? equippedSkin.LocalizedTitle : Localization.T("Базовый корпус", "Default Hull");
+                shipSkinTitleText.text = Localization.TFormat("КОРПУС: {0}\nОРУЖИЕ: {1}", "HULL: {0}\nWEAPON: {1}", skinTitle.ToUpper(), weaponTitle.ToUpper());
             }
 
             RefreshPlayerLine();
@@ -864,13 +949,6 @@ namespace KANYE.UI
                 if (sprite != null)
                     shipDisplayImage.sprite = sprite;
                 shipDisplayImage.color = Color.white;
-            }
-
-            if (nozzleDisplayImage != null)
-            {
-                var nSpr = Resources.Load<Sprite>(equippedSkin.NozzleSprite);
-                if (nSpr != null)
-                    nozzleDisplayImage.sprite = nSpr;
             }
 
             if (thrusterFlameTransform != null)
@@ -894,17 +972,17 @@ namespace KANYE.UI
 
                 if (isEquipped)
                 {
-                    skinActionLabels[i].text = "НАДЕТ";
+                    skinActionLabels[i].text = Localization.T("НАДЕТ", "EQUIPPED");
                     skinActionButtons[i].interactable = false;
                 }
                 else if (owned || skin.Price == 0)
                 {
-                    skinActionLabels[i].text = "ЭКИПИРОВАТЬ";
+                    skinActionLabels[i].text = Localization.T("ЭКИПИРОВАТЬ", "EQUIP");
                     skinActionButtons[i].interactable = true;
                 }
                 else
                 {
-                    skinActionLabels[i].text = $"КУПИТЬ ({skin.Price})";
+                    skinActionLabels[i].text = Localization.TFormat("КУПИТЬ ({0})", "BUY ({0})", skin.Price);
                     skinActionButtons[i].interactable = coins >= skin.Price;
                 }
             }
@@ -937,7 +1015,7 @@ namespace KANYE.UI
 
                 var unlocked = manager.IsUnlocked(data.id);
                 var progress = manager.GetProgress(data.id);
-                var status = unlocked ? "ОТКРЫТО" : $"{progress} / {data.targetAmount}";
+                var status = unlocked ? Localization.T("ОТКРЫТО", "UNLOCKED") : $"{progress} / {data.targetAmount}";
 
                 var row = CreateImage("AchRow" + i, achievementScrollContent, PixelUiAtlas.SubPanel, Color.white);
                 row.type = Image.Type.Sliced;
@@ -952,10 +1030,13 @@ namespace KANYE.UI
                 accent.rectTransform.sizeDelta = new Vector2(4f, 0f);
 
                 var badge = unlocked ? "★ " : "○ ";
-                var nameText = CreateText(row.transform, "Title", badge + data.displayName + "  —  [" + status + "]", new Vector2(0f, 1f), new Vector2(25f, -22f), new Vector2(720f, 28f), 19, unlocked ? new Color(0.7f, 1f, 0.75f) : Color.white, FontStyle.Bold);
+                var achTitle = Localization.GetAchievementTitle(data.id, data.displayName);
+                var achDesc = Localization.GetAchievementDesc(data.id, data.description);
+
+                var nameText = CreateText(row.transform, "Title", badge + achTitle + "  —  [" + status + "]", new Vector2(0f, 1f), new Vector2(25f, -22f), new Vector2(720f, 28f), 19, unlocked ? new Color(0.7f, 1f, 0.75f) : Color.white, FontStyle.Bold);
                 nameText.alignment = TextAnchor.MiddleLeft;
 
-                var descText = CreateText(row.transform, "Desc", data.description, new Vector2(0f, 1f), new Vector2(25f, -54f), new Vector2(720f, 26f), 15, new Color(0.75f, 0.85f, 0.95f), FontStyle.Normal);
+                var descText = CreateText(row.transform, "Desc", achDesc, new Vector2(0f, 1f), new Vector2(25f, -54f), new Vector2(720f, 26f), 15, new Color(0.75f, 0.85f, 0.95f), FontStyle.Normal);
                 descText.alignment = TextAnchor.MiddleLeft;
             }
         }
@@ -983,6 +1064,7 @@ namespace KANYE.UI
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
+            scaler.dynamicPixelsPerUnit = 1.25f;
             return c;
         }
 
@@ -1008,7 +1090,7 @@ namespace KANYE.UI
             rect.sizeDelta = size;
 
             var label = go.GetComponent<Text>();
-            label.font = UIFont.DefaultFont;
+            label.font = GameFont.Get();
             label.fontSize = fontSize;
             label.fontStyle = style;
             label.alignment = TextAnchor.MiddleCenter;
@@ -1016,7 +1098,7 @@ namespace KANYE.UI
             label.text = text;
             label.lineSpacing = 1.08f;
             label.horizontalOverflow = HorizontalWrapMode.Wrap;
-            label.verticalOverflow = VerticalWrapMode.Truncate;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
             if (label.font != null && label.font.material != null && label.font.material.mainTexture != null)
                 label.font.material.mainTexture.filterMode = FilterMode.Bilinear;
             return label;
@@ -1034,14 +1116,16 @@ namespace KANYE.UI
             return label;
         }
 
-        private static Button CreateSlicedButton(Transform parent, string name, string text, Sprite sprite, Vector2 pos, Vector2 size, int fontSize, Color textColor)
+        private static Button CreateSlicedButton(Transform parent, string name, string text, Sprite sprite, Vector2 pos, Vector2 size, int fontSize, Color textColor, Vector2? anchor = null, Vector2? pivot = null)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             go.transform.SetParent(parent, false);
             var rect = go.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.5f, 0.5f);
-            rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
+            var a = anchor ?? new Vector2(0.5f, 0.5f);
+            var p = pivot ?? new Vector2(0.5f, 0.5f);
+            rect.anchorMin = a;
+            rect.anchorMax = a;
+            rect.pivot = p;
             rect.anchoredPosition = pos;
             rect.sizeDelta = size;
 
@@ -1061,8 +1145,6 @@ namespace KANYE.UI
 
             var label = CreateText(go.transform, "Label", text, new Vector2(0.5f, 0.5f), Vector2.zero, size, fontSize, textColor, FontStyle.Bold);
             label.alignment = TextAnchor.MiddleCenter;
-
-            UITween.AttachButtonFeedback(btn);
             return btn;
         }
 

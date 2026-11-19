@@ -5,6 +5,7 @@
 using System;
 using System.Collections;
 using KANYE.Audio;
+using KANYE.Services;
 using KANYE.Systems;
 using UnityEngine;
 using UnityEngine.UI;
@@ -39,8 +40,15 @@ namespace KANYE.UI
             public string SpritePath;
             public Color FrameColor;
             public Action PlaySound;
+            public string HeaderEn;
+            public string SpeakerEn;
+            public string SpeechEn;
 
-            public ComicFrame(string header, string speaker, string speech, string sprite, Color color, Action sound)
+            public string LocalizedHeader => Localization.CurrentLanguage == GameLanguage.Russian ? Header : (!string.IsNullOrEmpty(HeaderEn) ? HeaderEn : Header);
+            public string LocalizedSpeaker => Localization.CurrentLanguage == GameLanguage.Russian ? Speaker : (!string.IsNullOrEmpty(SpeakerEn) ? SpeakerEn : Speaker);
+            public string LocalizedSpeech => Localization.CurrentLanguage == GameLanguage.Russian ? Speech : (!string.IsNullOrEmpty(SpeechEn) ? SpeechEn : Speech);
+
+            public ComicFrame(string header, string speaker, string speech, string sprite, Color color, Action sound, string headerEn = null, string speakerEn = null, string speechEn = null)
             {
                 Header = header;
                 Speaker = speaker;
@@ -48,6 +56,9 @@ namespace KANYE.UI
                 SpritePath = sprite;
                 FrameColor = color;
                 PlaySound = sound;
+                HeaderEn = headerEn;
+                SpeakerEn = speakerEn;
+                SpeechEn = speechEn;
             }
         }
 
@@ -64,7 +75,10 @@ namespace KANYE.UI
                     "ВНИМАНИЕ! Синдикат «Авангард» атаковал пять секторов! 50 Великих Золотых Винилов Hype Core похищены! На галактику надвигается Великое Глушение!",
                     "Sprites/boss_drone",
                     new Color(1f, 0.25f, 0.25f),
-                    () => AudioManager.PlayBossWarning()),
+                    () => AudioManager.PlayBossWarning(),
+                    "🚨 EMERGENCY ALERT // SECTOR 01",
+                    "SYSTEM SCANNER DRONE",
+                    "WARNING! The Vanguard Syndicate raided five sectors! 50 Great Golden Vinyls of Hype Core have been stolen! The Great Muffling is upon the galaxy!"),
 
                 new ComicFrame(
                     "📡 РАДИОСТАНЦИЯ «НЕОНОВЫЙ МАЯК»",
@@ -72,7 +86,10 @@ namespace KANYE.UI
                     "Зигги, дружище, приём! Слышишь этот вой сирен? Они заперли винил внутри своих боевых боссов! Если мы не прорвем блокаду — вся музыка и свобода обратятся в серый монохром!",
                     "Sprites/barney_portrait",
                     new Color(0.35f, 0.9f, 1f),
-                    () => AudioManager.PlayRadioOpen()),
+                    () => AudioManager.PlayRadioOpen(),
+                    "📡 RADIO STATION 'NEON BEACON'",
+                    "NAVIGATOR BARNEY",
+                    "Ziggy, buddy, do you read me? Hear those sirens wailing? They've locked the vinyl inside their battle flagships! If we don't breach their lines, all music and freedom will turn to monochrome gray!"),
 
                 new ComicFrame(
                     "🛸 АНГАР // ASTRO-SAUCER X-1",
@@ -80,7 +97,10 @@ namespace KANYE.UI
                     "Спокойно, Барни! Моя тарелка заправлена виниловым огнем, а штурвал откалиброван. Ни один корпоративный дрон не отнимет у нас наш бит!",
                     "Sprites/ship",
                     new Color(1f, 0.85f, 0.35f),
-                    () => AudioManager.PlayPowerup()),
+                    () => AudioManager.PlayPowerup(),
+                    "🛸 HANGAR // ASTRO-SAUCER X-1",
+                    "CAPTAIN ZIGGY",
+                    "Easy, Barney! My saucer is stoked with vinyl fire and flight controls are dialed in. Not a single corporate drone is taking our groove!"),
 
                 new ComicFrame(
                     "⚡ ГИПЕР-ФОРСАЖ АКТИВИРОВАН",
@@ -88,16 +108,22 @@ namespace KANYE.UI
                     "Кварцевый купол загерметизирован! Ионные приводы на 100%! ВПЕРЁД, В БОЙ ЗА ЗВУК И СВОБОДУ ВСЕЛЕННОЙ!",
                     "Sprites/thruster_ion",
                     new Color(0.4f, 1f, 0.5f),
-                    () => AudioManager.PlayEXShoot())
+                    () => AudioManager.PlayEXShoot(),
+                    "⚡ HYPERDRIVE ENGAGED",
+                    "FLIGHT COMPUTER",
+                    "Quartz dome sealed! Ionic thrusters at 100%! FORWARD, TO BATTLE FOR SOUND AND GALACTIC FREEDOM!")
             };
         }
 
         public static void Play(Action onFinish)
         {
-            if (SaveManager.Instance != null)
-                SaveManager.Instance.MarkIntroSeen(true);
+            if (Instance == null)
+            {
+                var go = new GameObject("CinematicIntroCutscene");
+                Instance = go.AddComponent<CinematicIntroCutscene>();
+            }
 
-            onFinish?.Invoke();
+            Instance.StartCutscene(onFinish);
         }
 
         private void Awake()
@@ -128,6 +154,22 @@ namespace KANYE.UI
                 return;
 
             // Spacebar, Enter, or Click to advance
+#if ENABLE_INPUT_SYSTEM
+            var kb = UnityEngine.InputSystem.Keyboard.current;
+            if (kb != null)
+            {
+                if (kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame || kb.rightArrowKey.wasPressedThisFrame)
+                {
+                    NextFrame();
+                    return;
+                }
+                if (kb.escapeKey.wasPressedThisFrame)
+                {
+                    FinishCutscene();
+                    return;
+                }
+            }
+#else
             if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.RightArrow))
             {
                 NextFrame();
@@ -139,6 +181,7 @@ namespace KANYE.UI
                 FinishCutscene();
                 return;
             }
+#endif
 
             frameTimer -= Time.unscaledDeltaTime;
             if (frameTimer <= 0f)
@@ -185,19 +228,19 @@ namespace KANYE.UI
             var f = frames[currentFrame];
             if (titleText != null)
             {
-                titleText.text = f.Header;
+                titleText.text = f.LocalizedHeader;
                 titleText.color = f.FrameColor;
             }
 
             if (speakerNameText != null)
             {
-                speakerNameText.text = $"▶  {f.Speaker}";
+                speakerNameText.text = $"▶  {f.LocalizedSpeaker}";
                 speakerNameText.color = Color.Lerp(f.FrameColor, Color.white, 0.5f);
             }
 
             if (dialogueText != null)
             {
-                dialogueText.text = f.Speech;
+                dialogueText.text = f.LocalizedSpeech;
             }
 
             if (instructionText != null)
@@ -331,7 +374,7 @@ namespace KANYE.UI
             skipButton = skipBtnObj.GetComponent<Button>();
             skipButton.onClick.AddListener(FinishCutscene);
 
-            var skipLabel = CreateLabel(skipBtnObj.transform, "Label", "ПРОПУСТИТЬ >> [ПРОБЕЛ]", 16, Vector2.zero, new Vector2(260f, 36f), Color.white, FontStyle.Bold);
+            var skipLabel = CreateLabel(skipBtnObj.transform, "Label", Localization.T("ПРОПУСТИТЬ >> [ПРОБЕЛ]", "SKIP >> [SPACE]"), 16, Vector2.zero, new Vector2(260f, 36f), Color.white, FontStyle.Bold);
         }
 
         private static Image CreateImage(string name, Transform parent, Sprite sprite, Color color)
@@ -352,7 +395,7 @@ namespace KANYE.UI
             rect.anchoredPosition = pos;
             rect.sizeDelta = sizeDelta;
             var t = go.GetComponent<Text>();
-            t.font = UIFont.DefaultFont;
+            t.font = GameFont.Get();
             t.text = text;
             t.fontSize = size;
             t.fontStyle = style;

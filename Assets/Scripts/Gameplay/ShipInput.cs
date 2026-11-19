@@ -65,8 +65,12 @@ namespace KANYE.Gameplay
                 return;
             }
 
-            Move = moveAction.ReadValue<Vector2>();
-            FireHeld = fireAction.IsPressed();
+            var move = moveAction.ReadValue<Vector2>();
+            if (move.sqrMagnitude < 0.01f && TouchFlightControls.TouchMove.sqrMagnitude > 0.01f)
+                move = TouchFlightControls.TouchMove;
+            Move = move;
+
+            FireHeld = fireAction.IsPressed() || TouchFlightControls.TouchFireHeld;
 
             // Проверяем первый выстрел (только один раз)
             if (!_firstShotFired && FireHeld)

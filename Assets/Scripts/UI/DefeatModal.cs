@@ -54,10 +54,7 @@ namespace KANYE.UI
         {
             onReviveCallback = onRevive;
             if (modalRoot != null)
-            {
                 modalRoot.SetActive(true);
-                UITween.FadeInModal(this, modalRoot);
-            }
 
             if (reviveButton != null)
                 reviveButton.gameObject.SetActive(canRevive);
@@ -65,16 +62,16 @@ namespace KANYE.UI
             if (Systems.GameRules.CurrentMode == Systems.GameMode.RogueExpedition)
             {
                 if (titleText != null)
-                    titleText.text = "ЭКСПЕДИЦИЯ ЗАВЕРШЕНА";
+                    titleText.text = Localization.T("ЭКСПЕДИЦИЯ ЗАВЕРШЕНА", "EXPEDITION FINISHED");
                 if (statusText != null)
-                    statusText.text = $"Пройдено волн: {Gameplay.RogueExpeditionController.CurrentWave}\nСобрано ресурсов: +{Gameplay.RogueExpeditionController.CoinsEarnedThisRun} кредитов (сохранено в ангар)";
+                    statusText.text = Localization.TFormat("Пройдено волн: {0}\n🪙 Собрано ресурсов: +{1} / 150 (сохранено в ангар)", "Waves cleared: {0}\n🪙 Resources collected: +{1} / 150 (banked to hangar)", Gameplay.RogueExpeditionController.CurrentWave, Gameplay.RogueExpeditionController.CoinsEarnedThisRun);
             }
             else
             {
                 if (titleText != null)
-                    titleText.text = "КОРАБЛЬ РАЗБИТ";
+                    titleText.text = Localization.T("КОРАБЛЬ РАЗБИТ", "SHIP DESTROYED");
                 if (statusText != null)
-                    statusText.text = "Сектор не пройден. Связь с ядром потеряна.";
+                    statusText.text = Localization.T("Сектор не пройден. Связь с ядром потеряна.", "Sector failed. Connection to core lost.");
             }
         }
 
@@ -97,6 +94,7 @@ namespace KANYE.UI
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
+            scaler.dynamicPixelsPerUnit = 1.25f;
 
             modalRoot = new GameObject("ModalRoot", typeof(RectTransform));
             modalRoot.transform.SetParent(canvasObj.transform, false);
@@ -106,26 +104,27 @@ namespace KANYE.UI
             var dim = CreateImage("Dim", modalRoot.transform, PixelUiAtlas.White, new Color(0.02f, 0.04f, 0.08f, 0.75f));
             Stretch(dim.rectTransform);
 
-            // Center Panel
+            // Center Panel (Comfortable proportions and margins)
             var panel = CreateImage("Panel", modalRoot.transform, PixelUiAtlas.Panel, Color.white);
             panel.type = Image.Type.Sliced;
-            panel.rectTransform.sizeDelta = new Vector2(620f, 440f);
+            panel.rectTransform.sizeDelta = new Vector2(640f, 460f);
 
             // Title
-            titleText = CreateLabel(panel.transform, "Title", "КОРАБЛЬ РАЗБИТ", 34, new Vector2(0f, 140f), new Color(1f, 0.35f, 0.35f, 1f));
+            titleText = CreateLabel(panel.transform, "Title", Localization.T("КОРАБЛЬ РАЗБИТ", "SHIP DESTROYED"), 32, new Vector2(0f, 152f), new Color(1f, 0.35f, 0.35f, 1f));
             titleText.fontStyle = FontStyle.Bold;
 
-            statusText = CreateLabel(panel.transform, "Subtitle", "Сектор не пройден. Связь с ядром потеряна.", 20, new Vector2(0f, 85f), new Color(0.8f, 0.88f, 0.95f, 1f));
+            statusText = CreateLabel(panel.transform, "Subtitle", Localization.T("Сектор не пройден. Связь с ядром потеряна.", "Sector failed. Connection to core lost."), 18, new Vector2(0f, 92f), new Color(0.8f, 0.88f, 0.95f, 1f));
+            statusText.rectTransform.sizeDelta = new Vector2(580f, 52f);
 
-            // Buttons
-            reviveButton = CreateButton(panel.transform, "ReviveButton", "⚡ ВОЗРОДИТЬСЯ ЗА РЕКЛАМУ", new Vector2(0f, 10f), new Vector2(460f, 58f), PixelUiAtlas.ButtonPrimary);
+            // Buttons with distinct 18px separation
+            reviveButton = CreateButton(panel.transform, "ReviveButton", Localization.T("⚡ ВОЗРОДИТЬСЯ ЗА РЕКЛАМУ", "⚡ REVIVE WITH AD"), new Vector2(0f, 14f), new Vector2(460f, 54f), PixelUiAtlas.ButtonPrimary);
             reviveButton.onClick.AddListener(() =>
             {
                 AudioManager.PlayClick();
                 onReviveCallback?.Invoke();
             });
 
-            var retryButton = CreateButton(panel.transform, "RetryButton", "ПОВТОРИТЬ МИССИЮ", new Vector2(0f, -65f), new Vector2(460f, 54f), PixelUiAtlas.ButtonSecondary);
+            var retryButton = CreateButton(panel.transform, "RetryButton", Localization.T("ПОВТОРИТЬ МИССИЮ", "RETRY MISSION"), new Vector2(0f, -56f), new Vector2(460f, 52f), PixelUiAtlas.ButtonSecondary);
             retryButton.onClick.AddListener(() =>
             {
                 AudioManager.PlayClick();
@@ -133,7 +132,7 @@ namespace KANYE.UI
                 SceneLoader.LoadSceneByName(SceneLoader.GameplayScene);
             });
 
-            var menuButton = CreateButton(panel.transform, "MenuButton", "В ГЛАВНОЕ МЕНЮ", new Vector2(0f, -135f), new Vector2(460f, 54f), PixelUiAtlas.ButtonDanger);
+            var menuButton = CreateButton(panel.transform, "MenuButton", Localization.T("В ГЛАВНОЕ МЕНЮ", "MAIN MENU"), new Vector2(0f, -126f), new Vector2(460f, 52f), PixelUiAtlas.ButtonDanger);
             menuButton.onClick.AddListener(() =>
             {
                 AudioManager.PlayClick();
@@ -168,7 +167,7 @@ namespace KANYE.UI
             rect.sizeDelta = new Vector2(580f, 40f);
 
             var label = obj.GetComponent<Text>();
-            label.font = UIFont.DefaultFont;
+            label.font = GameFont.Get();
             label.fontSize = fontSize;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = color;
@@ -196,9 +195,7 @@ namespace KANYE.UI
 
             var label = CreateLabel(obj.transform, "Label", text, 20, Vector2.zero, Color.white);
             label.fontStyle = FontStyle.Bold;
-            var btn = obj.GetComponent<Button>();
-            UITween.AttachButtonFeedback(btn);
-            return btn;
+            return obj.GetComponent<Button>();
         }
 
         private static void Stretch(RectTransform rect)

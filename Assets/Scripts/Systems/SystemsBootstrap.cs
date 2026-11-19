@@ -7,6 +7,8 @@ namespace KANYE.Systems
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Create()
         {
+            Application.targetFrameRate = 60;
+            QualitySettings.vSyncCount = 0;
             CreateService<SaveManager>();
             CreateService<AchievementManager>();
         }

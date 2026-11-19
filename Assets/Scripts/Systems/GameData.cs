@@ -22,13 +22,6 @@ namespace KANYE.Systems
     public class GameData
     {
         public int coins;
-        public int starCores;
-        public int hullMetaLevel = 1;
-        public int hypeMetaLevel = 1;
-        public int magnetMetaLevel = 1;
-        public int parryMetaLevel = 1;
-        public int dailyLoginDay = 1;
-        public string lastDailyClaimDate = "";
         public int totalKills;
         public int currentMission;
         public bool introCutsceneSeen;
@@ -38,5 +31,10 @@ namespace KANYE.Systems
         public List<string> unlockedWeaponIds = new List<string>();
         public List<WeaponUpgradeEntry> weaponUpgrades = new List<WeaponUpgradeEntry>();
         public List<AchievementProgressEntry> achievements = new List<AchievementProgressEntry>();
+
+        // Retention & dual currency
+        public int starCores;
+        public int dailyLoginDay = 1;
+        public string lastDailyClaimDate = "";
     }
 }

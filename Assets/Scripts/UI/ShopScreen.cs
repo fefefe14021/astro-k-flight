@@ -17,20 +17,17 @@ namespace KANYE.UI
 {
     public class ShopScreen : MonoBehaviour
     {
-        public System.Action OnCloseRequested;
-
         private enum ShopTab
         {
             Weapons,
-            Skins,
-            Tech
+            Skins
         }
 
         private ShopTab currentTab = ShopTab.Weapons;
         private int selectedWeaponIndex = 0;
         private int selectedSkinIndex = 0;
-        private int selectedTechIndex = 0;
 
+        private Text headerTitleLabel;
         private Text coinsLabel;
         private Text hintLabel;
         private bool selectionReady;
@@ -50,8 +47,10 @@ namespace KANYE.UI
         private Button upgradeButton;
         private Text upgradeButtonText;
         private Button tabWeaponsBtn;
+        private Text tabWeaponsText;
         private Button tabSkinsBtn;
-        private Button tabTechBtn;
+        private Text tabSkinsText;
+        private Text backButtonText;
 
         private void Start()
         {
@@ -67,12 +66,27 @@ namespace KANYE.UI
 
             if (SaveManager.Instance != null)
                 SaveManager.Instance.Changed += Refresh;
+            Localization.LanguageChanged += OnLanguageChanged;
         }
 
         private void OnDestroy()
         {
             if (SaveManager.Instance != null)
                 SaveManager.Instance.Changed -= Refresh;
+            Localization.LanguageChanged -= OnLanguageChanged;
+        }
+
+        private void OnLanguageChanged()
+        {
+            if (headerTitleLabel != null)
+                headerTitleLabel.text = Localization.T("АНГАР И АРСЕНАЛ КАПИТАНА ЗИГГИ", "CAPTAIN ZIGGY'S HANGAR & ARSENAL");
+            if (tabWeaponsText != null)
+                tabWeaponsText.text = Localization.T("🚀 ОРУЖЕЙНЫЙ АРСЕНАЛ", "🚀 WEAPON ARSENAL");
+            if (tabSkinsText != null)
+                tabSkinsText.text = Localization.T("🛸 КОРПУСА ТАРЕЛКИ", "🛸 SAUCER HULLS");
+            if (backButtonText != null)
+                backButtonText.text = Localization.T("В ГЛАВНОЕ МЕНЮ", "MAIN MENU");
+            Refresh();
         }
 
         private void BuildUI()
@@ -86,6 +100,7 @@ namespace KANYE.UI
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
+            scaler.dynamicPixelsPerUnit = 1.25f;
 
             // Background
             var bgObj = new GameObject("Bg", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
@@ -106,20 +121,19 @@ namespace KANYE.UI
             mainRect.anchorMin = new Vector2(0.5f, 0.5f);
             mainRect.anchorMax = new Vector2(0.5f, 0.5f);
             mainRect.pivot = new Vector2(0.5f, 0.5f);
-            mainRect.sizeDelta = new Vector2(1140f, 760f);
+            mainRect.sizeDelta = new Vector2(1160f, 780f);
             var panelImg = mainPanel.GetComponent<Image>();
             panelImg.sprite = PixelUiAtlas.Panel;
             panelImg.type = Image.Type.Sliced;
 
-            // Header Title
-            CreateText(mainPanel.transform, "HeaderTitle", "АНГАР И АРСЕНАЛ КАПИТАНА ЗИГГИ", 30, new Vector2(0f, 335f), new Vector2(800f, 40f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
-            coinsLabel = CreateText(mainPanel.transform, "CoinsLabel", CoinsText(), 22, new Vector2(0f, 298f), new Vector2(900f, 28f), new Color(1f, 0.95f, 0.7f), FontStyle.Bold);
-            hintLabel = CreateText(mainPanel.transform, "HintLabel", "Выбери корпус или оружие справа от списка.", 16, new Vector2(0f, 272f), new Vector2(980f, 24f), new Color(0.75f, 0.9f, 1f), FontStyle.Normal);
+            // Header Title & Status line with clear, generous spacing
+            headerTitleLabel = CreateText(mainPanel.transform, "HeaderTitle", Localization.T("АНГАР И АРСЕНАЛ КАПИТАНА ЗИГГИ", "CAPTAIN ZIGGY'S HANGAR & ARSENAL"), 28, new Vector2(0f, 345f), new Vector2(900f, 36f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
+            coinsLabel = CreateText(mainPanel.transform, "CoinsLabel", CoinsText(), 20, new Vector2(0f, 312f), new Vector2(940f, 26f), new Color(1f, 0.95f, 0.7f), FontStyle.Bold);
+            hintLabel = CreateText(mainPanel.transform, "HintLabel", Localization.T("Выбери корпус или оружие справа от списка.", "Select a hull or weapon from the list on the left."), 15, new Vector2(0f, 282f), new Vector2(980f, 24f), new Color(0.75f, 0.9f, 1f), FontStyle.Normal);
 
-            // Tab Buttons
-            tabWeaponsBtn = CreateTabButton(mainPanel.transform, "TabWeapons", "🚀 АРСЕНАЛ", new Vector2(-330f, 240f), () => SetTab(ShopTab.Weapons));
-            tabSkinsBtn = CreateTabButton(mainPanel.transform, "TabSkins", "🛸 КОРПУСА ТАРЕЛКИ", new Vector2(0f, 240f), () => SetTab(ShopTab.Skins));
-            tabTechBtn = CreateTabButton(mainPanel.transform, "TabTech", "⚡ МОДЕРНИЗАЦИЯ", new Vector2(330f, 240f), () => SetTab(ShopTab.Tech));
+            // Tab Buttons (distinct 14px gap above the panels)
+            tabWeaponsBtn = CreateTabButton(mainPanel.transform, "TabWeapons", Localization.T("🚀 ОРУЖЕЙНЫЙ АРСЕНАЛ", "🚀 WEAPON ARSENAL"), new Vector2(-220f, 238f), () => SetTab(ShopTab.Weapons), out tabWeaponsText);
+            tabSkinsBtn = CreateTabButton(mainPanel.transform, "TabSkins", Localization.T("🛸 КОРПУСА ТАРЕЛКИ", "🛸 SAUCER HULLS"), new Vector2(220f, 238f), () => SetTab(ShopTab.Skins), out tabSkinsText);
 
             // Left Side: Scrollable List Viewport
             var listPanel = new GameObject("ListPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(RectMask2D));
@@ -128,8 +142,8 @@ namespace KANYE.UI
             listRect.anchorMin = new Vector2(0f, 0.5f);
             listRect.anchorMax = new Vector2(0f, 0.5f);
             listRect.pivot = new Vector2(0f, 0.5f);
-            listRect.anchoredPosition = new Vector2(40f, -25f);
-            listRect.sizeDelta = new Vector2(500f, 440f);
+            listRect.anchoredPosition = new Vector2(40f, -36f);
+            listRect.sizeDelta = new Vector2(510f, 484f);
 
             var listBg = listPanel.GetComponent<Image>();
             listBg.sprite = PixelUiAtlas.SubPanel;
@@ -153,7 +167,7 @@ namespace KANYE.UI
 
             var vlg = contentObj.GetComponent<VerticalLayoutGroup>();
             vlg.padding = new RectOffset(10, 10, 10, 10);
-            vlg.spacing = 8f;
+            vlg.spacing = 10f;
             vlg.childControlWidth = true;
             vlg.childControlHeight = false;
             vlg.childForceExpandWidth = true;
@@ -167,15 +181,15 @@ namespace KANYE.UI
             scroll.viewport = listRect;
             listContainer = contentObj.transform;
 
-            // Right Side: Card Preview & Specs
+            // Right Side: Card Preview & Specs (Spacious 484px panel with clean button margins)
             var previewPanel = new GameObject("PreviewPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             previewPanel.transform.SetParent(mainPanel.transform, false);
             var prevRect = previewPanel.GetComponent<RectTransform>();
             prevRect.anchorMin = new Vector2(1f, 0.5f);
             prevRect.anchorMax = new Vector2(1f, 0.5f);
             prevRect.pivot = new Vector2(1f, 0.5f);
-            prevRect.anchoredPosition = new Vector2(-40f, -25f);
-            prevRect.sizeDelta = new Vector2(520f, 440f);
+            prevRect.anchoredPosition = new Vector2(-40f, -36f);
+            prevRect.sizeDelta = new Vector2(530f, 484f);
             var prevBg = previewPanel.GetComponent<Image>();
             prevBg.sprite = PixelUiAtlas.SubPanel;
             prevBg.type = Image.Type.Sliced;
@@ -188,40 +202,40 @@ namespace KANYE.UI
             frameRect.anchorMin = new Vector2(0.5f, 1f);
             frameRect.anchorMax = new Vector2(0.5f, 1f);
             frameRect.pivot = new Vector2(0.5f, 1f);
-            frameRect.anchoredPosition = new Vector2(0f, -16f);
-            frameRect.sizeDelta = new Vector2(280f, 150f);
-            var frameImg = frameObj.GetComponent<Image>();
-            frameImg.sprite = PixelUiAtlas.SubPanel;
-            frameImg.type = Image.Type.Sliced;
-            frameImg.color = new Color(0.03f, 0.05f, 0.1f, 0.98f);
+            frameRect.anchoredPosition = new Vector2(0f, -14f);
+            frameRect.sizeDelta = new Vector2(490f, 136f);
+            var frameBg = frameObj.GetComponent<Image>();
+            frameBg.sprite = PixelUiAtlas.Panel;
+            frameBg.type = Image.Type.Sliced;
+            frameBg.color = new Color(0.04f, 0.07f, 0.14f, 0.98f);
 
-            // Ventral Glow preview under the saucer
-            var glowObj = new GameObject("GlowPreview", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            // Thruster Glow underlay
+            var glowObj = new GameObject("ThrusterGlow", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             glowObj.transform.SetParent(frameObj.transform, false);
             var glowRect = glowObj.GetComponent<RectTransform>();
             glowRect.anchorMin = new Vector2(0.5f, 0.5f);
             glowRect.anchorMax = new Vector2(0.5f, 0.5f);
             glowRect.pivot = new Vector2(0.5f, 0.5f);
-            glowRect.anchoredPosition = new Vector2(10f, -36f);
-            glowRect.sizeDelta = new Vector2(130f, 26f);
+            glowRect.anchoredPosition = new Vector2(12f, -10f);
+            glowRect.sizeDelta = new Vector2(120f, 50f);
             previewGlow = glowObj.GetComponent<Image>();
-            previewGlow.sprite = Resources.Load<Sprite>("Sprites/spark");
-            previewGlow.color = new Color(0.2f, 0.85f, 1f, 0.65f);
+            previewGlow.sprite = PixelUiAtlas.White;
+            previewGlow.color = new Color(0.3f, 0.8f, 1f, 0.25f);
 
-            // Thruster Flame preview behind the saucer
-            var thrusterObj = new GameObject("ThrusterPreview", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            thrusterObj.transform.SetParent(frameObj.transform, false);
-            var thrustRect = thrusterObj.GetComponent<RectTransform>();
+            // Thruster Flame Image
+            var thrustObj = new GameObject("ThrusterFlame", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            thrustObj.transform.SetParent(frameObj.transform, false);
+            var thrustRect = thrustObj.GetComponent<RectTransform>();
             thrustRect.anchorMin = new Vector2(0.5f, 0.5f);
             thrustRect.anchorMax = new Vector2(0.5f, 0.5f);
-            thrustRect.pivot = new Vector2(1f, 0.5f);
-            thrustRect.anchoredPosition = new Vector2(-60f, 2f);
-            thrustRect.sizeDelta = new Vector2(75f, 44f);
-            previewThruster = thrusterObj.GetComponent<Image>();
+            thrustRect.pivot = new Vector2(0.5f, 0.5f);
+            thrustRect.anchoredPosition = new Vector2(12f, -22f);
+            thrustRect.sizeDelta = new Vector2(75f, 40f);
+            previewThruster = thrustObj.GetComponent<Image>();
             previewThruster.preserveAspect = true;
 
-            // Main Sprite Preview
-            var spriteObj = new GameObject("SpritePreview", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            // Centered Main Sprite
+            var spriteObj = new GameObject("PreviewSprite", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             spriteObj.transform.SetParent(frameObj.transform, false);
             var sprRect = spriteObj.GetComponent<RectTransform>();
             sprRect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -232,30 +246,29 @@ namespace KANYE.UI
             previewImage = spriteObj.GetComponent<Image>();
             previewImage.preserveAspect = true;
 
-            // Info Labels
-            previewTitle = CreateText(previewPanel.transform, "PrevTitle", "ОРУЖИЕ", 23, new Vector2(0f, 32f), new Vector2(480f, 32f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
-            previewSubtitle = CreateText(previewPanel.transform, "PrevSub", "Категория", 15, new Vector2(0f, 4f), new Vector2(480f, 24f), new Color(0.45f, 0.85f, 1f), FontStyle.Normal);
-            previewStats = CreateText(previewPanel.transform, "PrevStats", "УРОН: 1 | ТЕМП: 7.1 выстр/сек", 16, new Vector2(0f, -26f), new Vector2(480f, 26f), new Color(0.9f, 1f, 0.8f), FontStyle.Bold);
-            previewDescription = CreateText(previewPanel.transform, "PrevDesc", "Описание технологии...", 14, new Vector2(0f, -88f), new Vector2(480f, 96f), new Color(0.88f, 0.92f, 0.98f), FontStyle.Normal);
+            // Info Labels (Well-proportioned vertical hierarchy with clear breathing margins)
+            previewTitle = CreateText(previewPanel.transform, "PrevTitle", Localization.T("ОРУЖИЕ", "WEAPON"), 22, new Vector2(0f, 62f), new Vector2(490f, 30f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
+            previewSubtitle = CreateText(previewPanel.transform, "PrevSub", Localization.T("Категория", "Category"), 14, new Vector2(0f, 28f), new Vector2(490f, 28f), new Color(0.45f, 0.85f, 1f), FontStyle.Normal);
+            previewStats = CreateText(previewPanel.transform, "PrevStats", Localization.T("УРОН: 1 | ТЕМП: 7.1 выстр/сек", "DAMAGE: 1 | FIRE RATE: 7.1 shots/sec"), 15, new Vector2(0f, -4f), new Vector2(490f, 26f), new Color(0.9f, 1f, 0.8f), FontStyle.Bold);
+            previewDescription = CreateText(previewPanel.transform, "PrevDesc", Localization.T("Описание технологии...", "Technology specifications..."), 13, new Vector2(0f, -50f), new Vector2(490f, 54f), new Color(0.88f, 0.92f, 0.98f), FontStyle.Normal);
 
-            // Upgrade Button (Level 1 -> 2 -> 3)
+            // Upgrade Button (Level 1 -> 2 -> 3) with a solid 14px gap above ActionButton
             var upgObj = new GameObject("UpgradeButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             upgObj.transform.SetParent(previewPanel.transform, false);
             var upgRect = upgObj.GetComponent<RectTransform>();
             upgRect.anchorMin = new Vector2(0.5f, 0f);
             upgRect.anchorMax = new Vector2(0.5f, 0f);
             upgRect.pivot = new Vector2(0.5f, 0f);
-            upgRect.anchoredPosition = new Vector2(0f, 68f);
-            upgRect.sizeDelta = new Vector2(380f, 44f);
+            upgRect.anchoredPosition = new Vector2(0f, 74f);
+            upgRect.sizeDelta = new Vector2(400f, 44f);
             var upgImg = upgObj.GetComponent<Image>();
             upgImg.sprite = PixelUiAtlas.ButtonPrimary;
             upgImg.type = Image.Type.Sliced;
             upgradeButton = upgObj.GetComponent<Button>();
             upgradeButton.onClick.AddListener(OnUpgradeButtonClicked);
-            upgradeButtonText = CreateText(upgObj.transform, "UpgText", "ПРОКАЧАТЬ ОРУЖИЕ", 16, Vector2.zero, new Vector2(360f, 36f), Color.white, FontStyle.Bold);
-            UITween.AttachButtonFeedback(upgradeButton);
+            upgradeButtonText = CreateText(upgObj.transform, "UpgText", Localization.T("ПРОКАЧАТЬ ОРУЖИЕ", "UPGRADE WEAPON"), 16, Vector2.zero, new Vector2(380f, 36f), Color.white, FontStyle.Bold);
 
-            // Action Button (Buy / Equip)
+            // Action Button (Buy / Equip) positioned cleanly at the bottom
             var btnObj = new GameObject("ActionButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             btnObj.transform.SetParent(previewPanel.transform, false);
             var btnRect = btnObj.GetComponent<RectTransform>();
@@ -263,14 +276,13 @@ namespace KANYE.UI
             btnRect.anchorMax = new Vector2(0.5f, 0f);
             btnRect.pivot = new Vector2(0.5f, 0f);
             btnRect.anchoredPosition = new Vector2(0f, 18f);
-            btnRect.sizeDelta = new Vector2(380f, 44f);
+            btnRect.sizeDelta = new Vector2(400f, 44f);
             var btnImg = btnObj.GetComponent<Image>();
             btnImg.sprite = PixelUiAtlas.ButtonPrimary;
             btnImg.type = Image.Type.Sliced;
             actionButton = btnObj.GetComponent<Button>();
             actionButton.onClick.AddListener(OnActionButtonClicked);
-            actionButtonText = CreateText(btnObj.transform, "BtnText", "ВЫБРАТЬ", 18, Vector2.zero, new Vector2(360f, 36f), Color.white, FontStyle.Bold);
-            UITween.AttachButtonFeedback(actionButton);
+            actionButtonText = CreateText(btnObj.transform, "BtnText", Localization.T("ВЫБРАТЬ", "SELECT"), 18, Vector2.zero, new Vector2(380f, 36f), Color.white, FontStyle.Bold);
 
             // Return to Main Menu
             var backBtn = new GameObject("BackBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
@@ -284,25 +296,8 @@ namespace KANYE.UI
             var backImg = backBtn.GetComponent<Image>();
             backImg.sprite = PixelUiAtlas.ButtonSecondary;
             backImg.type = Image.Type.Sliced;
-            var backButton = backBtn.GetComponent<Button>();
-            backButton.onClick.AddListener(OnBackClicked);
-            CreateText(backBtn.transform, "BackText", "← В ГЛАВНОЕ МЕНЮ", 17, Vector2.zero, new Vector2(260f, 36f), Color.white, FontStyle.Bold);
-            UITween.AttachButtonFeedback(backButton);
-        }
-
-        private void OnBackClicked()
-        {
-            if (OnCloseRequested != null)
-            {
-                var canvas = GameObject.Find("ShopCanvas");
-                if (canvas != null)
-                    Destroy(canvas);
-                OnCloseRequested.Invoke();
-            }
-            else
-            {
-                SceneLoader.ReturnToMainMenu();
-            }
+            backBtn.GetComponent<Button>().onClick.AddListener(SceneLoader.ReturnToMainMenu);
+            backButtonText = CreateText(backBtn.transform, "BackText", Localization.T("В ГЛАВНОЕ МЕНЮ", "MAIN MENU"), 18, Vector2.zero, new Vector2(260f, 36f), Color.white, FontStyle.Bold);
         }
 
         private void SetTab(ShopTab tab)
@@ -321,8 +316,6 @@ namespace KANYE.UI
                 tabWeaponsBtn.GetComponent<Image>().color = currentTab == ShopTab.Weapons ? new Color(1f, 0.85f, 0.3f) : new Color(0.3f, 0.4f, 0.55f);
             if (tabSkinsBtn != null)
                 tabSkinsBtn.GetComponent<Image>().color = currentTab == ShopTab.Skins ? new Color(1f, 0.85f, 0.3f) : new Color(0.3f, 0.4f, 0.55f);
-            if (tabTechBtn != null)
-                tabTechBtn.GetComponent<Image>().color = currentTab == ShopTab.Tech ? new Color(1f, 0.85f, 0.3f) : new Color(0.3f, 0.4f, 0.55f);
 
             // Clear old buttons
             for (var i = 0; i < activeListButtons.Count; i++)
@@ -352,10 +345,10 @@ namespace KANYE.UI
                     var isSelected = index == selectedWeaponIndex;
                     var lvl = save != null ? save.GetWeaponLevel(w.Id) : 1;
                     var isLocked = !isOwned && save != null && !save.IsWeaponAccessible(w.Id);
-                    var lockBadge = isLocked ? $"🔒 СЕК.{(w.RequiredMissionIndex / 3) + 1}" : null;
-                    var itemTitle = isOwned ? $"{w.Title} [Ур.{lvl}]" : w.Title;
+                    var lockBadge = isLocked ? Localization.TFormat("🔒 СЕК.{0}", "🔒 SEC.{0}", (w.RequiredMissionIndex / 3) + 1) : null;
+                    var itemTitle = isOwned ? $"{w.LocalizedTitle} [{Localization.T("Ур.", "Lv.")}{lvl}]" : w.LocalizedTitle;
 
-                    var btn = CreateListItem(listContainer, itemTitle, w.Subtitle, w.Price, isOwned, isEquipped, isSelected, () =>
+                    var btn = CreateListItem(listContainer, itemTitle, w.LocalizedSubtitle, w.Price, isOwned, isEquipped, isSelected, () =>
                     {
                         selectedWeaponIndex = index;
                         Refresh();
@@ -365,7 +358,7 @@ namespace KANYE.UI
 
                 DisplayWeaponDetails(weapons[selectedWeaponIndex]);
             }
-            else if (currentTab == ShopTab.Skins)
+            else
             {
                 var skins = ShipSkinCatalog.All;
                 selectedSkinIndex = Mathf.Clamp(selectedSkinIndex, 0, skins.Length - 1);
@@ -379,57 +372,17 @@ namespace KANYE.UI
                     var isEquipped = s.Id == equippedId;
                     var isSelected = index == selectedSkinIndex;
                     var isLocked = !isOwned && save != null && !save.IsSkinAccessible(s.Id);
-                    var lockBadge = isLocked ? $"🔒 СЕК.{(s.RequiredMissionIndex / 3) + 1}" : null;
+                    var lockBadge = isLocked ? Localization.TFormat("🔒 СЕК.{0}", "🔒 SEC.{0}", (s.RequiredMissionIndex / 3) + 1) : null;
 
-                    string priceBadge = null;
-                    if (!isOwned && !isLocked)
-                    {
-                        priceBadge = s.CoresPrice > 0 ? $"{s.Price}¢+{s.CoresPrice}🌟" : $"{s.Price}¢";
-                    }
-
-                    var btn = CreateListItem(listContainer, s.Title, s.Subtitle, s.Price, isOwned, isEquipped, isSelected, () =>
+                    var btn = CreateListItem(listContainer, s.LocalizedTitle, s.LocalizedSubtitle, s.Price, isOwned, isEquipped, isSelected, () =>
                     {
                         selectedSkinIndex = index;
                         Refresh();
-                    }, isLocked, lockBadge, priceBadge);
+                    }, isLocked, lockBadge);
                     activeListButtons.Add(btn);
                 }
 
                 DisplaySkinDetails(skins[selectedSkinIndex]);
-            }
-            else
-            {
-                var techs = MetaTechCatalog.All;
-                selectedTechIndex = Mathf.Clamp(selectedTechIndex, 0, techs.Length - 1);
-
-                for (var i = 0; i < techs.Length; i++)
-                {
-                    var index = i;
-                    var t = techs[i];
-                    var lvl = save != null ? save.GetMetaLevel(t.Id) : 1;
-                    var isMax = lvl >= t.MaxLevel;
-                    var isSelected = index == selectedTechIndex;
-                    var (costCredits, costCores) = t.GetCost(lvl);
-
-                    string badgeStr;
-                    if (isMax)
-                        badgeStr = "★ МАКС";
-                    else if (costCores > 0)
-                        badgeStr = $"{costCredits}¢+{costCores}🌟";
-                    else
-                        badgeStr = $"{costCredits}¢";
-
-                    var itemTitle = $"{t.Title} [Ур.{lvl}/{t.MaxLevel}]";
-
-                    var btn = CreateListItem(listContainer, itemTitle, t.Subtitle, costCredits, isMax, false, isSelected, () =>
-                    {
-                        selectedTechIndex = index;
-                        Refresh();
-                    }, false, null, badgeStr);
-                    activeListButtons.Add(btn);
-                }
-
-                DisplayTechDetails(techs[selectedTechIndex]);
             }
         }
 
@@ -448,11 +401,10 @@ namespace KANYE.UI
             if (previewImage != null)
             {
                 previewImage.rectTransform.anchoredPosition = Vector2.zero;
-                previewImage.rectTransform.sizeDelta = new Vector2(90f, 90f);
+                previewImage.rectTransform.sizeDelta = new Vector2(160f, 100f);
                 var sprite = Resources.Load<Sprite>(weapon.ProjectileSprite);
-                previewImage.sprite = sprite != null ? sprite : PixelUiAtlas.White;
-                previewImage.color = weapon.ThemeColor;
-                previewImage.preserveAspect = true;
+                previewImage.sprite = sprite;
+                previewImage.color = Color.white;
             }
 
             var currentDamage = WeaponCatalog.GetDamage(weapon.Id, level);
@@ -461,24 +413,24 @@ namespace KANYE.UI
             var stars = level == 3 ? "★★★" : (level == 2 ? "★★☆" : "★☆☆");
 
             if (previewTitle != null)
-                previewTitle.text = isOwned ? $"{weapon.Title}  {stars} ({level}/3)" : weapon.Title;
+                previewTitle.text = isOwned ? $"{weapon.LocalizedTitle}  {stars} ({level}/3)" : weapon.LocalizedTitle;
 
             if (previewSubtitle != null)
             {
                 if (!isOwned)
-                    previewSubtitle.text = $"{weapon.Subtitle}  |  Базовый уровень (1/3)";
+                    previewSubtitle.text = Localization.TFormat("{0}  |  Базовый уровень (1/3)", "{0}  |  Base Level (1/3)", weapon.LocalizedSubtitle);
                 else if (level < 3)
-                    previewSubtitle.text = $"{weapon.Subtitle}  |  {WeaponCatalog.GetUpgradeSummary(weapon.Id, level)}";
+                    previewSubtitle.text = $"{weapon.LocalizedSubtitle}  |  {WeaponCatalog.GetUpgradeSummary(weapon.Id, level)}";
                 else
-                    previewSubtitle.text = $"{weapon.Subtitle}  |  ★ МАКСИМАЛЬНАЯ МОЩНОСТЬ ★";
+                    previewSubtitle.text = Localization.TFormat("{0}  |  ★ МАКСИМАЛЬНАЯ МОЩНОСТЬ ★", "{0}  |  ★ MAXIMUM POWER ★", weapon.LocalizedSubtitle);
             }
 
             if (previewDescription != null)
-                previewDescription.text = weapon.Description;
+                previewDescription.text = weapon.LocalizedDescription;
 
             if (previewStats != null)
             {
-                previewStats.text = $"УРОН: {currentDamage}  |  ТЕМП: {rps:0.0} выстр/сек";
+                previewStats.text = Localization.TFormat("УРОН: {0}  |  ТЕМП: {1:0.0} выстр/сек", "DAMAGE: {0}  |  FIRE RATE: {1:0.0} shots/sec", currentDamage, rps);
             }
 
             // Upgrade Button state
@@ -492,14 +444,14 @@ namespace KANYE.UI
                         var cost = save != null ? save.GetUpgradeCost(weapon.Id) : 50;
                         var canAfford = save != null && save.Data.coins >= cost;
                         upgradeButtonText.text = canAfford
-                            ? $"ПРОКАЧАТЬ ДО УР. {level + 1} ({cost} КРЕДИТОВ)"
-                            : $"ДО УР. {level + 1} НЕ ХВАТАЕТ {Mathf.Max(0, cost - (save != null ? save.Data.coins : 0))} КРЕДИТОВ";
+                            ? Localization.TFormat("ПРОКАЧАТЬ ДО УР. {0} ({1} 💰)", "UPGRADE TO LV. {0} ({1} 💰)", level + 1, cost)
+                            : Localization.TFormat("ДО УР. {0} НЕ ХВАТАЕТ {1} 💰", "NEED {1} MORE 💰 FOR LV. {0}", level + 1, Mathf.Max(0, cost - (save != null ? save.Data.coins : 0)));
                         upgradeButton.interactable = true;
                         upgradeButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.72f, 0.15f) : new Color(0.45f, 0.35f, 0.25f);
                     }
                     else
                     {
-                        upgradeButtonText.text = "★ МАКСИМАЛЬНЫЙ УРОВЕНЬ (3/3) ★";
+                        upgradeButtonText.text = Localization.T("★ МАКСИМАЛЬНЫЙ УРОВЕНЬ (3/3) ★", "★ MAXIMUM LEVEL (3/3) ★");
                         upgradeButton.interactable = false;
                         upgradeButton.GetComponent<Image>().color = new Color(0.22f, 0.42f, 0.32f);
                     }
@@ -513,17 +465,17 @@ namespace KANYE.UI
             // Action Button (Equip / Buy)
             if (isEquipped)
             {
-                actionButtonText.text = "УЖЕ В БОЮ";
+                actionButtonText.text = Localization.T("УЖЕ В БОЮ", "EQUIPPED");
                 actionButton.interactable = false;
                 actionButton.GetComponent<Image>().color = new Color(0.25f, 0.35f, 0.45f);
-                ShowHint("Это оружие уже стоит на тарелке.");
+                ShowHint(Localization.T("Это оружие уже стоит на тарелке.", "This weapon is currently equipped on the saucer."));
             }
             else if (isOwned)
             {
-                actionButtonText.text = "ЭКИПИРОВАТЬ";
+                actionButtonText.text = Localization.T("ЭКИПИРОВАТЬ", "EQUIP");
                 actionButton.interactable = true;
                 actionButton.GetComponent<Image>().color = new Color(0.2f, 0.85f, 0.35f);
-                ShowHint("Можно надеть перед вылетом. Урон зависит от уровня.");
+                ShowHint(Localization.T("Можно надеть перед вылетом. Урон зависит от уровня.", "Ready to equip before flight. Damage scales with upgrade level."));
             }
             else
             {
@@ -532,21 +484,23 @@ namespace KANYE.UI
                 {
                     var reqMission = weapon.RequiredMissionIndex + 1;
                     var reqSector = (weapon.RequiredMissionIndex / 3) + 1;
-                    actionButtonText.text = $"🔒 МИССИЯ {reqMission}";
+                    actionButtonText.text = Localization.TFormat("🔒 МИССИЯ {0}", "🔒 MISSION {0}", reqMission);
                     actionButton.interactable = true;
                     actionButton.GetComponent<Image>().color = new Color(0.35f, 0.25f, 0.25f);
-                    ShowHint($"Откроется в секторе {reqSector}, когда дойдёшь до миссии {reqMission}.");
+                    ShowHint(Localization.TFormat("Откроется в секторе {0}, когда дойдёшь до миссии {1}.", "Unlocks in Sector {0} upon reaching Mission {1}.", reqSector, reqMission));
                 }
                 else
                 {
                     var coins = save != null ? save.Data.coins : 0;
                     var canAfford = coins >= weapon.Price;
-                    actionButtonText.text = canAfford ? $"КУПИТЬ ЗА {weapon.Price} КРЕДИТОВ" : $"НЕ ХВАТАЕТ {weapon.Price - coins} КРЕДИТОВ";
+                    actionButtonText.text = canAfford
+                        ? Localization.TFormat("КУПИТЬ ЗА {0} 💰", "BUY FOR {0} 💰", weapon.Price)
+                        : Localization.TFormat("НЕ ХВАТАЕТ {0} 💰", "NEED {0} MORE 💰", weapon.Price - coins);
                     actionButton.interactable = true;
                     actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.6f, 0.15f) : new Color(0.55f, 0.28f, 0.28f);
                     ShowHint(canAfford
-                        ? "Покупка сразу установит оружие на корабль."
-                        : $"На счету {coins}. До этой пушки ещё {weapon.Price - coins} кредитов.");
+                        ? Localization.T("Покупка сразу поставит оружие в бой.", "Purchasing will immediately equip this weapon.")
+                        : Localization.TFormat("На счету {0}. До этой пушки ещё {1} монет.", "You have {0} coins. Need {1} more to acquire this weapon.", coins, weapon.Price - coins));
                 }
             }
         }
@@ -587,24 +541,32 @@ namespace KANYE.UI
                 previewGlow.color = skin.AntiGravColor;
             }
 
-            if (previewTitle != null) previewTitle.text = skin.Title;
-            if (previewSubtitle != null) previewSubtitle.text = skin.Subtitle;
-            if (previewDescription != null) previewDescription.text = skin.Description;
-            if (previewStats != null) previewStats.text = "ТИП: Летающая тарелка (UFO) с пилотом в кабине";
+            if (previewTitle != null) previewTitle.text = isOwned ? $"{skin.LocalizedTitle} ★" : skin.LocalizedTitle;
+            if (previewSubtitle != null)
+            {
+                if (isOwned)
+                    previewSubtitle.text = Localization.T("В ангаре Зигги  |  Готов к полету", "In Ziggy's Hangar  |  Ready for flight");
+                else if (save != null && !save.IsSkinAccessible(skin.Id))
+                    previewSubtitle.text = Localization.TFormat("Требуется: Пройти миссию {0}", "Requires: Complete Mission {0}", skin.RequiredMissionIndex);
+                else
+                    previewSubtitle.text = Localization.T("Доступен к покупке за монеты", "Available for purchase");
+            }
+            if (previewDescription != null) previewDescription.text = skin.LocalizedDescription;
+            if (previewStats != null) previewStats.text = Localization.T("ТИП: Летающая тарелка (UFO) с пилотом в кабине", "TYPE: Flying Saucer (UFO) with pilot in cockpit");
 
             if (isEquipped)
             {
-                actionButtonText.text = "УЖЕ В БОЮ";
+                actionButtonText.text = Localization.T("УЖЕ В БОЮ", "EQUIPPED");
                 actionButton.interactable = false;
                 actionButton.GetComponent<Image>().color = new Color(0.25f, 0.35f, 0.45f);
-                ShowHint("Этот корпус уже надет. Цвет двигателя виден в рамке сверху.");
+                ShowHint(Localization.T("Этот корпус уже надет. Цвет двигателя виден в рамке сверху.", "This hull is already active. Thruster trail is previewed above."));
             }
             else if (isOwned)
             {
-                actionButtonText.text = "ЭКИПИРОВАТЬ";
+                actionButtonText.text = Localization.T("ЭКИПИРОВАТЬ", "EQUIP");
                 actionButton.interactable = true;
                 actionButton.GetComponent<Image>().color = new Color(0.2f, 0.85f, 0.35f);
-                ShowHint("Корпус не меняет урон, только вид тарелки и пламя.");
+                ShowHint(Localization.T("Корпус не меняет урон, только вид тарелки и пламя.", "Hulls customize saucer visuals and thruster trail effects."));
             }
             else
             {
@@ -613,100 +575,23 @@ namespace KANYE.UI
                 {
                     var reqSector = (skin.RequiredMissionIndex / 3) + 1;
                     var reqMission = skin.RequiredMissionIndex + 1;
-                    actionButtonText.text = $"🔒 МИССИЯ {reqMission}";
+                    actionButtonText.text = Localization.TFormat("🔒 МИССИЯ {0}", "🔒 MISSION {0}", reqMission);
                     actionButton.interactable = true;
                     actionButton.GetComponent<Image>().color = new Color(0.35f, 0.25f, 0.25f);
-                    ShowHint($"Корпус откроется с миссии {reqMission}, сектор {reqSector}.");
+                    ShowHint(Localization.TFormat("Корпус откроется с миссии {0}, сектор {1}.", "Hull unlocks at Mission {0}, Sector {1}.", reqMission, reqSector));
                 }
                 else
                 {
                     var coins = save != null ? save.Data.coins : 0;
-                    var cores = save != null && save.Data != null ? save.Data.starCores : 0;
-                    var canAfford = coins >= skin.Price && cores >= skin.CoresPrice;
-                    string priceText = skin.CoresPrice > 0 ? $"{skin.Price} КРЕДИТОВ + {skin.CoresPrice} ЯДЕР" : $"{skin.Price} КРЕДИТОВ";
-                    actionButtonText.text = canAfford ? $"КУПИТЬ ЗА {priceText}" : $"НЕ ХВАТАЕТ РЕСУРСОВ ({priceText})";
-                    actionButton.interactable = canAfford;
+                    var canAfford = coins >= skin.Price;
+                    actionButtonText.text = canAfford
+                        ? Localization.TFormat("КУПИТЬ ЗА {0} 💰", "BUY FOR {0} 💰", skin.Price)
+                        : Localization.TFormat("НЕ ХВАТАЕТ {0} 💰", "NEED {0} MORE 💰", skin.Price - coins);
+                    actionButton.interactable = true;
                     actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.6f, 0.15f) : new Color(0.55f, 0.28f, 0.28f);
                     ShowHint(canAfford
-                        ? "После покупки корпус сразу активируется."
-                        : $"Требуется {priceText}. Баланс: {coins} кредитов, {cores} ядер.");
-                }
-            }
-        }
-
-        private void DisplayTechDetails(MetaTechDefinition tech)
-        {
-            if (tech == null) return;
-
-            var save = SaveManager.Instance;
-            var lvl = save != null ? save.GetMetaLevel(tech.Id) : 1;
-            var isMax = lvl >= tech.MaxLevel;
-
-            if (previewThruster != null) previewThruster.gameObject.SetActive(false);
-            if (previewGlow != null) previewGlow.gameObject.SetActive(false);
-
-            if (previewImage != null)
-            {
-                previewImage.rectTransform.anchoredPosition = Vector2.zero;
-                previewImage.rectTransform.sizeDelta = new Vector2(90f, 90f);
-                var sprite = Resources.Load<Sprite>(tech.SpriteName);
-                if (sprite == null)
-                {
-                    switch (tech.Id)
-                    {
-                        case "hull": sprite = Resources.Load<Sprite>("Sprites/nanite_repair"); break;
-                        case "hype": sprite = PixelUiAtlas.IconStarCore; break;
-                        case "magnet": sprite = PixelUiAtlas.IconCredit; break;
-                        case "parry": sprite = Resources.Load<Sprite>("Sprites/parry_orb"); break;
-                        default: sprite = PixelUiAtlas.White; break;
-                    }
-                }
-                previewImage.sprite = sprite != null ? sprite : PixelUiAtlas.White;
-                previewImage.color = tech.ThemeColor;
-                previewImage.preserveAspect = true;
-            }
-
-            if (previewTitle != null)
-                previewTitle.text = $"{tech.Title}  [Ур. {lvl}/{tech.MaxLevel}]";
-
-            if (previewSubtitle != null)
-                previewSubtitle.text = tech.Subtitle;
-
-            if (previewStats != null)
-            {
-                if (isMax)
-                    previewStats.text = $"ТЕКУЩИЙ ЭФФЕКТ: {tech.GetStatDescription(lvl)} (МАКСИМУМ)";
-                else
-                    previewStats.text = $"ТЕКУЩИЙ: {tech.GetStatDescription(lvl)}\nСЛЕДУЮЩИЙ: {tech.GetStatDescription(lvl + 1)}";
-            }
-
-            if (previewDescription != null)
-                previewDescription.text = tech.Description;
-
-            if (upgradeButton != null)
-                upgradeButton.gameObject.SetActive(false);
-
-            if (actionButton != null)
-            {
-                if (isMax)
-                {
-                    actionButtonText.text = "★ МАКСИМАЛЬНЫЙ УРОВЕНЬ ★";
-                    actionButton.interactable = false;
-                    actionButton.GetComponent<Image>().color = new Color(0.22f, 0.42f, 0.32f);
-                    ShowHint("Эта модернизация исследована на максимум мощности.");
-                }
-                else
-                {
-                    var (costCredits, costCores) = tech.GetCost(lvl);
-                    var canAfford = save != null && save.Data.coins >= costCredits && save.Data.starCores >= costCores;
-                    string costStr = costCores > 0 ? $"{costCredits} КРЕДИТОВ + {costCores} ЯДЕР" : $"{costCredits} КРЕДИТОВ";
-
-                    actionButtonText.text = canAfford ? $"МОДЕРНИЗИРОВАТЬ ДО УР. {lvl + 1} ({costStr})" : $"НЕ ХВАТАЕТ РЕСУРСОВ ({costStr})";
-                    actionButton.interactable = canAfford;
-                    actionButton.GetComponent<Image>().color = canAfford ? new Color(1f, 0.65f, 0.15f) : new Color(0.55f, 0.3f, 0.25f);
-                    ShowHint(canAfford
-                        ? "Улучшение действует перманентно во всех режимах игры."
-                        : $"Для модернизации требуется {costStr}.");
+                        ? Localization.T("После покупки корпус сразу надевается.", "Purchased hull will be equipped immediately.")
+                        : Localization.TFormat("На счету {0}. До корпуса ещё {1} монет.", "You have {0} coins. Need {1} more to unlock this hull.", coins, skin.Price - coins));
                 }
             }
         }
@@ -720,16 +605,16 @@ namespace KANYE.UI
             if (save.UpgradeWeapon(w.Id))
             {
                 AudioManager.PlayShoot();
-                ShowHint($"Оружие улучшено до уровня {save.GetWeaponLevel(w.Id)}.");
+                ShowHint(Localization.TFormat("Оружие улучшено до уровня {0}.", "Weapon upgraded to Level {0}.", save.GetWeaponLevel(w.Id)));
                 Refresh();
                 return;
             }
 
             var cost = save.GetUpgradeCost(w.Id);
-            ShowHint(cost < 0
-                ? "Дальше улучшать некуда."
-                : $"На прокачку нужно {cost} монет, не хватает {Mathf.Max(0, cost - save.Data.coins)}.");
-            AudioManager.PlayHit();
+            if (cost < 0)
+                ShowHint(Localization.T("Дальше улучшать некуда.", "Maximum upgrade level reached."));
+            else
+                ShowHint(Localization.TFormat("На прокачку нужно {0} монет, не хватает {1}.", "Upgrade costs {0} coins, need {1} more.", cost, Mathf.Max(0, cost - save.Data.coins)));
         }
 
         private void OnActionButtonClicked()
@@ -737,126 +622,110 @@ namespace KANYE.UI
             var save = SaveManager.Instance;
             if (save == null) return;
 
-            if (currentTab == ShopTab.Tech)
-            {
-                var tech = MetaTechCatalog.All[selectedTechIndex];
-                if (save.TryUpgradeMeta(tech.Id))
-                {
-                    AudioManager.PlayPowerup();
-                    ShowHint($"{tech.Title} улучшен до уровня {save.GetMetaLevel(tech.Id)}!");
-                    Refresh();
-                }
-                else
-                {
-                    AudioManager.PlayHit();
-                    ShowHint("Недостаточно кредитов или Звёздных Ядер для модернизации.");
-                }
-                return;
-            }
-
             if (currentTab == ShopTab.Weapons)
             {
                 var w = WeaponCatalog.All[selectedWeaponIndex];
-                var isOwned = save.Data.unlockedWeaponIds.Contains(w.Id);
-                if (!isOwned)
+                if (!save.IsWeaponAccessible(w.Id))
                 {
-                    if (!save.IsWeaponAccessible(w.Id))
-                    {
-                        ShowHint($"Сначала дойди до миссии {w.RequiredMissionIndex + 1}.");
-                        AudioManager.PlayHit();
-                        return;
-                    }
+                    ShowHint(Localization.TFormat("Сначала дойди до миссии {0}.", "Reach Mission {0} first.", w.RequiredMissionIndex + 1));
+                    return;
+                }
 
-                    if (save.TrySpendCoins(w.Price))
+                if (!save.Data.unlockedWeaponIds.Contains(w.Id))
+                {
+                    if (save.UnlockWeapon(w.Id))
                     {
-                        save.UnlockWeapon(w.Id);
                         save.EquipWeapon(w.Id);
-                        ShowHint($"{w.Title} куплено и надето. Осталось {save.Data.coins} монет.");
                         AudioManager.PlayPowerup();
+                        ShowHint(Localization.TFormat("{0} куплено и надето. Осталось {1} монет.", "\"{0}\" purchased and equipped. Remaining: {1} coins.", w.LocalizedTitle, save.Data.coins));
+                        Refresh();
                     }
                     else
                     {
-                        ShowHint($"Не хватает {w.Price - save.Data.coins} монет.");
-                        AudioManager.PlayHit();
-                        return;
+                        ShowHint(Localization.TFormat("Не хватает {0} монет.", "Need {0} more coins.", w.Price - save.Data.coins));
                     }
+                    return;
                 }
-                else
-                {
-                    save.EquipWeapon(w.Id);
-                    ShowHint($"{w.Title} теперь в бою.");
-                    AudioManager.PlayClick();
-                }
+
+                save.EquipWeapon(w.Id);
+                AudioManager.PlayClick();
+                ShowHint(Localization.TFormat("{0} теперь в бою.", "\"{0}\" equipped for battle.", w.LocalizedTitle));
+                Refresh();
             }
             else
             {
                 var s = ShipSkinCatalog.All[selectedSkinIndex];
-                var isOwned = save.Data.unlockedSkinIds.Contains(s.Id);
-                if (!isOwned)
+                if (!save.IsSkinAccessible(s.Id))
                 {
-                    if (!save.IsSkinAccessible(s.Id))
-                    {
-                        ShowHint($"Корпус откроется с миссии {s.RequiredMissionIndex + 1}.");
-                        AudioManager.PlayHit();
-                        return;
-                    }
+                    ShowHint(Localization.TFormat("Корпус откроется с миссии {0}.", "Hull unlocks at Mission {0}.", s.RequiredMissionIndex + 1));
+                    return;
+                }
 
-                    if (s.CoresPrice > 0 && save.Data.starCores < s.CoresPrice)
+                if (!save.Data.unlockedSkinIds.Contains(s.Id))
+                {
+                    if (save.UnlockSkin(s.Id))
                     {
-                        ShowHint($"Не хватает {s.CoresPrice - save.Data.starCores} Звёздных Ядер.");
-                        AudioManager.PlayHit();
-                        return;
-                    }
-
-                    if (save.Data.coins >= s.Price && save.Data.starCores >= s.CoresPrice)
-                    {
-                        save.Data.coins -= s.Price;
-                        save.Data.starCores -= s.CoresPrice;
-                        save.UnlockSkin(s.Id);
                         save.EquipSkin(s.Id);
-                        save.Save();
-                        ShowHint($"{s.Title} куплен и надет. Баланс: {save.Data.coins} кредитов, {save.Data.starCores} ядер.");
                         AudioManager.PlayPowerup();
+                        ShowHint(Localization.TFormat("{0} куплен и надет. Осталось {1} монет.", "\"{0}\" purchased and equipped. Remaining: {1} coins.", s.LocalizedTitle, save.Data.coins));
+                        Refresh();
                     }
                     else
                     {
-                        ShowHint($"Не хватает {s.Price - save.Data.coins} кредитов.");
-                        AudioManager.PlayHit();
-                        return;
+                        ShowHint(Localization.TFormat("Не хватает {0} монет.", "Need {0} more coins.", s.Price - save.Data.coins));
                     }
+                    return;
                 }
-                else
-                {
-                    save.EquipSkin(s.Id);
-                    ShowHint($"{s.Title} теперь на тарелке.");
-                    AudioManager.PlayClick();
-                }
-            }
 
-            Refresh();
+                save.EquipSkin(s.Id);
+                AudioManager.PlayClick();
+                ShowHint(Localization.TFormat("{0} теперь на тарелке.", "\"{0}\" equipped on saucer.", s.LocalizedTitle));
+                Refresh();
+            }
         }
 
-        private GameObject CreateListItem(Transform parent, string title, string sub, int price, bool isOwned, bool isEquipped, bool isSelected, System.Action onClick, bool isLocked = false, string lockBadge = null, string customBadge = null)
+        private GameObject CreateListItem(Transform parent, string title, string sub, int price, bool isOwned, bool isEquipped, bool isSelected, System.Action onClick, bool isLocked, string lockBadge)
         {
-            var btnObj = new GameObject("ItemBtn", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(LayoutElement));
+            var btnObj = new GameObject("Item_" + title, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(LayoutElement));
             btnObj.transform.SetParent(parent, false);
 
             var le = btnObj.GetComponent<LayoutElement>();
             le.minHeight = 64f;
             le.preferredHeight = 64f;
+            le.flexibleHeight = 0f;
 
             var img = btnObj.GetComponent<Image>();
-            img.sprite = PixelUiAtlas.ButtonSecondary;
+            img.sprite = PixelUiAtlas.SubPanel;
             img.type = Image.Type.Sliced;
-            img.color = isSelected 
-                ? new Color(0.3f, 0.65f, 0.95f, 1f) 
-                : new Color(0.12f, 0.18f, 0.28f, 0.9f);
+            if (isSelected)
+                img.color = new Color(0.2f, 0.45f, 0.75f, 1f);
+            else if (isEquipped)
+                img.color = new Color(0.12f, 0.28f, 0.38f, 0.95f);
+            else
+                img.color = new Color(0.08f, 0.12f, 0.2f, 0.95f);
 
             var btn = btnObj.GetComponent<Button>();
-            btn.onClick.AddListener(() => onClick?.Invoke());
+            btn.onClick.AddListener(() =>
+            {
+                AudioManager.PlayClick();
+                onClick?.Invoke();
+            });
 
-            // Left Title & Subtitle container
-            var titleText = CreateText(btnObj.transform, "T", title, 16, Vector2.zero, new Vector2(300f, 26f), Color.white, FontStyle.Bold);
+            // Accent bar on left edge
+            var accentObj = new GameObject("Accent", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            accentObj.transform.SetParent(btnObj.transform, false);
+            var accRect = accentObj.GetComponent<RectTransform>();
+            accRect.anchorMin = new Vector2(0f, 0f);
+            accRect.anchorMax = new Vector2(0f, 1f);
+            accRect.pivot = new Vector2(0f, 0.5f);
+            accRect.anchoredPosition = Vector2.zero;
+            accRect.sizeDelta = new Vector2(4f, 0f);
+            var accImg = accentObj.GetComponent<Image>();
+            accImg.sprite = PixelUiAtlas.White;
+            accImg.color = isSelected ? new Color(1f, 0.85f, 0.3f) : (isEquipped ? new Color(0.3f, 0.9f, 0.6f) : new Color(0.3f, 0.45f, 0.65f, 0.5f));
+
+            // Left Labels: Title & Sub
+            var titleText = CreateText(btnObj.transform, "T", title, 16, Vector2.zero, new Vector2(300f, 26f), isSelected ? Color.white : (isOwned ? new Color(0.95f, 0.98f, 1f) : new Color(0.8f, 0.85f, 0.9f)), FontStyle.Bold);
             titleText.rectTransform.anchorMin = new Vector2(0f, 0.5f);
             titleText.rectTransform.anchorMax = new Vector2(0.68f, 0.5f);
             titleText.rectTransform.pivot = new Vector2(0f, 0.5f);
@@ -877,27 +746,22 @@ namespace KANYE.UI
             Color statusCol;
             if (isEquipped)
             {
-                statusStr = "★ В БОЮ";
+                statusStr = Localization.T("★ В БОЮ", "★ EQUIPPED");
                 statusCol = new Color(0.4f, 1f, 0.5f);
             }
             else if (isOwned)
             {
-                statusStr = "В АНГАРЕ";
+                statusStr = Localization.T("В АНГАРЕ", "OWNED");
                 statusCol = new Color(0.85f, 0.95f, 1f);
             }
             else if (isLocked)
             {
-                statusStr = lockBadge ?? "🔒 БЛОК";
+                statusStr = lockBadge ?? Localization.T("🔒 БЛОК", "🔒 LOCKED");
                 statusCol = new Color(0.95f, 0.45f, 0.45f);
-            }
-            else if (!string.IsNullOrEmpty(customBadge))
-            {
-                statusStr = customBadge;
-                statusCol = new Color(1f, 0.85f, 0.3f);
             }
             else
             {
-                statusStr = $"{price} ¢";
+                statusStr = $"{price} 💰";
                 statusCol = new Color(1f, 0.85f, 0.3f);
             }
 
@@ -912,7 +776,7 @@ namespace KANYE.UI
             return btnObj;
         }
 
-        private static Button CreateTabButton(Transform parent, string name, string label, Vector2 pos, System.Action onClick)
+        private static Button CreateTabButton(Transform parent, string name, string label, Vector2 pos, System.Action onClick, out Text labelRef)
         {
             var btnObj = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             btnObj.transform.SetParent(parent, false);
@@ -931,7 +795,7 @@ namespace KANYE.UI
             var btn = btnObj.GetComponent<Button>();
             btn.onClick.AddListener(() => onClick?.Invoke());
 
-            CreateText(btnObj.transform, "T", label, 18, Vector2.zero, new Vector2(360f, 36f), Color.white, FontStyle.Bold);
+            labelRef = CreateText(btnObj.transform, "T", label, 18, Vector2.zero, new Vector2(360f, 36f), Color.white, FontStyle.Bold);
             return btn;
         }
 
@@ -945,7 +809,7 @@ namespace KANYE.UI
             rect.sizeDelta = size;
 
             var label = go.GetComponent<Text>();
-            label.font = UIFont.DefaultFont;
+            label.font = GameFont.Get();
             label.fontSize = fontSize;
             label.fontStyle = fontStyle;
             label.alignment = TextAnchor.MiddleCenter;
@@ -980,13 +844,13 @@ namespace KANYE.UI
         {
             var save = SaveManager.Instance;
             var coins = save != null ? save.Data.coins : 0;
-            return $"БАЛАНС: {coins} КРЕДИТОВ    {NextDeal(save, coins)}";
+            return Localization.TFormat("БАЛАНС: {0} 💰    {1}", "BALANCE: {0} 💰    {1}", coins, NextDeal(save, coins));
         }
 
         private static string NextDeal(SaveManager save, int coins)
         {
             if (save == null)
-                return "Войдите в сектор, чтобы сохранить прогресс.";
+                return Localization.T("Сначала зайди в игру, чтобы кошелёк сохранился.", "Launch flight to initialize your wallet.");
 
             ShipSkin cheapest = null;
             for (var i = 0; i < ShipSkinCatalog.All.Length; i++)
@@ -1001,12 +865,12 @@ namespace KANYE.UI
             }
 
             if (cheapest == null)
-                return "Все доступные корпуса разблокированы.";
+                return Localization.T("Доступные корпуса уже в ангаре.", "All available hulls are already in your hangar.");
 
             if (coins >= cheapest.Price)
-                return $"Доступно для покупки: «{cheapest.Title}» за {cheapest.Price} кредитов.";
+                return Localization.TFormat("Можно купить «{0}» за {1}.", "You can purchase \"{0}\" for {1} 💰.", cheapest.LocalizedTitle, cheapest.Price);
 
-            return $"До «{cheapest.Title}» ещё {cheapest.Price - coins} кредитов.";
+            return Localization.TFormat("До «{0}» ещё {1} монет.", "Need {1} more coins for \"{0}\".", cheapest.LocalizedTitle, cheapest.Price - coins);
         }
     }
 }

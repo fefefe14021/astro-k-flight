@@ -95,148 +95,6 @@ namespace KANYE.Systems
             return true;
         }
 
-        public void AddStarCores(int amount)
-        {
-            if (amount == 0 || Data == null)
-                return;
-
-            Data.starCores = Mathf.Max(0, Data.starCores + amount);
-            Save();
-        }
-
-        public bool TrySpendStarCores(int amount)
-        {
-            if (amount < 0 || Data == null || Data.starCores < amount)
-                return false;
-
-            Data.starCores -= amount;
-            Save();
-            return true;
-        }
-
-        public int GetMetaLevel(string metaId)
-        {
-            if (Data == null) return 1;
-            switch (metaId)
-            {
-                case "hull": return Mathf.Max(1, Data.hullMetaLevel);
-                case "hype": return Mathf.Max(1, Data.hypeMetaLevel);
-                case "magnet": return Mathf.Max(1, Data.magnetMetaLevel);
-                case "parry": return Mathf.Max(1, Data.parryMetaLevel);
-                default: return 1;
-            }
-        }
-
-        public bool CanUpgradeMeta(string metaId)
-        {
-            if (Data == null) return false;
-            var def = MetaTechCatalog.Find(metaId);
-            var currentLvl = GetMetaLevel(metaId);
-            if (currentLvl >= def.MaxLevel) return false;
-            var (costCredits, costCores) = def.GetCost(currentLvl);
-            return Data.coins >= costCredits && Data.starCores >= costCores;
-        }
-
-        public bool TryUpgradeMeta(string metaId)
-        {
-            if (!CanUpgradeMeta(metaId)) return false;
-            var def = MetaTechCatalog.Find(metaId);
-            var currentLvl = GetMetaLevel(metaId);
-            var (costCredits, costCores) = def.GetCost(currentLvl);
-            return UpgradeMeta(metaId, costCredits, costCores);
-        }
-
-        public bool UpgradeMeta(string metaId, int costCredits, int costCores = 0)
-        {
-            if (Data == null) return false;
-            if (Data.coins < costCredits || Data.starCores < costCores) return false;
-
-            Data.coins -= costCredits;
-            Data.starCores -= costCores;
-
-            switch (metaId)
-            {
-                case "hull": Data.hullMetaLevel = Mathf.Min(5, Data.hullMetaLevel + 1); break;
-                case "hype": Data.hypeMetaLevel = Mathf.Min(5, Data.hypeMetaLevel + 1); break;
-                case "magnet": Data.magnetMetaLevel = Mathf.Min(4, Data.magnetMetaLevel + 1); break;
-                case "parry": Data.parryMetaLevel = Mathf.Min(3, Data.parryMetaLevel + 1); break;
-            }
-
-            Save();
-            return true;
-        }
-
-        #region Daily Login Retention Loop
-
-        [Serializable]
-        public struct DailyRewardEntry
-        {
-            public int credits;
-            public int cores;
-
-            public DailyRewardEntry(int credits, int cores)
-            {
-                this.credits = credits;
-                this.cores = cores;
-            }
-
-            public void Deconstruct(out int credits, out int cores)
-            {
-                credits = this.credits;
-                cores = this.cores;
-            }
-        }
-
-        public bool IsDailyRewardAvailable()
-        {
-            if (Data == null) return true;
-            var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
-            return string.IsNullOrEmpty(Data.lastDailyClaimDate) || Data.lastDailyClaimDate != today;
-        }
-
-        public int GetCurrentDailyDay()
-        {
-            if (Data == null) return 1;
-            return Mathf.Clamp(Data.dailyLoginDay, 1, 7);
-        }
-
-        public DailyRewardEntry GetDailyRewardValues(int day)
-        {
-            switch (day)
-            {
-                case 1: return new DailyRewardEntry(50, 0);
-                case 2: return new DailyRewardEntry(75, 0);
-                case 3: return new DailyRewardEntry(100, 1);
-                case 4: return new DailyRewardEntry(150, 0);
-                case 5: return new DailyRewardEntry(200, 1);
-                case 6: return new DailyRewardEntry(250, 0);
-                case 7: return new DailyRewardEntry(500, 3);
-                default: return new DailyRewardEntry(50, 0);
-            }
-        }
-
-        public bool ClaimDailyReward(out int credits, out int cores)
-        {
-            credits = 0;
-            cores = 0;
-            if (!IsDailyRewardAvailable()) return false;
-
-            var day = GetCurrentDailyDay();
-            var reward = GetDailyRewardValues(day);
-            credits = reward.credits;
-            cores = reward.cores;
-
-            Data.coins += credits;
-            Data.starCores += cores;
-            Data.lastDailyClaimDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
-            Data.dailyLoginDay = (day % 7) + 1;
-
-            Save();
-            return true;
-        }
-
-        #endregion
-
         public bool UnlockSkin(string skinId)
         {
             if (string.IsNullOrEmpty(skinId) || Data.unlockedSkinIds.Contains(skinId))
@@ -343,6 +201,77 @@ namespace KANYE.Systems
             return true;
         }
 
+        #region Daily Login Retention Loop
+
+        [Serializable]
+        public struct DailyRewardEntry
+        {
+            public int credits;
+            public int cores;
+
+            public DailyRewardEntry(int credits, int cores)
+            {
+                this.credits = credits;
+                this.cores = cores;
+            }
+
+            public void Deconstruct(out int credits, out int cores)
+            {
+                credits = this.credits;
+                cores = this.cores;
+            }
+        }
+
+        public bool IsDailyRewardAvailable()
+        {
+            if (Data == null) return true;
+            var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            return string.IsNullOrEmpty(Data.lastDailyClaimDate) || Data.lastDailyClaimDate != today;
+        }
+
+        public int GetCurrentDailyDay()
+        {
+            if (Data == null) return 1;
+            return Mathf.Clamp(Data.dailyLoginDay, 1, 7);
+        }
+
+        public DailyRewardEntry GetDailyRewardValues(int day)
+        {
+            switch (day)
+            {
+                case 1: return new DailyRewardEntry(50, 0);
+                case 2: return new DailyRewardEntry(75, 0);
+                case 3: return new DailyRewardEntry(100, 1);
+                case 4: return new DailyRewardEntry(150, 0);
+                case 5: return new DailyRewardEntry(200, 1);
+                case 6: return new DailyRewardEntry(250, 0);
+                case 7: return new DailyRewardEntry(500, 3);
+                default: return new DailyRewardEntry(50, 0);
+            }
+        }
+
+        public bool ClaimDailyReward(out int credits, out int cores)
+        {
+            credits = 0;
+            cores = 0;
+            if (!IsDailyRewardAvailable()) return false;
+
+            var day = GetCurrentDailyDay();
+            var reward = GetDailyRewardValues(day);
+            credits = reward.credits;
+            cores = reward.cores;
+
+            Data.coins += credits;
+            Data.starCores += cores;
+            Data.lastDailyClaimDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            Data.dailyLoginDay = (day % 7) + 1;
+
+            Save();
+            return true;
+        }
+
+        #endregion
+
         public int CurrentMission => Data == null ? 0 : Mathf.Max(0, Data.currentMission);
         public bool HasSeenIntro => Data != null && Data.introCutsceneSeen;
 
@@ -352,8 +281,6 @@ namespace KANYE.Systems
             Data.introCutsceneSeen = seen;
             Save();
         }
-
-        public void SetIntroSeen(bool seen = true) => MarkIntroSeen(seen);
 
         public void RememberMission(int index)
         {

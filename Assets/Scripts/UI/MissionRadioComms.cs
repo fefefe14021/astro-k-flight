@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using KANYE.Audio;
 using KANYE.Gameplay;
+using KANYE.Services;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -89,15 +90,15 @@ namespace KANYE.UI
             var sector = MissionCatalog.Selected;
             var dialogue = LoreCatalog.GetDialogue(sector);
 
-            if (TutorialHints.IsTutorialActive && !string.IsNullOrEmpty(dialogue.TutorialIntro))
+            if (TutorialHints.IsTutorialActive && !string.IsNullOrEmpty(dialogue.LocalizedTutorialIntro))
             {
                 // Play tutorial introduction from Barney
-                StartTransmission(dialogue.Header, new[] { dialogue.TutorialIntro }, null);
+                StartTransmission(dialogue.LocalizedHeader, new[] { dialogue.LocalizedTutorialIntro }, null);
             }
             else
             {
                 // Play standard sector narrative introduction
-                StartTransmission(dialogue.Header, dialogue.IntroLines, null);
+                StartTransmission(dialogue.LocalizedHeader, dialogue.LocalizedIntroLines, null);
             }
         }
 
@@ -110,15 +111,15 @@ namespace KANYE.UI
             }
 
             var dialogue = LoreCatalog.GetDialogue(MissionCatalog.Selected);
-            if (string.IsNullOrEmpty(dialogue?.BossWarning))
+            if (string.IsNullOrEmpty(dialogue?.LocalizedBossWarning))
                 dialogue = LoreCatalog.GetDialogue(sectorIndex);
 
             AudioManager.PlayBossWarning();
-            var warning = !string.IsNullOrEmpty(dialogue?.BossWarning)
-                ? dialogue.BossWarning
-                : "⚠️ Внимание! На радаре обнаружен флагман Синдиката! Приготовься к бою!";
+            var warning = !string.IsNullOrEmpty(dialogue?.LocalizedBossWarning)
+                ? dialogue.LocalizedBossWarning
+                : Localization.T("⚠️ Внимание! На радаре обнаружен флагман Синдиката! Приготовься к бою!", "⚠️ Warning! Syndicate flagship detected on radar! Prepare for battle!");
 
-            Instance.StartTransmission("🚨 ПЕРЕХВАТ: БАРНИ НА СВЯЗИ!", new[] { warning }, onDismiss);
+            Instance.StartTransmission(Localization.T("🚨 ПЕРЕХВАТ: БАРНИ НА СВЯЗИ!", "🚨 TRANSMISSION: BARNEY ON AIR!"), new[] { warning }, onDismiss);
         }
 
         public void StartTransmission(string header, string[] lines, Action onComplete)
@@ -156,7 +157,7 @@ namespace KANYE.UI
             messageText.text = "";
 
             if (promptText != null)
-                promptText.text = "[ ПРОДОЛЖИТЬ (ПРОБЕЛ) >> ]";
+                promptText.text = Localization.T("[ ПРОДОЛЖИТЬ (ПРОБЕЛ) >> ]", "[ CONTINUE (SPACE) >> ]");
 
             var charDelay = 0.024f;
             var beepCounter = 0;
@@ -409,13 +410,13 @@ namespace KANYE.UI
             portraitImage.sprite = Resources.Load<Sprite>("Sprites/barney_portrait");
 
             // Header Channel Tag
-            channelTagText = CreateLabel(consoleRoot.transform, "ChannelTag", "📡 СВЯЗЬ: ШТУРМАН БАРНИ", 18, new Vector2(180f, 64f), new Vector2(490f, 28f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
+            channelTagText = CreateLabel(consoleRoot.transform, "ChannelTag", Localization.T("📡 СВЯЗЬ: ШТУРМАН БАРНИ", "📡 COMMS: NAVIGATOR BARNEY"), 18, new Vector2(180f, 64f), new Vector2(490f, 28f), new Color(1f, 0.85f, 0.35f), FontStyle.Bold);
             channelTagText.alignment = TextAnchor.MiddleLeft;
             channelTagText.horizontalOverflow = HorizontalWrapMode.Overflow;
             channelTagText.verticalOverflow = VerticalWrapMode.Truncate;
 
             // Live On-Air Indicator. Stops before the skip button, which sits at the right edge.
-            onAirText = CreateLabel(consoleRoot.transform, "OnAir", "● В ЭФИРЕ", 15, new Vector2(684f, 64f), new Vector2(130f, 28f), new Color(0.2f, 1f, 0.4f), FontStyle.Bold);
+            onAirText = CreateLabel(consoleRoot.transform, "OnAir", Localization.T("● В ЭФИРЕ", "● ON AIR"), 15, new Vector2(684f, 64f), new Vector2(130f, 28f), new Color(0.2f, 1f, 0.4f), FontStyle.Bold);
             onAirText.alignment = TextAnchor.MiddleLeft;
             onAirText.horizontalOverflow = HorizontalWrapMode.Overflow;
             onAirText.verticalOverflow = VerticalWrapMode.Truncate;
@@ -442,7 +443,7 @@ namespace KANYE.UI
             advanceButton = advanceObj.GetComponent<Button>();
             advanceButton.onClick.AddListener(AdvanceDialogue);
 
-            promptText = CreateLabel(advanceObj.transform, "Prompt", "[ ПРОДОЛЖИТЬ (ПРОБЕЛ) >> ]", 14, Vector2.zero, new Vector2(230f, 30f), Color.white, FontStyle.Bold);
+            promptText = CreateLabel(advanceObj.transform, "Prompt", Localization.T("[ ПРОДОЛЖИТЬ (ПРОБЕЛ) >> ]", "[ CONTINUE (SPACE) >> ]"), 14, Vector2.zero, new Vector2(230f, 30f), Color.white, FontStyle.Bold);
             promptText.alignment = TextAnchor.MiddleCenter;
 
             // Skip All Button [ESC]
@@ -463,7 +464,7 @@ namespace KANYE.UI
             var skipBtn = skipObj.GetComponent<Button>();
             skipBtn.onClick.AddListener(SkipAll);
 
-            var skipLabel = CreateLabel(skipObj.transform, "SkipText", "ПРОПУСТИТЬ [ESC]", 13, Vector2.zero, new Vector2(180f, 24f), new Color(0.85f, 0.92f, 1f), FontStyle.Bold);
+            var skipLabel = CreateLabel(skipObj.transform, "SkipText", Localization.T("ПРОПУСТИТЬ [ESC]", "SKIP [ESC]"), 13, Vector2.zero, new Vector2(180f, 24f), new Color(0.85f, 0.92f, 1f), FontStyle.Bold);
             skipLabel.rectTransform.anchorMin = Vector2.zero;
             skipLabel.rectTransform.anchorMax = Vector2.one;
             skipLabel.rectTransform.offsetMin = new Vector2(6f, 2f);
@@ -486,7 +487,7 @@ namespace KANYE.UI
             rect.sizeDelta = size;
 
             var label = go.GetComponent<Text>();
-            label.font = UIFont.DefaultFont;
+            label.font = GameFont.Get();
             label.fontSize = fontSize;
             label.fontStyle = style;
             label.color = color;
